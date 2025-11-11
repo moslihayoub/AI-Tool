@@ -1,0 +1,134 @@
+import React, { useState, DragEvent } from 'react';
+import { CVFile } from '../types';
+import { Icon } from './icons';
+import { useTranslation } from '../i18n';
+
+interface UploadViewProps {
+  cvFiles: CVFile[];
+  onAddFiles: (files: File[]) => void;
+  onStartAnalysis: () => void;
+  onClearFile: (fileId: string) => void;
+  isAnalyzing: boolean;
+  storageError: string | null;
+}
+
+const FileStatusChip: React.FC<{ status: CVFile['status'] }> = ({ status }) => {
+    const { t } = useTranslation();
+    const statusMap = {
+        pending: { text: t('upload.status.pending'), color: 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300' },
+        parsing: { text: t('upload.status.parsing'), color: 'bg-blue-200 text-blue-800 dark:bg-blue-900 dark:text-blue-300 animate-pulse' },
+        success: { text: t('upload.status.success'), color: 'bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-300' },
+        error: { text: t('upload.status.error'), color: 'bg-red-200 text-red-800 dark:bg-red-900 dark:text-red-300' },
+    };
+    const { text, color } = statusMap[status];
+    return <span className={`px-3 py-1 text-xs font-semibold rounded-full ${color}`}>{text}</span>;
+};
+
+
+export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onStartAnalysis, onClearFile, isAnalyzing, storageError }) => {
+  const { t } = useTranslation();
+  const [isDragActive, setIsDragActive] = useState(false);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const isUIDisabled = isAnalyzing || !!storageError;
+
+  const handleDrag = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isUIDisabled) return;
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setIsDragActive(true);
+    } else if (e.type === "dragleave") {
+      setIsDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isUIDisabled) return;
+    setIsDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      onAddFiles(Array.from(e.dataTransfer.files));
+    }
+  };
+  
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    if (e.target.files && e.target.files.length > 0) {
+      onAddFiles(Array.from(e.target.files));
+    }
+  };
+
+  const onButtonClick = () => {
+    if (isUIDisabled) return;
+    inputRef.current?.click();
+  };
+
+  const pendingFilesCount = cvFiles.filter(f => f.status === 'pending').length;
+
+  return (
+    <div className="p-4 sm:p-8 space-y-8">
+        <header>
+            <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{t('upload.title')}</h2>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">{t('upload.subtitle')}</p>
+        </header>
+
+        <div 
+          onDragEnter={handleDrag} 
+          onDragLeave={handleDrag} 
+          onDragOver={handleDrag} 
+          onDrop={handleDrop}
+          onClick={onButtonClick}
+          className={`relative border-2 border-dashed rounded-xl p-12 text-center transition-all duration-300 
+            ${isDragActive ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'border-gray-300 dark:border-gray-600'}
+            ${isUIDisabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:border-primary-400'}`}
+        >
+            <input ref={inputRef} type="file" multiple onChange={handleChange} className="hidden" accept=".pdf,.txt,.json,.md,.csv,.doc,.docx,.xls,.xlsx,.ppt,.pptx" disabled={isUIDisabled} />
+            <div className="flex flex-col items-center justify-center text-gray-500 dark:text-gray-400">
+                <Icon name="upload" className="w-12 h-12 mb-4"/>
+                {isDragActive ? (
+                    <p className="text-lg font-semibold text-primary-600">{t('upload.dropzone.release')}</p>
+                ) : (
+                    <p className="text-lg font-semibold">{t('upload.dropzone.prompt')}</p>
+                )}
+                <p className="text-sm mt-1">{t('upload.dropzone.supported_files')}</p>
+            </div>
+        </div>
+
+        {cvFiles.length > 0 && (
+             <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                    <h3 className="text-xl font-bold">{t('upload.pending_files.title', { count: cvFiles.length })}</h3>
+                    <button 
+                        onClick={onStartAnalysis} 
+                        disabled={pendingFilesCount === 0 || isAnalyzing}
+                        className="bg-primary-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                       {isAnalyzing ? <Icon name="spinner" className="w-5 h-5"/> : <Icon name="check" className="w-5 h-5"/>}
+                       <span>{t('upload.pending_files.analyze_button', { count: pendingFilesCount })}</span>
+                    </button>
+                </div>
+                <ul className="bg-white dark:bg-gray-800/50 rounded-lg border dark:border-gray-700 divide-y dark:divide-gray-700">
+                    {cvFiles.map(cvFile => (
+                        <li key={cvFile.id} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800">
+                           <div className="flex items-center gap-4 truncate">
+                                <Icon name="google" className="w-6 h-6 text-gray-400 flex-shrink-0"/>
+                                <div className="truncate">
+                                    <p className="font-semibold truncate">{cvFile.file.name}</p>
+                                    <p className="text-sm text-gray-500">{(cvFile.file.size / 1024).toFixed(1)} KB</p>
+                                </div>
+                           </div>
+                            <div className="flex items-center gap-4">
+                               <FileStatusChip status={cvFile.status} />
+                               <button onClick={() => onClearFile(cvFile.id)} className="text-gray-400 hover:text-red-500 p-1 rounded-full">
+                                   <Icon name="close" className="w-5 h-5" />
+                               </button>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        )}
+    </div>
+  );
+};

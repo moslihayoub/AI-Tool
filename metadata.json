@@ -1,0 +1,5 @@
+{
+  "name": "HR Auto Analyzer",
+  "description": "An AI-powered application for bulk resume management and analysis, featuring advanced filtering, interactive dashboards, and a contextual AI assistant to streamline the recruitment process.",
+  "requestFramePermissions": []
+}
