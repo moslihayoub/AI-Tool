@@ -29,6 +29,7 @@ export const fr = {
         subtitle: "Visualisez les données et les profils extraits des CVs.",
         filter_by_job: "Filtrer par métier",
         jobs_selected: "{{count}} métier{{plural:count}} sélectionné{{plural:count}}",
+        clear_filters: "Effacer les filtres",
         no_cv_analyzed: "Aucun CV n'a encore été analysé. Veuillez en importer depuis l'onglet \"Importer CVs\".",
         incomplete_profile_tooltip: "Informations clés (nom, métier) manquantes.",
         experience_years: "{{count}} an{{plural:count}} d'exp.",
@@ -99,6 +100,7 @@ export const fr = {
     common: {
         reset: "Réinitialiser",
         reset_confirm: "Êtes-vous sûr de vouloir supprimer toutes les données ? Cette action est irréversible.",
+        reset_confirm_action: "Confirmer ?",
         export: "Exporter",
         storageError: "Erreur de stockage",
         info: "Info",
@@ -151,6 +153,7 @@ export const en = {
         subtitle: "Visualize data and profiles extracted from the CVs.",
         filter_by_job: "Filter by Job",
         jobs_selected: "{{count}} job{{plural:count}} selected",
+        clear_filters: "Clear Filters",
         no_cv_analyzed: "No CVs have been analyzed yet. Please import some from the \"Import CVs\" tab.",
         incomplete_profile_tooltip: "Key information (name, job) is missing.",
         experience_years: "{{count}} year{{plural:count}} exp.",
@@ -221,6 +224,7 @@ export const en = {
     common: {
         reset: "Reset",
         reset_confirm: "Are you sure you want to delete all data? This action is irreversible.",
+        reset_confirm_action: "Confirm?",
         export: "Export",
         storageError: "Storage Error",
         info: "Info",

@@ -92,6 +92,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
     const { t } = useTranslation();
     const [selectedJobCategories, setSelectedJobCategories] = useState<string[]>([]);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [confirmReset, setConfirmReset] = useState(false);
     const filterRef = useRef<HTMLDivElement>(null);
 
     const allJobCategories = useMemo(() => {
@@ -119,10 +120,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
     }, []);
 
     const handleResetClick = () => {
-        if (selectedJobCategories.length > 0) {
-            setSelectedJobCategories([]);
-        } else {
+        if (confirmReset) {
             onReset();
+            setConfirmReset(false);
+        } else {
+            setConfirmReset(true);
+            setTimeout(() => setConfirmReset(false), 3000);
         }
     };
     
@@ -210,27 +213,46 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                             <Icon name="chevron-down" className={`w-5 h-5 transition-transform duration-200 ${isFilterOpen ? 'rotate-180' : ''}`} />
                         </button>
                         {isFilterOpen && (
-                            <div className="absolute top-full mt-2 w-56 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-lg shadow-xl z-10 max-h-60 overflow-y-auto">
-                                {allJobCategories.map(category => (
-                                    <label key={category} className="flex items-center p-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:bg-gray-900 dark:border-gray-600"
-                                            checked={selectedJobCategories.includes(category)}
-                                            onChange={() => handleCategoryToggle(category)}
-                                        />
-                                        <span className="ml-3 text-gray-700 dark:text-gray-300 truncate">{category}</span>
-                                    </label>
-                                ))}
+                            <div className="absolute top-full mt-2 w-56 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-lg shadow-xl z-10">
+                                <div className="max-h-60 overflow-y-auto">
+                                    {allJobCategories.map(category => (
+                                        <label key={category} className="flex items-center p-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:bg-gray-900 dark:border-gray-600"
+                                                checked={selectedJobCategories.includes(category)}
+                                                onChange={() => handleCategoryToggle(category)}
+                                            />
+                                            <span className="ml-3 text-gray-700 dark:text-gray-300 truncate">{category}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                                {selectedJobCategories.length > 0 && (
+                                    <div className="p-2 border-t dark:border-gray-700">
+                                        <button
+                                            onClick={() => {
+                                                setSelectedJobCategories([]);
+                                                setIsFilterOpen(false);
+                                            }}
+                                            className="w-full text-center text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline focus:outline-none"
+                                        >
+                                            {t('dashboard.clear_filters')}
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
                     <button onClick={exportToCsv} className="flex items-center gap-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-semibold px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
                         <Icon name="export" className="w-5 h-5" /> {t('common.export')}
                     </button>
-                    <button onClick={handleResetClick} className="flex items-center gap-2 bg-red-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">
+                    <button onClick={handleResetClick} className={`flex items-center gap-2 font-semibold px-4 py-2 rounded-lg transition-colors ${
+                        confirmReset 
+                        ? 'bg-yellow-500 text-white hover:bg-yellow-600' 
+                        : 'bg-red-600 text-white hover:bg-red-700'
+                    }`}>
                         <Icon name="refresh-cw" className="w-5 h-5" />
-                        {t('common.reset')}
+                        {confirmReset ? t('common.reset_confirm_action') : t('common.reset')}
                     </button>
                 </div>
             </header>

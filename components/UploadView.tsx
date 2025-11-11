@@ -8,6 +8,7 @@ interface UploadViewProps {
   onAddFiles: (files: File[]) => void;
   onStartAnalysis: () => void;
   onClearFile: (fileId: string) => void;
+  onClearAllFiles: () => void;
   isAnalyzing: boolean;
   storageError: string | null;
 }
@@ -25,9 +26,10 @@ const FileStatusChip: React.FC<{ status: CVFile['status'] }> = ({ status }) => {
 };
 
 
-export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onStartAnalysis, onClearFile, isAnalyzing, storageError }) => {
+export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onStartAnalysis, onClearFile, onClearAllFiles, isAnalyzing, storageError }) => {
   const { t } = useTranslation();
   const [isDragActive, setIsDragActive] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const isUIDisabled = isAnalyzing || !!storageError;
 
@@ -64,6 +66,16 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
     inputRef.current?.click();
   };
 
+  const handleResetClick = () => {
+      if (confirmReset) {
+          onClearAllFiles();
+          setConfirmReset(false);
+      } else {
+          setConfirmReset(true);
+          setTimeout(() => setConfirmReset(false), 3000);
+      }
+  };
+
   const pendingFilesCount = cvFiles.filter(f => f.status === 'pending').length;
 
   return (
@@ -97,16 +109,31 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
 
         {cvFiles.length > 0 && (
              <div className="space-y-4">
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center flex-wrap gap-4">
                     <h3 className="text-xl font-bold">{t('upload.pending_files.title', { count: cvFiles.length })}</h3>
-                    <button 
-                        onClick={onStartAnalysis} 
-                        disabled={pendingFilesCount === 0 || isAnalyzing}
-                        className="bg-primary-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
-                    >
-                       {isAnalyzing ? <Icon name="spinner" className="w-5 h-5"/> : <Icon name="check" className="w-5 h-5"/>}
-                       <span>{t('upload.pending_files.analyze_button', { count: pendingFilesCount })}</span>
-                    </button>
+                    <div className="flex items-center gap-2">
+                         <button 
+                            onClick={handleResetClick}
+                            disabled={isAnalyzing}
+                            className={`font-semibold py-2 px-4 rounded-lg transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2 ${
+                                confirmReset 
+                                ? 'bg-yellow-500 text-white hover:bg-yellow-600' 
+                                : 'bg-red-600 text-white hover:bg-red-700'
+                            }`}
+                            aria-label={confirmReset ? t('common.reset_confirm_action') : t('common.reset')}
+                        >
+                           <Icon name="refresh-cw" className="w-5 h-5"/>
+                           <span>{confirmReset ? t('common.reset_confirm_action') : t('common.reset')}</span>
+                        </button>
+                        <button 
+                            onClick={onStartAnalysis} 
+                            disabled={pendingFilesCount === 0 || isAnalyzing}
+                            className="bg-primary-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+                        >
+                           {isAnalyzing ? <Icon name="spinner" className="w-5 h-5"/> : <Icon name="check" className="w-5 h-5"/>}
+                           <span>{t('upload.pending_files.analyze_button', { count: pendingFilesCount })}</span>
+                        </button>
+                    </div>
                 </div>
                 <ul className="bg-white dark:bg-gray-800/50 rounded-lg border dark:border-gray-700 divide-y dark:divide-gray-700">
                     {cvFiles.map(cvFile => (

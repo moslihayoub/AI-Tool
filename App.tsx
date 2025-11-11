@@ -49,12 +49,34 @@ function AppContent() {
 
     useEffect(() => {
         const root = window.document.documentElement;
-        const isDark =
-          theme === 'dark' ||
-          (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
         
-        root.classList.toggle('dark', isDark);
+        const applyTheme = () => {
+            if (
+                theme === 'dark' ||
+                (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+            ) {
+                root.classList.add('dark');
+            } else {
+                root.classList.remove('dark');
+            }
+        }
+        
+        applyTheme();
         localStorage.setItem('theme', theme);
+
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        
+        const systemThemeListener = () => {
+            if (theme === 'system') {
+                applyTheme();
+            }
+        };
+
+        mediaQuery.addEventListener('change', systemThemeListener);
+
+        return () => {
+            mediaQuery.removeEventListener('change', systemThemeListener);
+        };
     }, [theme]);
 
     const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -176,14 +198,13 @@ function AppContent() {
     };
 
     const handleReset = () => {
-        if (window.confirm(t('common.reset_confirm'))) {
-            setCvFiles([]);
-            setSelectedProfileId(null);
-            setView('upload');
-            localStorage.removeItem('cvFiles');
-            setStorageError(null);
-            setAnalysisSummaryMessage(null);
-        }
+        // Confirmation is now handled within the components.
+        setCvFiles([]);
+        setSelectedProfileId(null);
+        setView('upload');
+        localStorage.removeItem('cvFiles');
+        setStorageError(null);
+        setAnalysisSummaryMessage(null);
     };
     
     const selectedCvFile = cvFiles.find(f => f.id === selectedProfileId);
@@ -195,13 +216,13 @@ function AppContent() {
 
         switch (view) {
             case 'upload':
-                return <UploadView cvFiles={cvFiles} onAddFiles={handleAddFiles} onStartAnalysis={handleStartAnalysis} onClearFile={handleClearFile} isAnalyzing={isAnalyzing} storageError={storageError}/>;
+                return <UploadView cvFiles={cvFiles} onAddFiles={handleAddFiles} onStartAnalysis={handleStartAnalysis} onClearFile={handleClearFile} onClearAllFiles={handleReset} isAnalyzing={isAnalyzing} storageError={storageError}/>;
             case 'dashboard':
                 return <DashboardView candidates={candidateProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} setSearchQuery={() => {}} />;
             case 'settings':
                 return <SettingsView theme={theme} setTheme={setTheme} />;
             default:
-                return <UploadView cvFiles={cvFiles} onAddFiles={handleAddFiles} onStartAnalysis={handleStartAnalysis} onClearFile={handleClearFile} isAnalyzing={isAnalyzing} storageError={storageError}/>;
+                return <UploadView cvFiles={cvFiles} onAddFiles={handleAddFiles} onStartAnalysis={handleStartAnalysis} onClearFile={handleClearFile} onClearAllFiles={handleReset} isAnalyzing={isAnalyzing} storageError={storageError}/>;
         }
     };
 
