@@ -1,5 +1,5 @@
-// FIX: Changed react import to namespace import and updated hooks to resolve JSX intrinsic element type errors.
-import * as React from 'react';
+// FIX: Changed react import to default and named hooks import to resolve JSX intrinsic element type errors.
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { CandidateProfile } from '../types';
 import { Icon } from './icons';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList, LineChart, Line } from 'recharts';
@@ -115,24 +115,24 @@ const EmptyChartState: React.FC = () => {
 
 export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSelectCandidate, onReset }) => {
     const { t } = useTranslation();
-    const [selectedJobCategories, setSelectedJobCategories] = React.useState<string[]>([]);
-    const [isFilterOpen, setIsFilterOpen] = React.useState(false);
-    const [confirmReset, setConfirmReset] = React.useState(false);
-    const filterRef = React.useRef<HTMLDivElement>(null);
+    const [selectedJobCategories, setSelectedJobCategories] = useState<string[]>([]);
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [confirmReset, setConfirmReset] = useState(false);
+    const filterRef = useRef<HTMLDivElement>(null);
 
-    const allJobCategories = React.useMemo(() => {
+    const allJobCategories = useMemo(() => {
         const categories = new Set(candidates.map(c => c.jobCategory).filter(c => c && c !== 'N/A'));
         return Array.from(categories).sort();
     }, [candidates]);
 
-    const filteredCandidates = React.useMemo(() => {
+    const filteredCandidates = useMemo(() => {
         if (selectedJobCategories.length === 0) {
             return candidates;
         }
         return candidates.filter(c => c.jobCategory && selectedJobCategories.includes(c.jobCategory));
     }, [candidates, selectedJobCategories]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
                 setIsFilterOpen(false);
@@ -162,8 +162,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         );
     };
 
-    const locationDistribution = React.useMemo(() => groupData(filteredCandidates.map(c => c.location), t), [filteredCandidates, t]);
-    const jobCategoryDistribution = React.useMemo(() => {
+    const locationDistribution = useMemo(() => groupData(filteredCandidates.map(c => c.location), t), [filteredCandidates, t]);
+    const jobCategoryDistribution = useMemo(() => {
         const validData = filteredCandidates.map(c => c.jobCategory).filter(item => item && item.trim() && item.trim() !== 'N/A');
         const freqMap = validData.reduce((acc: Record<string, number>, item) => {
             const key = item.trim();
@@ -173,7 +173,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         return Object.entries(freqMap).map(([name, value]) => ({ name, value }));
     }, [filteredCandidates]);
     
-    const experienceDistribution = React.useMemo(() => {
+    const experienceDistribution = useMemo(() => {
         const buckets = { [t('dashboard.exp_buckets.junior')]: 0, [t('dashboard.exp_buckets.confirmed')]: 0, [t('dashboard.exp_buckets.senior')]: 0, [t('dashboard.exp_buckets.expert')]: 0, };
         filteredCandidates.forEach(c => {
             const years = c.totalExperienceYears || 0;
@@ -185,7 +185,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         return Object.entries(buckets).map(([name, count]) => ({ name, count }));
     }, [filteredCandidates, t]);
     
-     const performanceByJobCategory = React.useMemo(() => {
+     const performanceByJobCategory = useMemo(() => {
         const validCandidates = filteredCandidates.filter(c => c.jobCategory && c.jobCategory.trim() && c.jobCategory !== 'N/A');
         const categoryScores: Record<string, { totalScore: number, count: number }> = validCandidates.reduce((acc, candidate) => {
             const category = candidate.jobCategory;
@@ -281,14 +281,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                     <button onClick={exportToCsv} className="flex items-center gap-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-semibold px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
                         <Icon name="export" className="w-5 h-5" /> {t('common.export')}
                     </button>
-                    <button onClick={handleResetClick} className={`flex items-center gap-2 font-semibold px-4 py-2 rounded-lg transition-colors ${
-                        confirmReset 
-                        ? 'bg-yellow-500 text-white hover:bg-yellow-600' 
-                        : 'bg-red-600 text-white hover:bg-red-700'
-                    }`}>
-                        <Icon name="refresh-cw" className="w-5 h-5" />
-                        {confirmReset ? t('common.reset_confirm_action') : t('common.reset')}
-                    </button>
+                    <div className="relative">
+                        <button onClick={handleResetClick} className={`flex items-center gap-2 font-semibold px-4 py-2 rounded-lg transition-colors ${
+                            confirmReset 
+                            ? 'bg-yellow-500 text-white hover:bg-yellow-600' 
+                            : 'bg-red-600 text-white hover:bg-red-700'
+                        }`}>
+                            <Icon name="refresh-cw" className="w-5 h-5" />
+                            {confirmReset ? t('common.reset_confirm_action') : t('common.reset')}
+                        </button>
+                        {confirmReset && (
+                            <div className="absolute bottom-full right-0 mb-2 w-max max-w-xs bg-gray-900 text-white text-xs rounded py-2 px-3 opacity-100 transition-opacity pointer-events-none z-10 shadow-lg text-center dark:bg-gray-700">
+                                {t('common.reset_confirm')}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </header>
 

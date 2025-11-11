@@ -1,9 +1,9 @@
-// FIX: Changed react import to namespace import and updated hooks to resolve JSX intrinsic element type errors.
-import * as React from 'react';
+// FIX: Changed react import to default and named hooks import to resolve JSX intrinsic element type errors.
+import React, { useState, useEffect, useRef } from 'react';
 import { CandidateProfile, ChatMessage, CVFile } from '../types';
 import { Icon } from './icons';
 import { createAIChat } from '../services/geminiService';
-import { Chat } from '@google/genai';
+import { Chat, GenerateContentResponse } from '@google/genai';
 import { useTranslation } from '../i18n';
 
 interface AIAssistantProps {
@@ -12,13 +12,13 @@ interface AIAssistantProps {
 
 const AIAssistant: React.FC<AIAssistantProps> = ({ cvFile }) => {
     const { t } = useTranslation();
-    const [chat, setChat] = React.useState<Chat | null>(null);
-    const [messages, setMessages] = React.useState<ChatMessage[]>([{role: 'model', text: t('ai_assistant.greeting')}]);
-    const [input, setInput] = React.useState('');
-    const [isLoading, setIsLoading] = React.useState(false);
-    const messagesEndRef = React.useRef<HTMLDivElement>(null);
+    const [chat, setChat] = useState<Chat | null>(null);
+    const [messages, setMessages] = useState<ChatMessage[]>([{role: 'model', text: t('ai_assistant.greeting')}]);
+    const [input, setInput] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    React.useEffect(() => {
+    useEffect(() => {
         setChat(createAIChat(cvFile));
         setMessages([{role: 'model', text: t('ai_assistant.greeting')}]);
     }, [cvFile, t]);
@@ -27,7 +27,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ cvFile }) => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
-    React.useEffect(scrollToBottom, [messages]);
+    useEffect(scrollToBottom, [messages]);
 
     const sendMessage = async () => {
         if (!input.trim() || !chat || isLoading) return;
@@ -37,7 +37,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ cvFile }) => {
         setIsLoading(true);
 
         try {
-            const response = await chat.sendMessage({ message: input });
+            const response: GenerateContentResponse = await chat.sendMessage({ message: input });
             const modelMessage: ChatMessage = { role: 'model', text: response.text };
             setMessages(prev => [...prev, modelMessage]);
         } catch (error) {

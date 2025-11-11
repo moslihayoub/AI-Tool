@@ -1,5 +1,5 @@
-// FIX: Changed react import to namespace import and updated hooks to resolve JSX intrinsic element type errors.
-import * as React from 'react';
+// FIX: Changed react import to default and named hooks import to resolve JSX intrinsic element type errors.
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { UploadView } from './components/UploadView';
 import { DashboardView } from './components/DashboardView';
@@ -29,7 +29,7 @@ const readFileAsBase64 = (file: File): Promise<{ mimeType: string; data: string 
 
 function AppContent() {
     const { t } = useTranslation();
-    const [cvFiles, setCvFiles] = React.useState<CVFile[]>(() => {
+    const [cvFiles, setCvFiles] = useState<CVFile[]>(() => {
         try {
             const savedFiles = localStorage.getItem('cvFiles');
             return savedFiles ? JSON.parse(savedFiles).map((f: any) => ({ ...f, file: new File([], f.fileName), content: '' })) : [];
@@ -39,21 +39,21 @@ function AppContent() {
         }
     });
 
-    const [view, setView] = React.useState<View>('upload');
-    const [selectedProfileId, setSelectedProfileId] = React.useState<string | null>(null);
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
-    const [isMobileSidebarOpen, setIsMobileSidebarOpen] = React.useState(false);
-    const [storageError, setStorageError] = React.useState<string | null>(null);
-    const [analysisSummaryMessage, setAnalysisSummaryMessage] = React.useState<string | null>(null);
+    const [view, setView] = useState<View>('upload');
+    const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+    const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+    const [storageError, setStorageError] = useState<string | null>(null);
+    const [analysisSummaryMessage, setAnalysisSummaryMessage] = useState<string | null>(null);
     
-    const [theme, setTheme] = React.useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'system');
+    const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'system');
 
     // Refactored theme logic
-    const [systemTheme, setSystemTheme] = React.useState(() =>
+    const [systemTheme, setSystemTheme] = useState(() =>
         window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
     );
 
-    React.useEffect(() => {
+    useEffect(() => {
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
         const handleChange = (e: MediaQueryListEvent) => {
             setSystemTheme(e.matches ? 'dark' : 'light');
@@ -62,14 +62,14 @@ function AppContent() {
         return () => mediaQuery.removeEventListener('change', handleChange);
     }, []);
 
-    const isDarkMode = React.useMemo(() => {
+    const isDarkMode = useMemo(() => {
         if (theme === 'system') {
             return systemTheme === 'dark';
         }
         return theme === 'dark';
     }, [theme, systemTheme]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         const root = window.document.documentElement;
         if (isDarkMode) {
             root.classList.add('dark');
@@ -80,12 +80,12 @@ function AppContent() {
     }, [isDarkMode, theme]);
     // End of refactored theme logic
 
-    const [isAnalyzing, setIsAnalyzing] = React.useState(false);
-    const [analysisProgress, setAnalysisProgress] = React.useState(0);
-    const [analysisStartTime, setAnalysisStartTime] = React.useState<number | null>(null);
-    const [analysisTotal, setAnalysisTotal] = React.useState(0);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [analysisProgress, setAnalysisProgress] = useState(0);
+    const [analysisStartTime, setAnalysisStartTime] = useState<number | null>(null);
+    const [analysisTotal, setAnalysisTotal] = useState(0);
 
-    React.useEffect(() => {
+    useEffect(() => {
         try {
             const storableFiles = cvFiles.map(f => {
                 const { file, content, ...rest } = f;
@@ -107,13 +107,13 @@ function AppContent() {
         }
     }, [cvFiles, storageError, t]);
 
-    const candidateProfiles = React.useMemo((): CandidateProfile[] => {
+    const candidateProfiles = useMemo((): CandidateProfile[] => {
         return cvFiles
             .filter(file => file.status === 'success' && file.profile)
             .map(file => file.profile as CandidateProfile);
     }, [cvFiles]);
 
-    const handleAddFiles = React.useCallback((files: File[]) => {
+    const handleAddFiles = useCallback((files: File[]) => {
         const newCvFiles: CVFile[] = files
           .filter(file => !cvFiles.some(cvFile => cvFile.file.name === file.name))
           .map(file => ({
@@ -252,7 +252,7 @@ function AppContent() {
                         </button>
                         <h1 className="text-lg font-bold text-transparent bg-clip-text bg-gradient-primary">HR Analyzer</h1>
                     </header>
-                    <main className="flex-1 overflow-y-auto bg-transparent">
+                    <main className="flex-1 overflow-y-auto bg-white/70 dark:bg-gray-900/70 backdrop-blur-lg">
                          {storageError && (
                             <div className="p-4 mx-4 sm:mx-8 mt-4 sm:mt-8 bg-red-100 dark:bg-red-900/50 border-l-4 border-red-500 text-red-800 dark:text-red-200 rounded-r-lg" role="alert">
                                 <p><span className="font-bold">{t('common.storageError')}:</span> {storageError}</p>

@@ -1,4 +1,5 @@
-import { GoogleGenAI, Type, Chat } from '@google/genai';
+
+import { GoogleGenAI, Type, Chat, GenerateContentResponse } from '@google/genai';
 import type { CandidateProfile, CVFile } from '../types';
 
 // Fix: Initialize the Google Gemini AI client. It's good practice to do this once per module.
@@ -83,7 +84,7 @@ export async function parseCvContent(fileData: { mimeType: string; data: string 
 
     try {
         // Fix: Call Gemini API to generate content with a specific JSON schema.
-        const response = await ai.models.generateContent({
+        const response: GenerateContentResponse = await ai.models.generateContent({
             model: model,
             contents: { parts: [{ text: prompt }, { inlineData: fileData }] },
             config: {
@@ -146,7 +147,7 @@ export function createAIChat(cvFile: CVFile): Chat {
     `;
 
     // Fix: Create a chat instance with a system instruction containing the candidate's profile as context.
-    const chat = ai.chats.create({
+    const chat: Chat = ai.chats.create({
         model: 'gemini-2.5-flash',
         config: {
             systemInstruction: systemInstruction,

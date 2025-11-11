@@ -1,5 +1,5 @@
-// FIX: Changed react import to namespace import and updated hooks to resolve JSX intrinsic element type errors.
-import * as React from 'react';
+// FIX: Changed react import to default and named hooks import to resolve JSX intrinsic element type errors.
+import React, { useState, useEffect } from 'react';
 import { Icon } from './icons';
 import { useTranslation } from '../i18n';
 
@@ -11,10 +11,10 @@ interface AnalysisLoaderProps {
 
 export const AnalysisLoader: React.FC<AnalysisLoaderProps> = ({ progress, total, startTime }) => {
   const { t } = useTranslation();
-  const [elapsedTime, setElapsedTime] = React.useState(0);
+  const [elapsedTime, setElapsedTime] = useState(0);
   const percentage = total > 0 ? Math.round((progress / total) * 100) : 0;
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (startTime === null) return;
     
     const timer = setInterval(() => {

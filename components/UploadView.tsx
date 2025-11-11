@@ -1,5 +1,5 @@
-// FIX: Changed react import to namespace import and updated hooks to resolve JSX intrinsic element type errors.
-import * as React from 'react';
+// FIX: Changed react import to default and named hooks import to resolve JSX intrinsic element type errors.
+import React, { useState, useRef } from 'react';
 import { CVFile } from '../types';
 import { Icon } from './icons';
 import { useTranslation } from '../i18n';
@@ -29,14 +29,11 @@ const FileStatusChip: React.FC<{ status: CVFile['status'] }> = ({ status }) => {
 
 export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onStartAnalysis, onClearFile, onClearAllFiles, isAnalyzing, storageError }) => {
   const { t } = useTranslation();
-  // FIX: Use React.useState to align with namespace import.
-  const [isDragActive, setIsDragActive] = React.useState(false);
-  // FIX: Use React.useState to align with namespace import.
-  const [confirmReset, setConfirmReset] = React.useState(false);
-  const inputRef = React.useRef<HTMLInputElement>(null);
+  const [isDragActive, setIsDragActive] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const isUIDisabled = isAnalyzing || !!storageError;
 
-  // FIX: Use React.DragEvent to align with namespace import.
   const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -48,7 +45,6 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
     }
   };
 
-  // FIX: Use React.DragEvent to align with namespace import.
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -97,7 +93,7 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
           onDrop={handleDrop}
           onClick={onButtonClick}
           className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 flex flex-col items-center justify-center min-h-[450px] gap-8 
-            ${isDragActive ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'border-gray-300 dark:border-gray-600'}
+            ${isDragActive ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'border-gray-300 dark:border-gray-600 bg-white/30 dark:bg-gray-800/30'}
             ${isUIDisabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:border-primary-400'}`}
         >
             <input ref={inputRef} type="file" multiple onChange={handleChange} className="hidden" accept=".pdf,.txt,.json,.md,.csv,.doc,.docx,.xls,.xlsx,.ppt,.pptx" disabled={isUIDisabled} />
@@ -118,19 +114,26 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
                 <div className="flex justify-between items-center flex-wrap gap-4">
                     <h3 className="text-xl font-bold">{t('upload.pending_files.title', { count: cvFiles.length })}</h3>
                     <div className="flex items-center gap-2">
-                         <button 
-                            onClick={handleResetClick}
-                            disabled={isAnalyzing}
-                            className={`font-semibold py-2 px-4 rounded-lg transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2 ${
-                                confirmReset 
-                                ? 'bg-yellow-500 text-white hover:bg-yellow-600' 
-                                : 'bg-red-600 text-white hover:bg-red-700'
-                            }`}
-                            aria-label={confirmReset ? t('common.reset_confirm_action') : t('common.reset')}
-                        >
-                           <Icon name="refresh-cw" className="w-5 h-5"/>
-                           <span>{confirmReset ? t('common.reset_confirm_action') : t('common.reset')}</span>
-                        </button>
+                        <div className="relative">
+                            <button 
+                                onClick={handleResetClick}
+                                disabled={isAnalyzing}
+                                className={`font-semibold py-2 px-4 rounded-lg transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2 ${
+                                    confirmReset 
+                                    ? 'bg-yellow-500 text-white hover:bg-yellow-600' 
+                                    : 'bg-red-600 text-white hover:bg-red-700'
+                                }`}
+                                aria-label={confirmReset ? t('common.reset_confirm_action') : t('common.reset')}
+                            >
+                               <Icon name="refresh-cw" className="w-5 h-5"/>
+                               <span>{confirmReset ? t('common.reset_confirm_action') : t('common.reset')}</span>
+                            </button>
+                            {confirmReset && (
+                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs bg-gray-900 text-white text-xs rounded py-2 px-3 opacity-100 transition-opacity pointer-events-none z-10 shadow-lg text-center dark:bg-gray-700">
+                                    {t('common.reset_confirm')}
+                                </div>
+                            )}
+                        </div>
                         <button 
                             onClick={onStartAnalysis} 
                             disabled={pendingFilesCount === 0 || isAnalyzing}

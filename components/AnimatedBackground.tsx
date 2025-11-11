@@ -1,8 +1,8 @@
-// FIX: Changed react import to namespace import and updated hooks to resolve JSX intrinsic element type errors.
-import * as React from 'react';
+// FIX: Changed react import to default and named hooks import to resolve JSX intrinsic element type errors.
+import React, { useEffect } from 'react';
 
 export const AnimatedBackground: React.FC = () => {
-    React.useEffect(() => {
+    useEffect(() => {
         const container = document.getElementById('particle-container');
         if (!container) return;
 
