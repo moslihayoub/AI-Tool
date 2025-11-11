@@ -1,8 +1,18 @@
-import React, { useMemo, useState, useRef, useEffect } from 'react';
+// FIX: Changed react import to namespace import and updated hooks to resolve JSX intrinsic element type errors.
+import * as React from 'react';
 import { CandidateProfile } from '../types';
 import { Icon } from './icons';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList, LineChart, Line } from 'recharts';
 import { useTranslation } from '../i18n';
+
+// Add TypeScript definitions for the Lottie web component
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'dotlottie-wc': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement> & { src: string; autoplay: boolean; loop: boolean; style?: React.CSSProperties }, HTMLElement>;
+    }
+  }
+}
 
 interface DashboardViewProps {
   candidates: CandidateProfile[];
@@ -88,26 +98,41 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     return null;
 };
 
+const EmptyChartState: React.FC = () => {
+    const { t } = useTranslation();
+    return (
+        <div className="flex flex-col items-center justify-center h-[300px] text-gray-500">
+            <dotlottie-wc
+                src="https://lottie.host/6b351e48-1af9-4c6d-b373-79ea075fc9a6/Uott01F3kh.lottie"
+                autoplay
+                loop
+                style={{ width: '120px', height: '120px' }}
+            ></dotlottie-wc>
+            <p className="mt-2 text-sm italic">{t('dashboard.charts.no_data')}</p>
+        </div>
+    );
+};
+
 export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSelectCandidate, onReset }) => {
     const { t } = useTranslation();
-    const [selectedJobCategories, setSelectedJobCategories] = useState<string[]>([]);
-    const [isFilterOpen, setIsFilterOpen] = useState(false);
-    const [confirmReset, setConfirmReset] = useState(false);
-    const filterRef = useRef<HTMLDivElement>(null);
+    const [selectedJobCategories, setSelectedJobCategories] = React.useState<string[]>([]);
+    const [isFilterOpen, setIsFilterOpen] = React.useState(false);
+    const [confirmReset, setConfirmReset] = React.useState(false);
+    const filterRef = React.useRef<HTMLDivElement>(null);
 
-    const allJobCategories = useMemo(() => {
+    const allJobCategories = React.useMemo(() => {
         const categories = new Set(candidates.map(c => c.jobCategory).filter(c => c && c !== 'N/A'));
         return Array.from(categories).sort();
     }, [candidates]);
 
-    const filteredCandidates = useMemo(() => {
+    const filteredCandidates = React.useMemo(() => {
         if (selectedJobCategories.length === 0) {
             return candidates;
         }
         return candidates.filter(c => c.jobCategory && selectedJobCategories.includes(c.jobCategory));
     }, [candidates, selectedJobCategories]);
 
-    useEffect(() => {
+    React.useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
                 setIsFilterOpen(false);
@@ -137,8 +162,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         );
     };
 
-    const locationDistribution = useMemo(() => groupData(filteredCandidates.map(c => c.location), t), [filteredCandidates, t]);
-    const jobCategoryDistribution = useMemo(() => {
+    const locationDistribution = React.useMemo(() => groupData(filteredCandidates.map(c => c.location), t), [filteredCandidates, t]);
+    const jobCategoryDistribution = React.useMemo(() => {
         const validData = filteredCandidates.map(c => c.jobCategory).filter(item => item && item.trim() && item.trim() !== 'N/A');
         const freqMap = validData.reduce((acc: Record<string, number>, item) => {
             const key = item.trim();
@@ -148,7 +173,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         return Object.entries(freqMap).map(([name, value]) => ({ name, value }));
     }, [filteredCandidates]);
     
-    const experienceDistribution = useMemo(() => {
+    const experienceDistribution = React.useMemo(() => {
         const buckets = { [t('dashboard.exp_buckets.junior')]: 0, [t('dashboard.exp_buckets.confirmed')]: 0, [t('dashboard.exp_buckets.senior')]: 0, [t('dashboard.exp_buckets.expert')]: 0, };
         filteredCandidates.forEach(c => {
             const years = c.totalExperienceYears || 0;
@@ -160,7 +185,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         return Object.entries(buckets).map(([name, count]) => ({ name, count }));
     }, [filteredCandidates, t]);
     
-     const performanceByJobCategory = useMemo(() => {
+     const performanceByJobCategory = React.useMemo(() => {
         const validCandidates = filteredCandidates.filter(c => c.jobCategory && c.jobCategory.trim() && c.jobCategory !== 'N/A');
         const categoryScores: Record<string, { totalScore: number, count: number }> = validCandidates.reduce((acc, candidate) => {
             const category = candidate.jobCategory;
@@ -176,7 +201,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
     }, [filteredCandidates]);
 
     if (candidates.length === 0) {
-        return <div className="p-8 text-center"><p>{t('dashboard.no_cv_analyzed')}</p></div>
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] p-8 text-center">
+                <dotlottie-wc
+                    src="https://lottie.host/6b351e48-1af9-4c6d-b373-79ea075fc9a6/Uott01F3kh.lottie"
+                    autoplay
+                    loop
+                    style={{ width: '300px', height: '300px' }}
+                ></dotlottie-wc>
+                <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">{t('dashboard.no_cv_analyzed')}</p>
+            </div>
+        );
     }
 
     const exportToCsv = () => {
@@ -279,9 +314,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                             </BarChart>
                         </ResponsiveContainer>
                     ) : (
-                        <div className="flex items-center justify-center h-[300px] text-gray-500 italic">
-                            {t('dashboard.charts.no_data')}
-                        </div>
+                        <EmptyChartState />
                     )}
                 </div>
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-lg">
@@ -298,9 +331,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                             </LineChart>
                         </ResponsiveContainer>
                     ) : (
-                        <div className="flex items-center justify-center h-[300px] text-gray-500 italic">
-                            {t('dashboard.charts.no_data')}
-                        </div>
+                        <EmptyChartState />
                     )}
                 </div>
                  <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-lg">
@@ -324,9 +355,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                             </BarChart>
                         </ResponsiveContainer>
                     ) : (
-                        <div className="flex items-center justify-center h-[300px] text-gray-500 italic">
-                            {t('dashboard.charts.no_data')}
-                        </div>
+                        <EmptyChartState />
                     )}
                 </div>
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-lg">
@@ -350,9 +379,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                             </BarChart>
                         </ResponsiveContainer>
                     ) : (
-                        <div className="flex items-center justify-center h-[300px] text-gray-500 italic">
-                            {t('dashboard.charts.no_data')}
-                        </div>
+                        <EmptyChartState />
                     )}
                 </div>
             </div>

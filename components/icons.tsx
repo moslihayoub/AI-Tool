@@ -1,4 +1,5 @@
-import React from 'react';
+// FIX: Changed react import to namespace import to resolve JSX intrinsic element type errors.
+import * as React from 'react';
 
 interface IconProps extends React.SVGProps<SVGSVGElement> {
   name: string;

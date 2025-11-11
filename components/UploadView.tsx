@@ -1,4 +1,5 @@
-import React, { useState, DragEvent } from 'react';
+// FIX: Changed react import to namespace import and updated hooks to resolve JSX intrinsic element type errors.
+import * as React from 'react';
 import { CVFile } from '../types';
 import { Icon } from './icons';
 import { useTranslation } from '../i18n';
@@ -28,12 +29,15 @@ const FileStatusChip: React.FC<{ status: CVFile['status'] }> = ({ status }) => {
 
 export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onStartAnalysis, onClearFile, onClearAllFiles, isAnalyzing, storageError }) => {
   const { t } = useTranslation();
-  const [isDragActive, setIsDragActive] = useState(false);
-  const [confirmReset, setConfirmReset] = useState(false);
+  // FIX: Use React.useState to align with namespace import.
+  const [isDragActive, setIsDragActive] = React.useState(false);
+  // FIX: Use React.useState to align with namespace import.
+  const [confirmReset, setConfirmReset] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const isUIDisabled = isAnalyzing || !!storageError;
 
-  const handleDrag = (e: DragEvent<HTMLDivElement>) => {
+  // FIX: Use React.DragEvent to align with namespace import.
+  const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     if (isUIDisabled) return;
@@ -44,7 +48,8 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
     }
   };
 
-  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+  // FIX: Use React.DragEvent to align with namespace import.
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     if (isUIDisabled) return;
@@ -91,11 +96,12 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
           onDragOver={handleDrag} 
           onDrop={handleDrop}
           onClick={onButtonClick}
-          className={`relative border-2 border-dashed rounded-xl p-12 text-center transition-all duration-300 
+          className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 flex flex-col items-center justify-center min-h-[450px] gap-8 
             ${isDragActive ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'border-gray-300 dark:border-gray-600'}
             ${isUIDisabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:border-primary-400'}`}
         >
             <input ref={inputRef} type="file" multiple onChange={handleChange} className="hidden" accept=".pdf,.txt,.json,.md,.csv,.doc,.docx,.xls,.xlsx,.ppt,.pptx" disabled={isUIDisabled} />
+            
             <div className="flex flex-col items-center justify-center text-gray-500 dark:text-gray-400">
                 <Icon name="upload" className="w-12 h-12 mb-4"/>
                 {isDragActive ? (

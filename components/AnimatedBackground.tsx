@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+// FIX: Changed react import to namespace import and updated hooks to resolve JSX intrinsic element type errors.
+import * as React from 'react';
 
 export const AnimatedBackground: React.FC = () => {
-    useEffect(() => {
+    React.useEffect(() => {
         const container = document.getElementById('particle-container');
         if (!container) return;
 

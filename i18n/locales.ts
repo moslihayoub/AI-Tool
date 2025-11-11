@@ -13,6 +13,7 @@ export const fr = {
             prompt: "Glissez-déposez des fichiers ici, ou cliquez pour sélectionner",
             supported_files: "Fichiers supportés: PDF, TXT, JSON, MD, CSV, Fichiers Office"
         },
+        google_drive_import: "Importer via Google Drive",
         pending_files: {
             title: "Fichiers en attente ({{count}})",
             analyze_button: "Analyser ({{count}}) Fichier{{plural:count}}"
@@ -137,6 +138,7 @@ export const en = {
             prompt: "Drag and drop files here, or click to select",
             supported_files: "Supported files: PDF, TXT, JSON, MD, CSV, Office Files"
         },
+        google_drive_import: "Import from Google Drive",
         pending_files: {
             title: "Pending Files ({{count}})",
             analyze_button: "Analyze ({{count}}) File{{plural:count}}"

@@ -1,4 +1,5 @@
-import React from 'react';
+// FIX: Changed react import to namespace import to resolve JSX intrinsic element type errors.
+import * as React from 'react';
 import { Icon } from './icons';
 import { View } from '../types';
 import { useTranslation } from '../i18n';
@@ -63,7 +64,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, i
               }`}
             >
               <Icon name={item.icon} className="w-6 h-6" />
-              <span className={`ml-3 transition-opacity duration-200 ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100'}`}>{item.label}</span>
+              <span className={`transition-opacity duration-200 ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100 ml-3'}`}>{item.label}</span>
             </button>
           ))}
         </nav>

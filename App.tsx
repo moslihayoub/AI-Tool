@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+// FIX: Changed react import to namespace import and updated hooks to resolve JSX intrinsic element type errors.
+import * as React from 'react';
 import { Sidebar } from './components/Sidebar';
 import { UploadView } from './components/UploadView';
 import { DashboardView } from './components/DashboardView';
@@ -28,7 +29,7 @@ const readFileAsBase64 = (file: File): Promise<{ mimeType: string; data: string 
 
 function AppContent() {
     const { t } = useTranslation();
-    const [cvFiles, setCvFiles] = useState<CVFile[]>(() => {
+    const [cvFiles, setCvFiles] = React.useState<CVFile[]>(() => {
         try {
             const savedFiles = localStorage.getItem('cvFiles');
             return savedFiles ? JSON.parse(savedFiles).map((f: any) => ({ ...f, file: new File([], f.fileName), content: '' })) : [];
@@ -38,53 +39,53 @@ function AppContent() {
         }
     });
 
-    const [view, setView] = useState<View>('upload');
-    const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-    const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-    const [storageError, setStorageError] = useState<string | null>(null);
-    const [analysisSummaryMessage, setAnalysisSummaryMessage] = useState<string | null>(null);
+    const [view, setView] = React.useState<View>('upload');
+    const [selectedProfileId, setSelectedProfileId] = React.useState<string | null>(null);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
+    const [isMobileSidebarOpen, setIsMobileSidebarOpen] = React.useState(false);
+    const [storageError, setStorageError] = React.useState<string | null>(null);
+    const [analysisSummaryMessage, setAnalysisSummaryMessage] = React.useState<string | null>(null);
     
-    const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'system');
+    const [theme, setTheme] = React.useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'system');
 
-    useEffect(() => {
-        const root = window.document.documentElement;
-        
-        const applyTheme = () => {
-            if (
-                theme === 'dark' ||
-                (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-            ) {
-                root.classList.add('dark');
-            } else {
-                root.classList.remove('dark');
-            }
-        }
-        
-        applyTheme();
-        localStorage.setItem('theme', theme);
+    // Refactored theme logic
+    const [systemTheme, setSystemTheme] = React.useState(() =>
+        window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    );
 
+    React.useEffect(() => {
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        
-        const systemThemeListener = () => {
-            if (theme === 'system') {
-                applyTheme();
-            }
+        const handleChange = (e: MediaQueryListEvent) => {
+            setSystemTheme(e.matches ? 'dark' : 'light');
         };
+        mediaQuery.addEventListener('change', handleChange);
+        return () => mediaQuery.removeEventListener('change', handleChange);
+    }, []);
 
-        mediaQuery.addEventListener('change', systemThemeListener);
+    const isDarkMode = React.useMemo(() => {
+        if (theme === 'system') {
+            return systemTheme === 'dark';
+        }
+        return theme === 'dark';
+    }, [theme, systemTheme]);
 
-        return () => {
-            mediaQuery.removeEventListener('change', systemThemeListener);
-        };
-    }, [theme]);
+    React.useEffect(() => {
+        const root = window.document.documentElement;
+        if (isDarkMode) {
+            root.classList.add('dark');
+        } else {
+            root.classList.remove('dark');
+        }
+        localStorage.setItem('theme', theme);
+    }, [isDarkMode, theme]);
+    // End of refactored theme logic
 
-    const [isAnalyzing, setIsAnalyzing] = useState(false);
-    const [analysisProgress, setAnalysisProgress] = useState(0);
-    const [analysisStartTime, setAnalysisStartTime] = useState<number | null>(null);
-    const [analysisTotal, setAnalysisTotal] = useState(0);
+    const [isAnalyzing, setIsAnalyzing] = React.useState(false);
+    const [analysisProgress, setAnalysisProgress] = React.useState(0);
+    const [analysisStartTime, setAnalysisStartTime] = React.useState<number | null>(null);
+    const [analysisTotal, setAnalysisTotal] = React.useState(0);
 
-    useEffect(() => {
+    React.useEffect(() => {
         try {
             const storableFiles = cvFiles.map(f => {
                 const { file, content, ...rest } = f;
@@ -106,13 +107,13 @@ function AppContent() {
         }
     }, [cvFiles, storageError, t]);
 
-    const candidateProfiles = useMemo((): CandidateProfile[] => {
+    const candidateProfiles = React.useMemo((): CandidateProfile[] => {
         return cvFiles
             .filter(file => file.status === 'success' && file.profile)
             .map(file => file.profile as CandidateProfile);
     }, [cvFiles]);
 
-    const handleAddFiles = useCallback((files: File[]) => {
+    const handleAddFiles = React.useCallback((files: File[]) => {
         const newCvFiles: CVFile[] = files
           .filter(file => !cvFiles.some(cvFile => cvFile.file.name === file.name))
           .map(file => ({
@@ -228,8 +229,11 @@ function AppContent() {
 
     return (
         <div className="relative h-screen text-gray-800 dark:text-gray-200">
-            <div className="absolute inset-0 bg-animated-gradient bg-200% animate-gradient-flow" aria-hidden="true" />
-            <div className="absolute inset-0 bg-gray-900 opacity-60" aria-hidden="true" />
+            <div
+                className={`absolute inset-0 bg-200% animate-gradient-flow ${isDarkMode ? 'bg-animated-gradient' : 'bg-animated-gradient-light'}`}
+                aria-hidden="true"
+            />
+            {isDarkMode && <div className="absolute inset-0 bg-gray-900 opacity-60" aria-hidden="true" />}
 
             <div className="relative flex h-full w-full">
                 {isAnalyzing && <AnalysisLoader progress={analysisProgress} total={analysisTotal} startTime={analysisStartTime} />}

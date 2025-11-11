@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" class="dark">
+<html lang="fr">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -21,6 +21,7 @@
       }
     }
     </script>
+    <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.8.5/dist/dotlottie-wc.js" type="module"></script>
     <style>
         body {
             font-family: 'Outfit', sans-serif;
@@ -42,6 +43,7 @@
                     backgroundImage: { 
                       'gradient-primary': 'linear-gradient(to right, #3b82f6, #ec4899)',
                       'animated-gradient': 'linear-gradient(-45deg, #1e3a8a, #500724, #1d4ed8, #701a75)',
+                      'animated-gradient-light': 'linear-gradient(-45deg, #bfdbfe, #fbcfe8, #dbeafe, #f5d0fe)',
                     },
                     backgroundSize: {
                       '200%': '200% 200%',
@@ -61,7 +63,7 @@
         }
     </script>
 </head>
-<body class="dark">
+<body>
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
 </body>
