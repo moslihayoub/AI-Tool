@@ -390,18 +390,19 @@ function AppContent() {
         setAnalysisProgress(0);
         setAnalysisStartTime(Date.now());
         
+        // Set all pending files to 'parsing' state at once for immediate UI feedback.
+        setCvFiles(prevFiles =>
+            prevFiles.map(file =>
+                pendingFiles.some(pf => pf.id === file.id) ? { ...file, status: 'parsing', analysisStartTime: Date.now() } : file
+            )
+        );
+
         const analysisPromises = pendingFiles.map(async (cvFile) => {
-            let analysisStartTime = Date.now();
-            let updatedFile: CVFile;
+            const analysisStartTimeForFile = Date.now();
             try {
-                setCvFiles(prev => prev.map(f => f.id === cvFile.id ? { ...f, status: 'parsing', analysisStartTime } : f));
-                
                 const fileData = await readFileAsBase64(cvFile.file);
                 const profileData = await parseCvContent(fileData);
-
-                const analysisEndTime = Date.now();
-                const duration = analysisEndTime - analysisStartTime;
-
+                const duration = Date.now() - analysisStartTimeForFile;
                 const profile: CandidateProfile = {
                     ...profileData,
                     id: cvFile.id,
@@ -409,36 +410,33 @@ function AppContent() {
                     analysisDuration: duration,
                 };
 
-                updatedFile = { ...cvFile, status: 'success', profile, content: '', analysisDuration: duration };
-                setCvFiles(prev => prev.map(f => f.id === cvFile.id ? updatedFile : f));
+                return { ...cvFile, status: 'success' as const, profile, content: '', analysisDuration: duration };
             } catch (error) {
-                console.error(`Failed to process ${cvFile.file.name}:`, error);
-                const analysisEndTime = Date.now();
-                const duration = analysisEndTime - analysisStartTime;
+                const duration = Date.now() - analysisStartTimeForFile;
                 const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
-                updatedFile = { ...cvFile, status: 'error', error: errorMessage, analysisDuration: duration };
-                setCvFiles(prev => prev.map(f => f.id === cvFile.id ? updatedFile : f));
-            } finally {
-                setAnalysisProgress(p => p + 1);
+                return { ...cvFile, status: 'error' as const, error: errorMessage, analysisDuration: duration };
             }
-            return updatedFile;
         });
 
         const results = await Promise.all(analysisPromises);
         
+        // Update the main state once with all the results.
+        setCvFiles(prevFiles => {
+            const filesMap = new Map(prevFiles.map(f => [f.id, f]));
+            results.forEach(result => {
+                filesMap.set(result.id, result);
+            });
+            return Array.from(filesMap.values());
+        });
+
         const incompleteCount = results.filter(f => 
             f.status === 'success' && 
             f.profile && 
             (!f.profile.name || f.profile.name === 'N/A' || !f.profile.jobCategory || f.profile.jobCategory === 'N/A')
         ).length;
         
-        let finalSummary = '';
         if (incompleteCount > 0) {
-            finalSummary = t('analysis.summary_incomplete', {count: incompleteCount});
-        }
-
-        if (finalSummary) {
-            setAnalysisSummaryMessage(finalSummary);
+            setAnalysisSummaryMessage(t('analysis.summary_incomplete', {count: incompleteCount}));
         }
 
         setIsAnalyzing(false);
