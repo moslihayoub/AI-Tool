@@ -7,9 +7,11 @@ import { useTranslation } from '../i18n';
 interface SettingsViewProps {
     theme: Theme;
     setTheme: (theme: Theme) => void;
+    onLoadDummyData: () => void;
+    isDummyDataButtonDisabled: boolean;
 }
 
-export const SettingsView: React.FC<SettingsViewProps> = ({ theme, setTheme }) => {
+export const SettingsView: React.FC<SettingsViewProps> = ({ theme, setTheme, onLoadDummyData, isDummyDataButtonDisabled }) => {
     const { t, language, setLanguage } = useTranslation();
 
     const activeBtnClasses = "bg-primary-600 text-white";
@@ -68,6 +70,19 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ theme, setTheme }) =
                             <span>{t('settings.theme.system')}</span>
                         </button>
                     </div>
+                </div>
+
+                 <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700">
+                    <h3 className="text-lg font-semibold mb-3">{t('settings.data.title')}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{t('settings.data.dummy_description')}</p>
+                    <button 
+                        onClick={onLoadDummyData}
+                        disabled={isDummyDataButtonDisabled}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors bg-secondary-600 text-white hover:bg-secondary-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    >
+                        <Icon name="bot" className="w-5 h-5"/>
+                        <span>{t('settings.data.load_dummy')}</span>
+                    </button>
                 </div>
             </div>
         </div>

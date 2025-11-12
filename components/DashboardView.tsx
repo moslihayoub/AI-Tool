@@ -37,21 +37,23 @@ const CandidateCard: React.FC<{ candidate: CandidateProfile; onSelect: () => voi
     return (
         <div onClick={onSelect} className={`relative bg-white dark:bg-gray-800 p-5 rounded-xl border shadow-md hover:shadow-xl hover:border-primary-500 cursor-pointer transition-all hover:scale-105 duration-200 flex flex-col justify-between min-h-[190px] ${isFavorite ? 'ring-2 ring-secondary-500 dark:ring-secondary-400' : 'dark:border-gray-700'}`}>
             <div>
-                <div className="flex justify-between items-start gap-2">
-                    <h3 className="font-bold text-lg text-primary-700 dark:text-primary-300 truncate pr-8">{candidate.name && candidate.name !== 'N/A' ? candidate.name : t('common.name_not_available')}</h3>
+                <h3 className="font-bold text-lg text-primary-700 dark:text-primary-300">{candidate.name && candidate.name !== 'N/A' ? candidate.name : t('common.name_not_available')}</h3>
+                
+                <div className="flex justify-between items-center mt-2">
                      <button 
                         onClick={onToggleFavorite} 
-                        className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-secondary-100 dark:hover:bg-gray-700 transition-colors z-10"
+                        className="p-1.5 rounded-full hover:bg-secondary-100 dark:hover:bg-gray-700 transition-colors z-10"
                         title={isFavorite ? t('detail.remove_from_favorites') : t('detail.add_to_favorites')}
                         aria-label="Toggle favorite"
                     >
-                        <Icon name="heart" className={`w-5 h-5 ${isFavorite ? 'fill-secondary-500 text-secondary-500' : 'text-gray-400'}`} />
+                        <Icon name="heart" className={`w-6 h-6 ${isFavorite ? 'fill-secondary-500 text-secondary-500' : 'text-gray-400'}`} />
                     </button>
+
                     <div className="flex items-center gap-2 flex-shrink-0">
                         {isProfileIncomplete(candidate) && (
                             <div className="group relative flex items-center">
                                 <Icon name="alert-triangle" className="w-5 h-5 text-yellow-500" />
-                                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                <span className="absolute bottom-full right-0 mb-2 w-48 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 text-center">
                                     {t('dashboard.incomplete_profile_tooltip')}
                                 </span>
                             </div>
@@ -64,7 +66,8 @@ const CandidateCard: React.FC<{ candidate: CandidateProfile; onSelect: () => voi
                         </div>
                     </div>
                 </div>
-                <p className="text-base text-gray-600 dark:text-gray-400 truncate mt-1">{candidate.jobCategory && candidate.jobCategory !== 'N/A' ? candidate.jobCategory : t('common.category_not_available')}</p>
+
+                <p className="text-base text-gray-600 dark:text-gray-400 truncate mt-2">{candidate.jobCategory && candidate.jobCategory !== 'N/A' ? candidate.jobCategory : t('common.category_not_available')}</p>
                 <div className="text-base text-gray-500 dark:text-gray-400 flex items-center justify-between mt-1">
                   <span className="truncate pr-2">{candidate.location && candidate.location !== 'N/A' ? candidate.location : t('common.location_not_available')}</span>
                   <span className="font-medium flex-shrink-0">{t('dashboard.experience_years', {count: candidate.totalExperienceYears || 0})}</span>

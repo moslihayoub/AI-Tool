@@ -1,9 +1,20 @@
+// FIX: Force-include React's global types to resolve JSX intrinsic element errors.
+/// <reference types="react" />
+
 // FIX: Changed React import to default to resolve JSX intrinsic element type errors.
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 
-// FIX: Moved global type definition for 'dotlottie-wc' custom element to types.ts to fix issue with overwritten JSX intrinsic elements.
+// FIX: Added global type definition for 'dotlottie-wc' custom element here.
+// This is the main entry point, ensuring types are augmented correctly.
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'dotlottie-wc': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement> & { src: string; autoplay: boolean; loop: boolean; style?: React.CSSProperties }, HTMLElement>;
+    }
+  }
+}
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

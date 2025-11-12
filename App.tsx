@@ -11,6 +11,105 @@ import { parseCvContent } from './services/geminiService';
 import { Icon } from './components/icons';
 import { LanguageProvider, useTranslation } from './i18n';
 
+const dummyProfiles: Omit<CandidateProfile, 'id' | 'fileName' | 'analysisDuration'>[] = [
+  {
+    name: 'Alice Dubois',
+    email: 'alice.dubois@example.com',
+    phone: '+33 6 12 34 56 78',
+    location: 'Paris, France',
+    summary: 'Développeuse Full Stack passionnée avec 3 ans d\'expérience dans la création d\'applications web robustes et scalables. Adepte des méthodologies agiles et du travail en équipe.',
+    experience: [
+      { title: 'Développeur Full Stack', company: 'Tech Solutions Inc.', dates: 'Jan 2021 - Présent', description: 'Développement et maintenance d\'une plateforme SaaS. Utilisation de React, Node.js, et PostgreSQL.' },
+      { title: 'Développeur Web Junior', company: 'Web Agency', dates: 'Juin 2019 - Déc 2020', description: 'Création de sites vitrines pour divers clients avec WordPress et PHP.' },
+    ],
+    education: [
+      { degree: 'Master en Informatique', school: 'Université Paris-Saclay', dates: '2017 - 2019' },
+    ],
+    skills: {
+      hard: ['React', 'Node.js', 'TypeScript', 'PostgreSQL', 'Docker', 'Git'],
+      soft: ['Travail d\'équipe', 'Résolution de problèmes', 'Communication', 'Agile'],
+    },
+    languages: ['Français (Natif)', 'Anglais (Courant)'],
+    certifications: ['AWS Certified Developer - Associate'],
+    detectedLanguage: 'French',
+    jobCategory: 'Développeur Full Stack',
+    totalExperienceYears: 3.5,
+    performanceScore: 88,
+  },
+  {
+    name: 'Bob Martin',
+    email: 'bob.martin@example.com',
+    phone: '+44 20 7946 0958',
+    location: 'London, UK',
+    summary: 'Senior Product Designer with over 8 years of experience leading design for B2B and B2C products. Expert in user-centered design, prototyping, and design systems.',
+    experience: [
+      { title: 'Senior Product Designer', company: 'Innovate Ltd.', dates: 'May 2018 - Present', description: 'Led the redesign of the main dashboard, resulting in a 20% increase in user engagement. Created and maintained the company\'s design system.' },
+      { title: 'UX/UI Designer', company: 'Creative Minds', dates: 'Jul 2015 - Apr 2018', description: 'Designed mobile and web interfaces for various clients in the e-commerce sector.' },
+    ],
+    education: [
+      { degree: 'BSc in Graphic Design', school: 'University of the Arts London', dates: '2012 - 2015' },
+    ],
+    skills: {
+      hard: ['Figma', 'Sketch', 'Adobe XD', 'User Research', 'Prototyping', 'Design Systems'],
+      soft: ['Leadership', 'Empathy', 'Storytelling', 'Collaboration'],
+    },
+    languages: ['English (Native)'],
+    certifications: [],
+    detectedLanguage: 'English',
+    jobCategory: 'Product Design',
+    totalExperienceYears: 8,
+    performanceScore: 95,
+  },
+  {
+    name: 'Carla Rodriguez',
+    email: 'carla.rodriguez@example.com',
+    phone: '+34 911 23 45 67',
+    location: 'Madrid, Spain',
+    summary: 'QA Automation Engineer with a strong background in building and maintaining automated test frameworks. Proficient in Selenium, Cypress, and CI/CD pipelines.',
+    experience: [
+      { title: 'QA Automation Engineer', company: 'Software Quality Co.', dates: 'Feb 2020 - Present', description: 'Developed a Cypress-based E2E testing framework from scratch. Reduced manual testing time by 60%.' },
+      { title: 'Manual QA Tester', company: 'App Testers', dates: 'Sep 2018 - Jan 2020', description: 'Performed manual regression and exploratory testing for mobile applications.' },
+    ],
+    education: [
+      { degree: 'Bachelor in Computer Science', school: 'Polytechnic University of Madrid', dates: '2014 - 2018' },
+    ],
+    skills: {
+      hard: ['Cypress', 'Selenium', 'JavaScript', 'CI/CD', 'Jenkins', 'Jira'],
+      soft: ['Attention to detail', 'Analytical thinking', 'Reporting'],
+    },
+    languages: ['Spanish (Native)', 'English (Professional)'],
+    certifications: ['ISTQB Certified Tester'],
+    detectedLanguage: 'English',
+    jobCategory: 'QA Automation',
+    totalExperienceYears: 4,
+    performanceScore: 82,
+  },
+  {
+    name: 'David Chen',
+    email: 'david.chen@example.com',
+    phone: '+1 415-555-0101',
+    location: 'San Francisco, USA',
+    summary: 'Data Scientist with a passion for machine learning and data visualization. Experienced in Python, R, and building predictive models to drive business decisions.',
+    experience: [
+        { title: 'Data Scientist', company: 'Data Insights Corp', dates: 'Aug 2019 - Present', description: 'Built a customer churn prediction model with 92% accuracy. Created interactive dashboards using Tableau.'},
+    ],
+    education: [
+        { degree: 'M.S. in Data Science', school: 'Stanford University', dates: '2017 - 2019'},
+    ],
+    skills: {
+        hard: ['Python', 'R', 'SQL', 'Scikit-learn', 'TensorFlow', 'Tableau'],
+        soft: ['Critical Thinking', 'Problem Solving', 'Communication'],
+    },
+    languages: ['English (Native)', 'Mandarin (Conversational)'],
+    certifications: [],
+    detectedLanguage: 'English',
+    jobCategory: 'Développeur Full Stack', // Grouped with developers
+    totalExperienceYears: 3,
+    performanceScore: 91,
+  },
+];
+
+
 const readFileAsBase64 = (file: File): Promise<{ mimeType: string; data: string }> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -62,6 +161,13 @@ function AppContent() {
     const [systemTheme, setSystemTheme] = React.useState(() =>
         window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
     );
+     const [isDummyDataActive, setIsDummyDataActive] = React.useState<boolean>(() => {
+        try {
+            return localStorage.getItem('isDummyDataActive') === 'true';
+        } catch {
+            return false;
+        }
+    });
 
     React.useEffect(() => {
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -125,6 +231,14 @@ function AppContent() {
         }
     }, [favorites]);
 
+     React.useEffect(() => {
+        try {
+            localStorage.setItem('isDummyDataActive', String(isDummyDataActive));
+        } catch (error) {
+            console.error("Failed to save dummy data state to localStorage", error);
+        }
+    }, [isDummyDataActive]);
+
     const candidateProfiles = React.useMemo((): CandidateProfile[] => {
         return cvFiles
             .filter(file => file.status === 'success' && file.profile)
@@ -136,16 +250,26 @@ function AppContent() {
     }, [candidateProfiles, favorites]);
 
     const handleAddFiles = React.useCallback((files: File[]) => {
-        const newCvFiles: CVFile[] = files
-          .filter(file => !cvFiles.some(cvFile => cvFile.file.name === file.name))
-          .map(file => ({
-            id: `${file.name}-${Date.now()}`,
-            file,
-            content: '',
-            status: 'pending',
-          }));
-        setCvFiles(prev => [...prev, ...newCvFiles]);
-    }, [cvFiles]);
+        setCvFiles(currentCvFiles => {
+            const initialCvFiles = isDummyDataActive ? [] : currentCvFiles;
+            
+            const newCvFiles: CVFile[] = files
+                .filter(file => !initialCvFiles.some(cvFile => cvFile.file.name === file.name))
+                .map(file => ({
+                    id: `${file.name}-${Date.now()}`,
+                    file,
+                    content: '',
+                    status: 'pending',
+                }));
+            
+            return [...initialCvFiles, ...newCvFiles];
+        });
+
+        if (isDummyDataActive) {
+            setIsDummyDataActive(false);
+        }
+    }, [isDummyDataActive]);
+
 
     const handleClearFile = (fileId: string) => {
         setCvFiles(prev => prev.filter(f => f.id !== fileId));
@@ -226,10 +350,36 @@ function AppContent() {
         setFavorites([]);
         setSelectedProfileId(null);
         setView('upload');
+        setIsDummyDataActive(false);
         localStorage.removeItem('cvFiles');
         localStorage.removeItem('favorites');
+        localStorage.removeItem('isDummyDataActive');
         setStorageError(null);
         setAnalysisSummaryMessage(null);
+    };
+
+     const handleLoadDummyData = () => {
+        if (cvFiles.length > 0 && !isDummyDataActive) return;
+        
+        const dummyCvFiles: CVFile[] = dummyProfiles.map((profile, index) => {
+            const id = `dummy-${profile.name.replace(/\s/g, '')}-${index}`;
+            return {
+                id: id,
+                file: new File([], `${profile.name.replace(/\s/g, '_')}.pdf`),
+                status: 'success',
+                profile: {
+                    ...profile,
+                    id: id,
+                    fileName: `${profile.name.replace(/\s/g, '_')}.pdf`,
+                    analysisDuration: Math.random() * 5000 + 1000,
+                },
+                analysisDuration: Math.random() * 5000 + 1000,
+            };
+        });
+        
+        setCvFiles(dummyCvFiles);
+        setIsDummyDataActive(true);
+        setView('dashboard');
     };
 
     const toggleFavorite = (candidateId: string) => {
@@ -257,7 +407,12 @@ function AppContent() {
             case 'favorites':
                 return <DashboardView candidates={favoriteProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} setSearchQuery={() => {}} isFavoritesView />;
             case 'settings':
-                return <SettingsView theme={theme} setTheme={setTheme} />;
+                return <SettingsView 
+                            theme={theme} 
+                            setTheme={setTheme} 
+                            onLoadDummyData={handleLoadDummyData}
+                            isDummyDataButtonDisabled={cvFiles.length > 0 && !isDummyDataActive}
+                        />;
             default:
                 return <UploadView cvFiles={cvFiles} onAddFiles={handleAddFiles} onStartAnalysis={handleStartAnalysis} onClearFile={handleClearFile} onClearAllFiles={handleReset} isAnalyzing={isAnalyzing} storageError={storageError}/>;
         }

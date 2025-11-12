@@ -96,6 +96,11 @@ export const fr = {
             light: "Clair",
             dark: "Sombre",
             system: "Système"
+        },
+        data: {
+            title: "Gestion des données",
+            load_dummy: "Charger données d'exemple",
+            dummy_description: "Remplissez l'application avec des profils d'exemple pour explorer toutes les fonctionnalités."
         }
     },
     analysis: {
@@ -228,6 +233,11 @@ export const en = {
             light: "Light",
             dark: "Dark",
             system: "System"
+        },
+        data: {
+            title: "Data Management",
+            load_dummy: "Load Dummy Data",
+            dummy_description: "Populate the app with sample profiles to explore all features."
         }
     },
     analysis: {
