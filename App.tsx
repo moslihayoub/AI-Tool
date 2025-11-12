@@ -1,4 +1,4 @@
-// FIX: Changed to default react import and updated hooks usage to resolve JSX intrinsic element type errors.
+// FIX: Changed import to `import * as React from 'react'` and updated hooks usage to resolve JSX intrinsic element type errors.
 import * as React from 'react';
 import { Sidebar } from './components/Sidebar';
 import { UploadView } from './components/UploadView';
@@ -32,7 +32,7 @@ const dummyProfiles: Omit<CandidateProfile, 'id' | 'fileName' | 'analysisDuratio
     languages: ['Français (Natif)', 'Anglais (Courant)'],
     certifications: ['AWS Certified Developer - Associate'],
     detectedLanguage: 'French',
-    jobCategory: 'Développeur Full Stack',
+    jobCategory: 'Développeur Full-Stack',
     totalExperienceYears: 3.5,
     performanceScore: 88,
   },
@@ -103,7 +103,7 @@ const dummyProfiles: Omit<CandidateProfile, 'id' | 'fileName' | 'analysisDuratio
     languages: ['English (Native)', 'Mandarin (Conversational)'],
     certifications: [],
     detectedLanguage: 'English',
-    jobCategory: 'Développeur Full Stack', // Grouped with developers
+    jobCategory: 'Développeur Full-Stack', // Grouped with developers
     totalExperienceYears: 3,
     performanceScore: 91,
   },

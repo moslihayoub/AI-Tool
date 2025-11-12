@@ -1,4 +1,4 @@
-// FIX: Changed React import to default to resolve JSX intrinsic element type errors.
+// FIX: Changed import to `import * as React from 'react'` to make the classic JSX transform work and resolve intrinsic element type errors.
 import * as React from 'react';
 import { Icon } from './icons';
 import { Theme } from '../types';

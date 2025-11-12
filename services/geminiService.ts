@@ -1,5 +1,7 @@
 
 
+
+
 import { GoogleGenAI, Type, Chat, GenerateContentResponse } from '@google/genai';
 import type { CandidateProfile, CVFile } from '../types';
 
@@ -57,9 +59,10 @@ const candidateProfileSchema = {
         detectedLanguage: { type: Type.STRING, description: "The primary language detected in the CV (e.g., 'French', 'English')." },
         jobCategory: {
             type: Type.STRING,
-            description: `Categorize the candidate into ONE of the following job categories: 'Product Design', 'Développeur Full Stack', 'QA Automation', or 'Other'.
+            // FIX: Corrected typo from 'Développeur Full Stack' to 'Développeur Full-Stack' to ensure consistency.
+            description: `Categorize the candidate into ONE of the following job categories: 'Product Design', 'Développeur Full-Stack', 'QA Automation', or 'Other'.
 - 'Product Design': For all design roles, including UX Designer, UI Designer, Product Designer, Digital Designer, Motion Designer, Graphic Designer, Brand Designer.
-- 'Développeur Full Stack': For all development-related roles, including Développeur Full Stack, Développeur Front-End, Développeur Back-End, Développeur Mobile, Data Scientist, Data Analyst, Ingénieur Cloud, Ingénieur IA, DevOps, Software Engineer.
+- 'Développeur Full-Stack': For all development-related roles, including Développeur Full-Stack, Développeur Front-End, Développeur Back-End, Développeur Mobile, Data Scientist, Data Analyst, Ingénieur Cloud, Ingénieur IA, DevOps, Software Engineer.
 - 'QA Automation': For all QA and automation roles, including QA Automation Engineer, Testeur QA, Ingénieur Automatisation des Tests, SDET, Test Automation Specialist.
 - 'Other': If the role does not fit into the above categories.`
         },

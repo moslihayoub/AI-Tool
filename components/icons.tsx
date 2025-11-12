@@ -1,4 +1,4 @@
-// FIX: Changed React import to namespace import `import * as React from 'react'` to correctly resolve JSX types for SVG elements.
+// FIX: Changed import to `import * as React from 'react'` to make the classic JSX transform work and resolve intrinsic element type errors.
 import * as React from 'react';
 
 interface IconProps extends React.SVGProps<SVGSVGElement> {

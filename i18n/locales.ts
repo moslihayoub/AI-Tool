@@ -9,6 +9,10 @@ export const fr = {
     upload: {
         title: "Importer des CVs",
         subtitle: "Glissez-déposez des fichiers ou cliquez pour les sélectionner.",
+        results: {
+            title: "Zone d'importation",
+            subtitle: "Vérifiez les fichiers ci-dessous avant de lancer l'analyse."
+        },
         dropzone: {
             release: "Relâchez les fichiers ici",
             prompt: "Glissez-déposez des fichiers ici, ou cliquez pour sélectionner",
@@ -147,6 +151,10 @@ export const en = {
     upload: {
         title: "Import CVs",
         subtitle: "Drag and drop files or click to select them.",
+        results: {
+            title: "Import Zone",
+            subtitle: "Review the files below before starting the analysis."
+        },
         dropzone: {
             release: "Release files here",
             prompt: "Drag and drop files here, or click to select",

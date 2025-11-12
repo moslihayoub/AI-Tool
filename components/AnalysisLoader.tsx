@@ -1,4 +1,4 @@
-// FIX: Changed to default react import and updated hooks usage to resolve JSX intrinsic element type errors.
+// FIX: Changed import to `import * as React from 'react'` and updated hooks usage to resolve JSX intrinsic element type errors.
 import * as React from 'react';
 import { Icon } from './icons';
 import { useTranslation } from '../i18n';
@@ -30,7 +30,7 @@ export const AnalysisLoader: React.FC<AnalysisLoaderProps> = ({ progress, total,
       <div className="absolute inset-0 bg-animated-gradient bg-200% animate-gradient-flow" aria-hidden="true" />
       <div className="absolute inset-0 bg-gray-900 opacity-70" aria-hidden="true" />
       <div className="relative flex flex-col items-center justify-center h-full w-full">
-        <dotlottie-wc src="https://lottie.host/f65b0508-f3b0-46d1-9a76-2974759efcb3/uA68bKWt6J.lottie" style={{ width: '300px', height: '300px' }} autoplay loop></dotlottie-wc>
+        <dotlottie-wc src="https://lottie.host/f65b0508-f3b0-46d1-9a76-2974759efcb3/uA68bKWt6J.lottie" style={{ width: '300px', height: '300px' }} autoPlay loop></dotlottie-wc>
         <h2 className="text-3xl font-bold mt-4">{t('analysis.title')}</h2>
         <p className="text-gray-300 mt-2">{t('analysis.subtitle')}</p>
         

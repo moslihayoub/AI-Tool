@@ -1,4 +1,4 @@
-// FIX: Changed to default react import and updated hooks usage to resolve JSX intrinsic element type errors.
+// FIX: Changed import to `import * as React from 'react'` and updated hooks usage to resolve JSX intrinsic element type errors.
 import * as React from 'react';
 import { CVFile } from '../types';
 import { Icon } from './icons';
@@ -81,15 +81,21 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
 
   return (
     <div className="p-4 sm:p-8 space-y-8">
-        <header>
-            <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{t('upload.title')}</h2>
-            <p className="text-gray-500 dark:text-gray-400 mt-1">{t('upload.subtitle')}</p>
-        </header>
+        {cvFiles.length === 0 && (
+            <header>
+                <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{t('upload.title')}</h2>
+                <p className="text-gray-500 dark:text-gray-400 mt-1">{t('upload.subtitle')}</p>
+            </header>
+        )}
 
         <div className={`grid grid-cols-1 ${cvFiles.length > 0 ? 'lg:grid-cols-2 gap-8 items-start' : ''}`}>
              {cvFiles.length > 0 && (
                  <div className="space-y-4 lg:order-1">
-                    <div className="flex justify-between items-center flex-wrap gap-4">
+                    <header>
+                        <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{t('upload.results.title')}</h2>
+                        <p className="text-gray-500 dark:text-gray-400 mt-1">{t('upload.results.subtitle')}</p>
+                    </header>
+                    <div className="flex justify-between items-center flex-wrap gap-4 pt-4">
                         <h3 className="text-xl font-bold">{t('upload.pending_files.title', { count: cvFiles.length })}</h3>
                         <div className="flex items-center gap-2">
                             <div className="relative">
@@ -103,8 +109,8 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
                                     }`}
                                     aria-label={confirmReset ? t('common.reset_confirm_action') : t('common.reset')}
                                 >
-                                   <Icon name="refresh-cw" className="w-5 h-5"/>
-                                   <span>{confirmReset ? t('common.reset_confirm_action') : t('common.reset')}</span>
+                                <Icon name="refresh-cw" className="w-5 h-5"/>
+                                <span>{confirmReset ? t('common.reset_confirm_action') : t('common.reset')}</span>
                                 </button>
                                 {confirmReset && (
                                     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs bg-gray-900 text-white text-xs rounded py-2 px-3 opacity-100 transition-opacity pointer-events-none z-10 shadow-lg text-center dark:bg-gray-700">
@@ -117,8 +123,8 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
                                 disabled={pendingFilesCount === 0 || isAnalyzing}
                                 className="bg-primary-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
                             >
-                               {isAnalyzing ? <Icon name="spinner" className="w-5 h-5"/> : <Icon name="check" className="w-5 h-5"/>}
-                               <span>{t('upload.pending_files.analyze_button', { count: pendingFilesCount })}</span>
+                            {isAnalyzing ? <Icon name="spinner" className="w-5 h-5"/> : <Icon name="check" className="w-5 h-5"/>}
+                            <span>{t('upload.pending_files.analyze_button', { count: pendingFilesCount })}</span>
                             </button>
                         </div>
                     </div>
@@ -150,7 +156,7 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
                             </li>
                         ))}
                     </ul>
-                </div>
+                 </div>
             )}
             <div 
               onDragEnter={handleDrag} 
@@ -166,7 +172,7 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
                 <input ref={inputRef} type="file" multiple onChange={handleChange} className="hidden" accept=".pdf,.txt,.json,.md,.csv,.doc,.docx,.xls,.xlsx,.ppt,.pptx" disabled={isUIDisabled} />
                 
                 <div className="flex flex-col items-center justify-center text-gray-500 dark:text-gray-400">
-                    <dotlottie-wc src="https://lottie.host/05f02365-02dd-4b23-8289-b8d119e5c961/9dwTt6kpl2.lottie" style={{ width: '220px', height: '220px' }} autoplay loop></dotlottie-wc>
+                    <dotlottie-wc src="https://lottie.host/05f02365-02dd-4b23-8289-b8d119e5c961/9dwTt6kpl2.lottie" style={{ width: '220px', height: '220px' }} autoPlay loop></dotlottie-wc>
                     <div className="text-center">
                         {isDragActive ? (
                             <p className="text-lg font-semibold text-primary-600">{t('upload.dropzone.release')}</p>

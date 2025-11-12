@@ -1,4 +1,4 @@
-// FIX: Changed to default react import and updated hooks usage to resolve JSX intrinsic element type errors.
+// FIX: Changed import to `import * as React from 'react'` and updated hooks usage to resolve JSX intrinsic element type errors.
 import * as React from 'react';
 import { CandidateProfile, ChatMessage, CVFile } from '../types';
 import { Icon } from './icons';
