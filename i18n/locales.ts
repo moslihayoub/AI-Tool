@@ -16,7 +16,8 @@ export const fr = {
         dropzone: {
             release: "Relâchez les fichiers ici",
             prompt: "Glissez-déposez des fichiers ici, ou cliquez pour sélectionner",
-            supported_files: "Fichiers supportés: PDF, TXT, JSON, MD, CSV, Fichiers Office"
+            supported_files: "Fichiers supportés: PDF, TXT, JSON, MD, CSV, Fichiers Office",
+            limit_reached_prompt: "Limite de 5 fichiers atteinte"
         },
         google_drive_import: "Importer via Google Drive",
         pending_files: {
@@ -28,6 +29,14 @@ export const fr = {
             parsing: "Analyse...",
             success: "Succès",
             error: "Erreur"
+        },
+        owner_info: "Vous avez un accès illimité à toutes les fonctionnalités.",
+        limit_rules: {
+            title: "Règles de limitation",
+            title_owner: "Mode Propriétaire",
+            description_with_count: "Il vous reste <strong>{{count}}/{{limit}}</strong> opérations d'analyse pour aujourd'hui. Chaque opération peut traiter jusqu'à {{uploadLimit}} CVs.",
+            limit_reached_title: "Limite quotidienne atteinte",
+            limit_reached_description: "Vous avez atteint votre quota d'analyse pour aujourd'hui. Revenez demain ou connectez-vous pour un accès illimité."
         }
     },
     dashboard: {
@@ -106,6 +115,15 @@ export const fr = {
             title: "Gestion des données",
             load_dummy: "Charger données d'exemple",
             dummy_description: "Remplissez l'application avec des profils d'exemple pour explorer toutes les fonctionnalités."
+        },
+        connection: {
+            title: "Connexion ID",
+            description: "Connectez-vous avec votre ID pour débloquer des fonctionnalités ou outrepasser les limites.",
+            button: "Se connecter avec ID",
+            title_connected: "Connecté",
+            description_connected: "Vous êtes connecté en tant que propriétaire. Vous avez un accès illimité.",
+            button_disconnect: "Se déconnecter",
+            disconnect_confirm: "Êtes-vous sûr de vouloir vous déconnecter ?"
         }
     },
     analysis: {
@@ -136,7 +154,23 @@ export const fr = {
     errors: {
         storageFull: "L'espace de stockage est plein. Veuillez réinitialiser les données pour libérer de l'espace.",
         saveError: "Erreur de sauvegarde",
-        unknownSaveError: "Une erreur inconnue est survenue lors de la sauvegarde."
+        unknownSaveError: "Une erreur inconnue est survenue lors de la sauvegarde.",
+        limit_exceeded: "Limite d'opérations d'analyse quotidienne atteinte. Vous ne pouvez effectuer que {{limit}} opérations d'analyse par jour.",
+        upload_limit_reached: "Vous avez atteint la limite de 5 fichiers. Veuillez analyser ou réinitialiser pour en ajouter d'autres.",
+        upload_selection_ignored: "La limite de 5 fichiers a été atteinte. Seuls les {{count}} premiers fichiers ont été ajoutés."
+    },
+    quota_modal: {
+        title: "Limite de quota atteinte",
+        description: "Veuillez vous connecter avec votre ID utilisateur pour continuer ou contacter le support.",
+        user_id: "ID Utilisateur",
+        user_id_placeholder: "votre id",
+        email: "Email",
+        email_placeholder: "votre email",
+        remember_me: "Se souvenir de moi",
+        connect: "Se connecter",
+        close: "Fermer",
+        contact_support: "Contacter le support via WhatsApp",
+        error: "ID utilisateur ou email incorrect."
     }
 };
 
@@ -158,7 +192,8 @@ export const en = {
         dropzone: {
             release: "Release files here",
             prompt: "Drag and drop files here, or click to select",
-            supported_files: "Supported files: PDF, TXT, JSON, MD, CSV, Office Files"
+            supported_files: "Supported files: PDF, TXT, JSON, MD, CSV, Office Files",
+            limit_reached_prompt: "5-file limit reached"
         },
         google_drive_import: "Import from Google Drive",
         pending_files: {
@@ -170,6 +205,14 @@ export const en = {
             parsing: "Parsing...",
             success: "Success",
             error: "Error"
+        },
+        owner_info: "You have unlimited access to all features.",
+        limit_rules: {
+            title: "Limitation Rules",
+            title_owner: "Owner Mode",
+            description_with_count: "You have <strong>{{count}}/{{limit}}</strong> analysis operations remaining for today. Each operation can process up to {{uploadLimit}} CVs.",
+            limit_reached_title: "Daily Limit Reached",
+            limit_reached_description: "You have reached your analysis quota for today. Come back tomorrow or connect for unlimited access."
         }
     },
     dashboard: {
@@ -248,6 +291,15 @@ export const en = {
             title: "Data Management",
             load_dummy: "Load Dummy Data",
             dummy_description: "Populate the app with sample profiles to explore all features."
+        },
+        connection: {
+            title: "Connect with ID",
+            description: "Connect with your ID to unlock features or bypass limits.",
+            button: "Connect with ID",
+            title_connected: "Connected",
+            description_connected: "You are connected as the owner. You have unlimited access.",
+            button_disconnect: "Disconnect",
+            disconnect_confirm: "Are you sure you want to disconnect?"
         }
     },
     analysis: {
@@ -278,6 +330,22 @@ export const en = {
     errors: {
         storageFull: "Storage space is full. Please reset data to free up space.",
         saveError: "Save Error",
-        unknownSaveError: "An unknown error occurred while saving."
+        unknownSaveError: "An unknown error occurred while saving.",
+        limit_exceeded: "Daily analysis operation limit reached. You can only perform {{limit}} analysis operations per day.",
+        upload_limit_reached: "You have reached the 5-file limit. Please analyze or reset to add more.",
+        upload_selection_ignored: "The 5-file limit was reached. Only the first {{count}} files were added."
+    },
+    quota_modal: {
+        title: "Quota Limit Reached",
+        description: "Please connect with your user ID to continue, or contact support.",
+        user_id: "User ID",
+        user_id_placeholder: "your id",
+        email: "Email",
+        email_placeholder: "your email",
+        remember_me: "Remember me",
+        connect: "Connect",
+        close: "Close",
+        contact_support: "Contact Support via WhatsApp",
+        error: "Incorrect User ID or Email."
     }
 };

@@ -1,4 +1,4 @@
-// FIX: Changed import to `import * as React from 'react'` and updated hooks usage to resolve JSX intrinsic element type errors.
+// FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
 import * as React from 'react';
 import { Sidebar } from './components/Sidebar';
 import { UploadView } from './components/UploadView';
@@ -6,7 +6,8 @@ import { DashboardView } from './components/DashboardView';
 import { CandidateDetailView } from './components/CandidateDetailView';
 import { AnalysisLoader } from './components/AnalysisLoader';
 import { SettingsView } from './components/SettingsView';
-import { CVFile, View, CandidateProfile, Theme } from './types';
+import { QuotaModal } from './components/QuotaModal';
+import { CVFile, View, CandidateProfile, Theme, User } from './types';
 import { parseCvContent } from './services/geminiService';
 import { Icon } from './components/icons';
 import { LanguageProvider, useTranslation } from './i18n';
@@ -122,9 +123,12 @@ const readFileAsBase64 = (file: File): Promise<{ mimeType: string; data: string 
       resolve({ mimeType: file.type || 'application/octet-stream', data: base64String });
     };
     reader.onerror = (error) => reject(error);
+    // FIX: Corrected typo from `readDataURL` to `readAsDataURL`.
     reader.readAsDataURL(file);
   });
 };
+
+const UPLOAD_SELECTION_LIMIT = 5;
 
 function AppContent() {
     const { t } = useTranslation();
@@ -154,6 +158,12 @@ function AppContent() {
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = React.useState(false);
     const [storageError, setStorageError] = React.useState<string | null>(null);
     const [analysisSummaryMessage, setAnalysisSummaryMessage] = React.useState<string | null>(null);
+    const [currentUser, setCurrentUser] = React.useState<User | null>(null);
+    const [isOwner, setIsOwner] = React.useState(false);
+    const [analysisLimit, setAnalysisLimit] = React.useState({ count: 0, limit: 3 });
+    const [limitError, setLimitError] = React.useState<string | null>(null);
+    const [uploadError, setUploadError] = React.useState<string | null>(null);
+    const [isQuotaModalOpen, setIsQuotaModalOpen] = React.useState(false);
     
     const [theme, setTheme] = React.useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'system');
 
@@ -200,6 +210,70 @@ function AppContent() {
     const [analysisProgress, setAnalysisProgress] = React.useState(0);
     const [analysisStartTime, setAnalysisStartTime] = React.useState<number | null>(null);
     const [analysisTotal, setAnalysisTotal] = React.useState(0);
+
+    React.useEffect(() => {
+        const fetchUser = async () => {
+            let specialUserFound = false;
+            try {
+                const specialUser = localStorage.getItem('specialUser');
+                if (specialUser) {
+                    const { userId, email } = JSON.parse(specialUser);
+                    if (email.toLowerCase() === 'moslihayoub@gmail.com' || userId === 'Moslih84') {
+                        specialUserFound = true;
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to check special user from localStorage", e);
+            }
+
+            if (specialUserFound) {
+                setIsOwner(true);
+            }
+
+            try {
+                if (window.aistudio && typeof window.aistudio.getAuthenticatedUser === 'function') {
+                    const user = await window.aistudio.getAuthenticatedUser();
+                    setCurrentUser(user);
+                    if (user && (user.email.toLowerCase() === 'moslihayoub@gmail.com' || user.id === 'moslih84')) {
+                        setIsOwner(true);
+                    }
+                } else if (!specialUserFound) {
+                    console.warn("User authentication service not found.");
+                    setIsOwner(false);
+                    setCurrentUser({ email: 'guest@example.com', id: 'guest' });
+                }
+            } catch (e) {
+                console.error("Could not get authenticated user:", e);
+                if (!specialUserFound) setIsOwner(false);
+                setCurrentUser(null);
+            }
+        };
+        fetchUser();
+    }, []);
+
+    React.useEffect(() => {
+        if (isOwner) return; // Owner usage is not tracked
+
+        const today = new Date().toISOString().split('T')[0];
+        try {
+            const usageDataStr = localStorage.getItem('analysisOperationUsage');
+            if (usageDataStr) {
+                const usageData = JSON.parse(usageDataStr);
+                if (usageData.date === today) {
+                    setAnalysisLimit(prev => ({ ...prev, count: usageData.count }));
+                } else {
+                    localStorage.setItem('analysisOperationUsage', JSON.stringify({ date: today, count: 0 }));
+                    setAnalysisLimit(prev => ({ ...prev, count: 0 }));
+                }
+            } else {
+                localStorage.setItem('analysisOperationUsage', JSON.stringify({ date: today, count: 0 }));
+                setAnalysisLimit(prev => ({ ...prev, count: 0 }));
+            }
+        } catch (e) {
+            console.error("Error reading usage from localStorage", e);
+            localStorage.setItem('analysisOperationUsage', JSON.stringify({ date: today, count: 0 }));
+        }
+    }, [isOwner]);
 
     React.useEffect(() => {
         try {
@@ -250,25 +324,37 @@ function AppContent() {
     }, [candidateProfiles, favorites]);
 
     const handleAddFiles = React.useCallback((files: File[]) => {
-        setCvFiles(currentCvFiles => {
-            const initialCvFiles = isDummyDataActive ? [] : currentCvFiles;
-            
-            const newCvFiles: CVFile[] = files
-                .filter(file => !initialCvFiles.some(cvFile => cvFile.file.name === file.name))
-                .map(file => ({
-                    id: `${file.name}-${Date.now()}`,
-                    file,
-                    content: '',
-                    status: 'pending',
-                }));
-            
-            return [...initialCvFiles, ...newCvFiles];
-        });
+        setUploadError(null);
 
+        const baseFiles = isDummyDataActive ? [] : cvFiles;
+
+        if (!isOwner && baseFiles.length >= UPLOAD_SELECTION_LIMIT) {
+            setUploadError(t('errors.upload_limit_reached'));
+            return;
+        }
+
+        const remainingSlots = isOwner ? files.length : UPLOAD_SELECTION_LIMIT - baseFiles.length;
+        const filesToAdd = files.slice(0, remainingSlots);
+        
+        if (!isOwner && files.length > remainingSlots && remainingSlots > 0) {
+            setUploadError(t('errors.upload_selection_ignored', { count: remainingSlots }));
+        }
+        
+        const newCvFiles: CVFile[] = filesToAdd
+            .filter(file => !baseFiles.some(cvFile => cvFile.file.name === file.name))
+            .map(file => ({
+                id: `${file.name}-${Date.now()}`,
+                file,
+                content: '',
+                status: 'pending',
+            }));
+        
+        setCvFiles([...baseFiles, ...newCvFiles]);
+        
         if (isDummyDataActive) {
             setIsDummyDataActive(false);
         }
-    }, [isDummyDataActive]);
+    }, [cvFiles, isDummyDataActive, t, isOwner]);
 
 
     const handleClearFile = (fileId: string) => {
@@ -279,7 +365,26 @@ function AppContent() {
         const pendingFiles = cvFiles.filter(f => f.status === 'pending');
         if (pendingFiles.length === 0) return;
 
+        setLimitError(null);
         setAnalysisSummaryMessage(null);
+
+        if (!isOwner) {
+            if (analysisLimit.count >= analysisLimit.limit) {
+                setLimitError(t('errors.limit_exceeded', { limit: analysisLimit.limit }));
+                setIsQuotaModalOpen(true);
+                return;
+            }
+
+            const newCount = analysisLimit.count + 1;
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                localStorage.setItem('analysisOperationUsage', JSON.stringify({ date: today, count: newCount }));
+                setAnalysisLimit(prev => ({ ...prev, count: newCount }));
+            } catch (e) {
+                console.error("Failed to update usage in localStorage", e);
+            }
+        }
+
         setAnalysisTotal(pendingFiles.length);
         setIsAnalyzing(true);
         setAnalysisProgress(0);
@@ -326,9 +431,14 @@ function AppContent() {
             f.profile && 
             (!f.profile.name || f.profile.name === 'N/A' || !f.profile.jobCategory || f.profile.jobCategory === 'N/A')
         ).length;
-
+        
+        let finalSummary = '';
         if (incompleteCount > 0) {
-            setAnalysisSummaryMessage(t('analysis.summary_incomplete', {count: incompleteCount}));
+            finalSummary = t('analysis.summary_incomplete', {count: incompleteCount});
+        }
+
+        if (finalSummary) {
+            setAnalysisSummaryMessage(finalSummary);
         }
 
         setIsAnalyzing(false);
@@ -354,8 +464,12 @@ function AppContent() {
         localStorage.removeItem('cvFiles');
         localStorage.removeItem('favorites');
         localStorage.removeItem('isDummyDataActive');
+        localStorage.removeItem('analysisOperationUsage');
+        localStorage.removeItem('specialUser');
+        setAnalysisLimit(prev => ({...prev, count: 0}));
         setStorageError(null);
         setAnalysisSummaryMessage(null);
+        setUploadError(null);
     };
 
      const handleLoadDummyData = () => {
@@ -381,7 +495,7 @@ function AppContent() {
         setIsDummyDataActive(true);
         setView('dashboard');
     };
-
+    
     const toggleFavorite = (candidateId: string) => {
         setFavorites(prev => 
             prev.includes(candidateId) 
@@ -390,6 +504,35 @@ function AppContent() {
         );
     };
     
+    const handleConnect = (credentials: { userId: string; email: string; rememberMe: boolean }): boolean => {
+        const { userId, email, rememberMe } = credentials;
+        if (email.toLowerCase() === 'moslihayoub@gmail.com' || userId === 'Moslih84') {
+            setIsOwner(true);
+            if (rememberMe) {
+                try {
+                    localStorage.setItem('specialUser', JSON.stringify({ userId, email }));
+                } catch (e) {
+                    console.error("Failed to save special user to localStorage", e);
+                }
+            }
+            setIsQuotaModalOpen(false);
+            setLimitError(null);
+            return true;
+        }
+        return false;
+    };
+
+    const handleDisconnect = () => {
+        setIsOwner(false);
+        setCurrentUser({ email: 'guest@example.com', id: 'guest' });
+        try {
+            localStorage.removeItem('specialUser');
+        } catch (e) {
+            console.error("Failed to remove special user from localStorage", e);
+        }
+    };
+
+
     const selectedCvFile = cvFiles.find(f => f.id === selectedProfileId);
     
     const renderContent = () => {
@@ -401,7 +544,7 @@ function AppContent() {
 
         switch (view) {
             case 'upload':
-                return <UploadView cvFiles={cvFiles} onAddFiles={handleAddFiles} onStartAnalysis={handleStartAnalysis} onClearFile={handleClearFile} onClearAllFiles={handleReset} isAnalyzing={isAnalyzing} storageError={storageError}/>;
+                return <UploadView cvFiles={cvFiles} onAddFiles={handleAddFiles} onStartAnalysis={handleStartAnalysis} onClearFile={handleClearFile} onClearAllFiles={handleReset} isAnalyzing={isAnalyzing} storageError={storageError} isOwner={isOwner} analysisLimit={analysisLimit} limitError={limitError} uploadLimit={isOwner ? Infinity : UPLOAD_SELECTION_LIMIT} />;
             case 'dashboard':
                 return <DashboardView candidates={candidateProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} setSearchQuery={() => {}} />;
             case 'favorites':
@@ -412,9 +555,12 @@ function AppContent() {
                             setTheme={setTheme} 
                             onLoadDummyData={handleLoadDummyData}
                             isDummyDataButtonDisabled={cvFiles.length > 0 && !isDummyDataActive}
+                            onOpenQuotaModal={() => setIsQuotaModalOpen(true)}
+                            isOwner={isOwner}
+                            onDisconnect={handleDisconnect}
                         />;
             default:
-                return <UploadView cvFiles={cvFiles} onAddFiles={handleAddFiles} onStartAnalysis={handleStartAnalysis} onClearFile={handleClearFile} onClearAllFiles={handleReset} isAnalyzing={isAnalyzing} storageError={storageError}/>;
+                return <UploadView cvFiles={cvFiles} onAddFiles={handleAddFiles} onStartAnalysis={handleStartAnalysis} onClearFile={handleClearFile} onClearAllFiles={handleReset} isAnalyzing={isAnalyzing} storageError={storageError} isOwner={isOwner} analysisLimit={analysisLimit} limitError={limitError} uploadLimit={isOwner ? Infinity : UPLOAD_SELECTION_LIMIT} />;
         }
     };
 
@@ -428,6 +574,8 @@ function AppContent() {
 
             <div className="relative flex h-full w-full">
                 {isAnalyzing && <AnalysisLoader progress={analysisProgress} total={analysisTotal} startTime={analysisStartTime} />}
+                {isQuotaModalOpen && <QuotaModal onClose={() => setIsQuotaModalOpen(false)} onConnect={handleConnect} />}
+
                 <Sidebar
                     currentView={view}
                     setCurrentView={(v) => { setView(v); setSelectedProfileId(null); }}
@@ -443,20 +591,29 @@ function AppContent() {
                         </button>
                         <h1 className="text-lg font-bold text-transparent bg-clip-text bg-gradient-primary">HR Analyzer</h1>
                     </header>
+                    {storageError ? (
+                        <div className="p-4 mx-4 sm:mx-8 mt-4 sm:mt-8 bg-red-100 dark:bg-red-900/50 border-l-4 border-red-500 text-red-800 dark:text-red-200 rounded-r-lg flex justify-between items-center" role="alert">
+                            <p><span className="font-bold">{t('common.storageError')}:</span> {storageError}</p>
+                            <button onClick={() => setStorageError(null)} className="p-1 rounded-full hover:bg-red-200 dark:hover:bg-red-800/50">
+                                <Icon name="close" className="w-5 h-5"/>
+                            </button>
+                        </div>
+                    ) : uploadError ? (
+                        <div className="p-4 mx-4 sm:mx-8 mt-4 sm:mt-8 bg-yellow-100 dark:bg-yellow-900/50 border-l-4 border-yellow-500 text-yellow-800 dark:text-yellow-200 rounded-r-lg flex justify-between items-center" role="alert">
+                            <p><span className="font-bold">{t('common.info')}:</span> {uploadError}</p>
+                            <button onClick={() => setUploadError(null)} className="p-1 rounded-full hover:bg-yellow-200 dark:hover:bg-yellow-800/50">
+                                <Icon name="close" className="w-5 h-5"/>
+                            </button>
+                        </div>
+                    ) : analysisSummaryMessage ? (
+                        <div className="p-4 mx-4 sm:mx-8 mt-4 sm:mt-8 bg-yellow-100 dark:bg-yellow-900/50 border-l-4 border-yellow-500 text-yellow-800 dark:text-yellow-200 rounded-r-lg flex justify-between items-center" role="alert">
+                            <p><span className="font-bold">{t('common.info')}:</span> {analysisSummaryMessage}</p>
+                            <button onClick={() => setAnalysisSummaryMessage(null)} className="p-1 rounded-full hover:bg-yellow-200 dark:hover:bg-yellow-800/50">
+                                <Icon name="close" className="w-5 h-5"/>
+                            </button>
+                        </div>
+                    ) : null}
                     <main className="flex-1 overflow-y-auto bg-white/70 dark:bg-gray-900/70 backdrop-blur-lg">
-                         {storageError && (
-                            <div className="p-4 mx-4 sm:mx-8 mt-4 sm:mt-8 bg-red-100 dark:bg-red-900/50 border-l-4 border-red-500 text-red-800 dark:text-red-200 rounded-r-lg" role="alert">
-                                <p><span className="font-bold">{t('common.storageError')}:</span> {storageError}</p>
-                            </div>
-                        )}
-                        {analysisSummaryMessage && (
-                            <div className="p-4 mx-4 sm:mx-8 mt-4 sm:mt-8 bg-yellow-100 dark:bg-yellow-900/50 border-l-4 border-yellow-500 text-yellow-800 dark:text-yellow-200 rounded-r-lg flex justify-between items-center" role="alert">
-                                <p><span className="font-bold">{t('common.info')}:</span> {analysisSummaryMessage}</p>
-                                <button onClick={() => setAnalysisSummaryMessage(null)} className="p-1 rounded-full hover:bg-yellow-200 dark:hover:bg-yellow-800/50">
-                                    <Icon name="close" className="w-5 h-5"/>
-                                </button>
-                            </div>
-                        )}
                         {renderContent()}
                     </main>
                 </div>

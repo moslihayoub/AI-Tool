@@ -1,4 +1,4 @@
-// FIX: Changed import to `import * as React from 'react'` and updated hooks usage to resolve JSX intrinsic element type errors.
+// FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
 import * as React from 'react';
 import { Icon } from './icons';
 import { useTranslation } from '../i18n';

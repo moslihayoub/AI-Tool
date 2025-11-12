@@ -1,4 +1,4 @@
-// FIX: Changed import to `import * as React from 'react'` to make the classic JSX transform work and resolve intrinsic element type errors.
+// FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
 import * as React from 'react';
 import { Icon } from './icons';
 import { Theme } from '../types';
@@ -9,13 +9,27 @@ interface SettingsViewProps {
     setTheme: (theme: Theme) => void;
     onLoadDummyData: () => void;
     isDummyDataButtonDisabled: boolean;
+    onOpenQuotaModal: () => void;
+    isOwner: boolean;
+    onDisconnect: () => void;
 }
 
-export const SettingsView: React.FC<SettingsViewProps> = ({ theme, setTheme, onLoadDummyData, isDummyDataButtonDisabled }) => {
+export const SettingsView: React.FC<SettingsViewProps> = ({ theme, setTheme, onLoadDummyData, isDummyDataButtonDisabled, onOpenQuotaModal, isOwner, onDisconnect }) => {
     const { t, language, setLanguage } = useTranslation();
+    const [confirmDisconnect, setConfirmDisconnect] = React.useState(false);
 
     const activeBtnClasses = "bg-primary-600 text-white";
     const inactiveBtnClasses = "bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600";
+    
+    const handleDisconnectClick = () => {
+        if (confirmDisconnect) {
+            onDisconnect();
+            setConfirmDisconnect(false);
+        } else {
+            setConfirmDisconnect(true);
+            setTimeout(() => setConfirmDisconnect(false), 3000);
+        }
+    };
 
     return (
         <div className="p-4 sm:p-8 space-y-8">
@@ -53,24 +67,64 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ theme, setTheme, onL
                             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors w-full justify-center ${theme === 'light' ? activeBtnClasses : inactiveBtnClasses}`}
                         >
                             <Icon name="sun" className="w-5 h-5"/>
-                            <span>{t('settings.theme.light')}</span>
+                            <span className="hidden sm:inline">{t('settings.theme.light')}</span>
                         </button>
                          <button 
                             onClick={() => setTheme('dark')} 
                             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors w-full justify-center ${theme === 'dark' ? activeBtnClasses : inactiveBtnClasses}`}
                         >
                              <Icon name="moon" className="w-5 h-5"/>
-                            <span>{t('settings.theme.dark')}</span>
+                            <span className="hidden sm:inline">{t('settings.theme.dark')}</span>
                         </button>
                          <button 
                             onClick={() => setTheme('system')} 
                             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors w-full justify-center ${theme === 'system' ? activeBtnClasses : inactiveBtnClasses}`}
                         >
                              <Icon name="desktop" className="w-5 h-5"/>
-                            <span>{t('settings.theme.system')}</span>
+                            <span className="hidden sm:inline">{t('settings.theme.system')}</span>
                         </button>
                     </div>
                 </div>
+
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700">
+                    {isOwner ? (
+                        <>
+                            <h3 className="text-lg font-semibold mb-3">{t('settings.connection.title_connected')}</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{t('settings.connection.description_connected')}</p>
+                            <div className="relative">
+                                <button
+                                    onClick={handleDisconnectClick}
+                                    className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors ${
+                                        confirmDisconnect 
+                                        ? 'bg-yellow-500 text-white hover:bg-yellow-600' 
+                                        : 'bg-red-600 text-white hover:bg-red-700'
+                                    }`}
+                                >
+                                    <Icon name="log-out" className="w-5 h-5"/>
+                                    <span>{confirmDisconnect ? t('common.reset_confirm_action') : t('settings.connection.button_disconnect')}</span>
+                                </button>
+                                {confirmDisconnect && (
+                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs bg-gray-900 text-white text-xs rounded py-2 px-3 opacity-100 transition-opacity pointer-events-none z-10 shadow-lg text-center dark:bg-gray-700">
+                                        {t('settings.connection.disconnect_confirm')}
+                                    </div>
+                                )}
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <h3 className="text-lg font-semibold mb-3">{t('settings.connection.title')}</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{t('settings.connection.description')}</p>
+                            <button
+                                onClick={onOpenQuotaModal}
+                                className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors bg-primary-600 text-white hover:bg-primary-700"
+                            >
+                                <Icon name="link" className="w-5 h-5"/>
+                                <span>{t('settings.connection.button')}</span>
+                            </button>
+                        </>
+                    )}
+                </div>
+
 
                  <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700">
                     <h3 className="text-lg font-semibold mb-3">{t('settings.data.title')}</h3>

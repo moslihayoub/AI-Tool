@@ -1,4 +1,4 @@
-// FIX: Changed import to `import * as React from 'react'` to make the classic JSX transform work and resolve intrinsic element type errors.
+// FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
 import * as React from 'react';
 
 interface IconProps extends React.SVGProps<SVGSVGElement> {
@@ -31,6 +31,8 @@ export const Icon: React.FC<IconProps> = ({ name, ...props }) => {
       return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M12 8V4H8" /><rect width="16" height="12" x="4" y="8" rx="2" /><path d="M2 14h2" /><path d="M20 14h2" /><path d="M15 13v2" /><path d="M9 13v2" /></svg>;
     case 'google':
       return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M18 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Z" /><path d="M12 18v-6" /><path d="M15 15H9" /></svg>;
+    case 'play-circle':
+      return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="12" cy="12" r="10" /><polygon points="10 8 16 12 10 16 10 8" /></svg>;
     case 'link':
       return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72" /></svg>;
     case 'export':
@@ -47,6 +49,8 @@ export const Icon: React.FC<IconProps> = ({ name, ...props }) => {
         return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m6 9 6 6 6-6"/></svg>;
     case 'panel-left':
       return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg>;
+    case 'info':
+      return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>;
     case 'alert-triangle':
       return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>;
     case 'sun':
@@ -61,6 +65,10 @@ export const Icon: React.FC<IconProps> = ({ name, ...props }) => {
       return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 60 30" {...props}><clipPath id="a"><path d="M0 0v30h60V0z"/></clipPath><path d="M0 0v30h60V0z" fill="#012169"/><path d="M0 0l60 30m0-30L0 30" stroke="#fff" strokeWidth="6"/><path d="M0 0l60 30m0-30L0 30" clipPath="url(#a)" stroke="#C8102E" strokeWidth="4"/><path d="M30 0v30M0 15h60" stroke="#fff" strokeWidth="10"/><path d="M30 0v30M0 15h60" stroke="#C8102E" strokeWidth="6"/></svg>;
     case 'refresh-cw':
         return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M3 2v6h6"/><path d="M21 12A9 9 0 0 0 6 5.3L3 8"/><path d="M21 22v-6h-6"/><path d="M3 12a9 9 0 0 0 15 6.7l3-2.7"/></svg>;
+    case 'whatsapp':
+        return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" {...props}><path d="M16.75 13.96c.25.13.43.2.5.28.07.08.15.18.22.33.07.15.1.33.05.53-.05.2-.15.38-.33.53-.18.15-.45.28-.8.35-.35.08-.8.1-1.33-.03-.53-.13-1.15-.35-1.83-.68-.68-.33-1.3-.75-1.88-1.28-.58-.53-1.05-1.15-1.43-1.83-.38-.68-.6-1.4-.68-2.18-.08-.78-.03-1.48.18-2.1.2-.6.53-1.1.95-1.5.43-.4.9-.73 1.4-.98.5-.25 1-.4 1.5-.4.15 0 .28.03.4.08.13.05.25.1.35.18.1.08.18.18.23.28.05.1.08.2.08.3s-.03.2-.08.28c-.05.08-.1.15-.18.23-.08.08-.15.13-.23.18-.08.05-.15.08-.23.08-.13 0-.25.03-.38.08-.12.05-.25.1-.38.18-.12.08-.23.18-.33.28-.1.1-.18.23-.25.35-.08.13-.13.25-.15.38-.03.13-.03.25-.03.38s.03.25.08.38c.05.13.1.25.18.35.08.1.18.2.28.28.1.1.2.18.33.25.13.08.25.13.38.15.13.03.25.03.38.03s.25,0,.38-.03c.13-.03.25-.08.35-.15.1-.08.2-.18.28-.28.08-.1.13-.2.15-.33s.03-.25.03-.38-.03-.25-.05-.38c-.03-.13-.05-.23-.08-.33s-.08-.18-.1-.25c-.03-.08-.05-.13-.05-.18s0-.1.03-.13c.03-.03.05-.05.08-.08.03-.03.08-.05.1-.08.03-.03.08-.03.1-.03h.15c.05 0 .1.03.15.03.05.01.1.03.15.03.05,0,.1,0,.15.03.05,0,.1,0,.15,0,.05.03.1.03.15.05.05.03.1.05.15.08l.15.15c.05.05.1.1.15.15.05.05.1.1.15.15.05.05.1.1.15.18.05.08.08.13.1.2.03.08.05.13.05.18s-.03.1-.05.15c-.03.05-.05.1-.08.15l-.15.2c-.05.05-.1.1-.15.15</svg>;
+    case 'log-out':
+      return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>;
     default:
       return null;
   }

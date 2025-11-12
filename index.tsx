@@ -1,17 +1,7 @@
-// FIX: Changed to default React import to resolve JSX intrinsic element type errors.
-import React from 'react';
+// FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
+import * as React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-
-// FIX: Added global type definition for 'dotlottie-wc' custom element here.
-// This is the main entry point, ensuring types are augmented correctly.
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      'dotlottie-wc': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement> & { src: string; autoplay: boolean; loop: boolean; style?: React.CSSProperties }, HTMLElement>;
-    }
-  }
-}
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

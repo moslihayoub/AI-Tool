@@ -1,4 +1,4 @@
-// FIX: Changed import to `import * as React from 'react'` and updated hooks usage to resolve JSX intrinsic element type errors.
+// FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
 import * as React from 'react';
 import { CandidateProfile, ChatMessage, CVFile } from '../types';
 import { Icon } from './icons';
@@ -29,6 +29,17 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ cvFile }) => {
     };
 
     React.useEffect(scrollToBottom, [messages]);
+    
+    const formatMessage = (text: string) => {
+        // Enhanced markdown to HTML converter for paragraphs, lists, and emphasis.
+        return text
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .split('\n')
+            .filter(line => line.trim() !== '')
+            .map(line => `<p>${line.replace(/^\s*[\*\-]\s*/, '&bull; ')}</p>`)
+            .join('');
+    };
 
     const sendMessage = async () => {
         if (!input.trim() || !chat || isLoading) return;
@@ -64,8 +75,12 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ cvFile }) => {
             <div className="flex-1 p-4 overflow-y-auto space-y-4">
                 {messages.map((msg, index) => (
                     <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-xs lg:max-w-md p-3 rounded-xl shadow-sm ${msg.role === 'user' ? 'bg-primary-600 text-white' : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200'}`}
-                         dangerouslySetInnerHTML={{__html: msg.text.replace(/\n/g, '<br />')}}>
+                        <div className={`max-w-xs lg:max-w-md p-3 rounded-xl shadow-sm ${
+                            msg.role === 'user' 
+                            ? 'bg-primary-600 text-white' 
+                            : 'bg-white dark:bg-gray-700 prose prose-sm dark:prose-invert max-w-none'
+                        }`}
+                         dangerouslySetInnerHTML={{__html: formatMessage(msg.text)}}>
                         </div>
                     </div>
                 ))}
@@ -74,7 +89,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ cvFile }) => {
             </div>
             <div className="p-4 border-t dark:border-gray-700 bg-white dark:bg-gray-800">
                  <div className="flex flex-wrap gap-2 mb-3">
-                    {quickQuestions.map(q => <button key={q} onClick={() => setInput(q)} className="text-xs bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 px-3 py-1 rounded-full transition-colors">{q}</button>)}
+                    {quickQuestions.map(q => <button key={q} onClick={() => setInput(q)} className="text-sm font-semibold bg-gray-900 text-gray-100 hover:bg-gray-700 dark:bg-black dark:text-gray-200 dark:hover:bg-gray-800 px-3 py-1 rounded-full transition-colors">{q}</button>)}
                 </div>
                 <div className="flex items-center gap-2">
                     <input 

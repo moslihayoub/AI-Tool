@@ -1,4 +1,4 @@
-// FIX: Changed import to `import * as React from 'react'` and updated hooks usage to resolve JSX intrinsic element type errors.
+// FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
 import * as React from 'react';
 import { CVFile } from '../types';
 import { Icon } from './icons';
@@ -12,6 +12,10 @@ interface UploadViewProps {
   onClearAllFiles: () => void;
   isAnalyzing: boolean;
   storageError: string | null;
+  isOwner: boolean;
+  analysisLimit: { count: number; limit: number };
+  limitError: string | null;
+  uploadLimit: number;
 }
 
 const FileStatusChip: React.FC<{ status: CVFile['status'] }> = ({ status }) => {
@@ -27,17 +31,21 @@ const FileStatusChip: React.FC<{ status: CVFile['status'] }> = ({ status }) => {
 };
 
 
-export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onStartAnalysis, onClearFile, onClearAllFiles, isAnalyzing, storageError }) => {
+export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onStartAnalysis, onClearFile, onClearAllFiles, isAnalyzing, storageError, isOwner, analysisLimit, limitError, uploadLimit }) => {
   const { t } = useTranslation();
   const [isDragActive, setIsDragActive] = React.useState(false);
   const [confirmReset, setConfirmReset] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
-  const isUIDisabled = isAnalyzing || !!storageError;
+  
+  const remainingAnalyses = analysisLimit.limit - analysisLimit.count;
+  const isUploadDisabled = cvFiles.length >= uploadLimit;
+  const isInteractionDisabled = isAnalyzing || !!storageError || isUploadDisabled || (!isOwner && remainingAnalyses <= 0);
+  
 
   const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    if (isUIDisabled) return;
+    if (isInteractionDisabled) return;
     if (e.type === "dragenter" || e.type === "dragover") {
       setIsDragActive(true);
     } else if (e.type === "dragleave") {
@@ -48,7 +56,7 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    if (isUIDisabled) return;
+    if (isInteractionDisabled) return;
     setIsDragActive(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       onAddFiles(Array.from(e.dataTransfer.files));
@@ -63,7 +71,7 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
   };
 
   const onButtonClick = () => {
-    if (isUIDisabled) return;
+    if (isInteractionDisabled) return;
     inputRef.current?.click();
   };
 
@@ -86,6 +94,33 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
                 <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{t('upload.title')}</h2>
                 <p className="text-gray-500 dark:text-gray-400 mt-1">{t('upload.subtitle')}</p>
             </header>
+        )}
+        
+        {isOwner ? (
+            <div className="p-4 rounded-lg border bg-green-50 border-green-200 text-green-800 dark:bg-green-900/30 dark:border-green-700 dark:text-green-200">
+              <div className="flex items-start gap-3">
+                <Icon name="check" className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h4 className="font-semibold">{t('upload.limit_rules.title_owner')}</h4>
+                  <p className="text-sm">{t('upload.owner_info')}</p>
+                </div>
+              </div>
+            </div>
+        ) : (
+            <div className={`p-4 rounded-lg border ${remainingAnalyses > 0 ? 'bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-200' : 'bg-red-50 border-red-200 text-red-800 dark:bg-red-900/30 dark:border-red-700 dark:text-red-200'}`}>
+              <div className="flex items-start gap-3">
+                <Icon name={remainingAnalyses > 0 ? 'info' : 'alert-triangle'} className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h4 className="font-semibold">{remainingAnalyses > 0 ? t('upload.limit_rules.title') : t('upload.limit_rules.limit_reached_title')}</h4>
+                  <p 
+                    className="text-sm" 
+                    dangerouslySetInnerHTML={{ __html: remainingAnalyses > 0 
+                      ? t('upload.limit_rules.description_with_count', { count: remainingAnalyses, limit: analysisLimit.limit, uploadLimit }) 
+                      : t('upload.limit_rules.limit_reached_description')
+                  }}></p>
+                </div>
+              </div>
+            </div>
         )}
 
         <div className={`grid grid-cols-1 ${cvFiles.length > 0 ? 'lg:grid-cols-2 gap-8 items-start' : ''}`}>
@@ -120,7 +155,7 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
                             </div>
                             <button 
                                 onClick={onStartAnalysis} 
-                                disabled={pendingFilesCount === 0 || isAnalyzing}
+                                disabled={pendingFilesCount === 0 || isAnalyzing || (!isOwner && remainingAnalyses <= 0)}
                                 className="bg-primary-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
                             >
                             {isAnalyzing ? <Icon name="spinner" className="w-5 h-5"/> : <Icon name="check" className="w-5 h-5"/>}
@@ -128,6 +163,11 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
                             </button>
                         </div>
                     </div>
+                    {limitError && (
+                        <div className="my-2 text-center text-sm text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/30 p-3 rounded-md" role="alert">
+                            {limitError}
+                        </div>
+                    )}
                     <ul className="bg-white dark:bg-gray-800/50 rounded-lg border dark:border-gray-700 divide-y dark:divide-gray-700 max-h-[450px] overflow-y-auto">
                         {cvFiles.map(cvFile => (
                              <li key={cvFile.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800">
@@ -167,19 +207,22 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
               className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 flex flex-col items-center justify-center min-h-[450px]
                 ${cvFiles.length > 0 ? 'lg:order-2' : 'col-span-1'}
                 ${isDragActive ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'border-gray-300 dark:border-gray-600 bg-white/30 dark:bg-gray-800/30'}
-                ${isUIDisabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:border-primary-400'}`}
+                ${isInteractionDisabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:border-primary-400'}`}
+                 title={isUploadDisabled ? t('errors.upload_limit_reached') : ''}
             >
-                <input ref={inputRef} type="file" multiple onChange={handleChange} className="hidden" accept=".pdf,.txt,.json,.md,.csv,.doc,.docx,.xls,.xlsx,.ppt,.pptx" disabled={isUIDisabled} />
+                <input ref={inputRef} type="file" multiple onChange={handleChange} className="hidden" accept=".pdf,.txt,.json,.md,.csv,.doc,.docx,.xls,.xlsx,.ppt,.pptx" disabled={isInteractionDisabled} />
                 
                 <div className="flex flex-col items-center justify-center text-gray-500 dark:text-gray-400">
                     <dotlottie-wc src="https://lottie.host/05f02365-02dd-4b23-8289-b8d119e5c961/9dwTt6kpl2.lottie" style={{ width: '220px', height: '220px' }} autoPlay loop></dotlottie-wc>
                     <div className="text-center">
                         {isDragActive ? (
                             <p className="text-lg font-semibold text-primary-600">{t('upload.dropzone.release')}</p>
+                        ) : isInteractionDisabled ? (
+                           <p className="text-lg font-semibold text-gray-600 dark:text-gray-400">{t('upload.dropzone.limit_reached_prompt')}</p>
                         ) : (
                             <p className="text-lg font-semibold">{t('upload.dropzone.prompt')}</p>
                         )}
-                        <p className="text-sm mt-1">{t('upload.dropzone.supported_files')}</p>
+                        <p className="text-sm mt-1">{isInteractionDisabled ? t('upload.limit_rules.limit_reached_description') : t('upload.dropzone.supported_files')}</p>
                     </div>
                 </div>
             </div>
