@@ -1,5 +1,5 @@
 // FIX: Changed to default react import and updated hooks usage to resolve JSX intrinsic element type errors.
-import React from 'react';
+import * as React from 'react';
 import { CandidateProfile } from '../types';
 import { Icon } from './icons';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList, LineChart, Line } from 'recharts';

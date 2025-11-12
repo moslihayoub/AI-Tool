@@ -1,9 +1,12 @@
 
+
 import { GoogleGenAI, Type, Chat, GenerateContentResponse } from '@google/genai';
 import type { CandidateProfile, CVFile } from '../types';
 
 // Fix: Initialize the Google Gemini AI client. It's good practice to do this once per module.
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Fix: Define the JSON schema for the candidate profile to ensure structured output from the AI.
 const candidateProfileSchema = {
@@ -81,48 +84,83 @@ export async function parseCvContent(fileData: { mimeType: string; data: string 
     // Fix: Select model based on task type. 'gemini-2.5-flash' is suitable for this structured data extraction task.
     const model = 'gemini-2.5-flash';
     const prompt = `Please analyze the attached CV and extract the candidate's information.`;
+    
+    const maxRetries = 3;
+    let attempt = 0;
 
-    try {
-        // Fix: Call Gemini API to generate content with a specific JSON schema.
-        const response: GenerateContentResponse = await ai.models.generateContent({
-            model: model,
-            contents: { parts: [{ text: prompt }, { inlineData: fileData }] },
-            config: {
-                systemInstruction: systemInstructionForParsing,
-                responseMimeType: "application/json",
-                responseSchema: candidateProfileSchema,
-            },
-        });
+    while (attempt < maxRetries) {
+        try {
+            // Fix: Call Gemini API to generate content with a specific JSON schema.
+            const response: GenerateContentResponse = await ai.models.generateContent({
+                model: model,
+                contents: { parts: [{ text: prompt }, { inlineData: fileData }] },
+                config: {
+                    systemInstruction: systemInstructionForParsing,
+                    responseMimeType: "application/json",
+                    responseSchema: candidateProfileSchema,
+                },
+            });
 
-        // Fix: Extract and parse the JSON text from the response.
-        const jsonText = response.text.trim();
-        const parsedJson = JSON.parse(jsonText);
+            // Fix: Extract and parse the JSON text from the response.
+            const jsonText = response.text.trim();
+            const parsedJson = JSON.parse(jsonText);
 
-        // We return the parsed data, and the caller will add the file-specific metadata.
-        return {
-            name: parsedJson.name || 'N/A',
-            email: parsedJson.email || 'N/A',
-            phone: parsedJson.phone || 'N/A',
-            location: parsedJson.location || 'N/A',
-            summary: parsedJson.summary || 'N/A',
-            experience: parsedJson.experience || [],
-            education: parsedJson.education || [],
-            skills: parsedJson.skills || { hard: [], soft: [] },
-            languages: parsedJson.languages || [],
-            certifications: parsedJson.certifications || [],
-            detectedLanguage: parsedJson.detectedLanguage || 'N/A',
-            jobCategory: parsedJson.jobCategory || 'N/A',
-            totalExperienceYears: parsedJson.totalExperienceYears || 0,
-            performanceScore: parsedJson.performanceScore || 0,
-        };
-    } catch (e) {
-        console.error("Failed to process CV with Gemini:", e);
-        if (e instanceof Error) {
-           throw new Error(`Failed to get structured data from AI. The CV might be unparsable or in an unsupported format. Gemini Error: ${e.message}`);
+            // We return the parsed data, and the caller will add the file-specific metadata.
+            return {
+                name: parsedJson.name || 'N/A',
+                email: parsedJson.email || 'N/A',
+                phone: parsedJson.phone || 'N/A',
+                location: parsedJson.location || 'N/A',
+                summary: parsedJson.summary || 'N/A',
+                experience: parsedJson.experience || [],
+                education: parsedJson.education || [],
+                skills: parsedJson.skills || { hard: [], soft: [] },
+                languages: parsedJson.languages || [],
+                certifications: parsedJson.certifications || [],
+                detectedLanguage: parsedJson.detectedLanguage || 'N/A',
+                jobCategory: parsedJson.jobCategory || 'N/A',
+                totalExperienceYears: parsedJson.totalExperienceYears || 0,
+                performanceScore: parsedJson.performanceScore || 0,
+            };
+        } catch (e) {
+            attempt++;
+            console.warn(`Attempt ${attempt} failed for CV processing. Error:`, e);
+            
+            let isRetryable = false;
+            let finalError: Error | null = null;
+
+            if (e instanceof Error) {
+                try {
+                    const errorObj = JSON.parse(e.message);
+                    if (errorObj.error && errorObj.error.message) {
+                        if (errorObj.error.code === 503 || errorObj.error.status === 'UNAVAILABLE') {
+                            isRetryable = true;
+                            finalError = new Error('The AI model is overloaded. Please try again later.');
+                        } else {
+                            finalError = new Error(`AI API Error: ${errorObj.error.message}`);
+                        }
+                    }
+                } catch (jsonError) { /* Not a JSON API error */ }
+                
+                if (!finalError) {
+                    finalError = new Error(`Failed to get structured data from AI. The CV might be unparsable or in an unsupported format. Gemini Error: ${e.message}`);
+                }
+            } else {
+                finalError = new Error("An unknown error occurred during CV analysis.");
+            }
+
+            if (isRetryable && attempt < maxRetries) {
+                const backoffTime = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+                console.log(`Model overloaded. Retrying in ${Math.round(backoffTime / 1000)}s...`);
+                await delay(backoffTime);
+            } else {
+                throw finalError;
+            }
         }
-        throw new Error("An unknown error occurred during CV analysis.");
     }
+    throw new Error("Failed to process CV after multiple retries.");
 }
+
 
 /**
  * Creates a new AI chat session for a given CV profile.

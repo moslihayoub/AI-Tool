@@ -1,5 +1,5 @@
 // FIX: Changed to default react import and updated hooks usage to resolve JSX intrinsic element type errors.
-import React from 'react';
+import * as React from 'react';
 import { CVFile } from '../types';
 import { Icon } from './icons';
 import { useTranslation } from '../i18n';
@@ -124,20 +124,29 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
                     </div>
                     <ul className="bg-white dark:bg-gray-800/50 rounded-lg border dark:border-gray-700 divide-y dark:divide-gray-700 max-h-[450px] overflow-y-auto">
                         {cvFiles.map(cvFile => (
-                            <li key={cvFile.id} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800">
-                               <div className="flex items-center gap-4 truncate">
-                                    <Icon name="google" className="w-6 h-6 text-gray-400 flex-shrink-0"/>
-                                    <div className="truncate">
-                                        <p className="font-semibold truncate">{cvFile.file.name}</p>
-                                        <p className="text-sm text-gray-500">{(cvFile.file.size / 1024).toFixed(1)} KB</p>
+                             <li key={cvFile.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800">
+                                <div className="flex items-center justify-between w-full">
+                                   <div className="flex items-center gap-4 truncate min-w-0">
+                                        <Icon name="google" className="w-6 h-6 text-gray-400 flex-shrink-0"/>
+                                        <div className="truncate">
+                                            <p className="font-semibold truncate">{cvFile.file.name}</p>
+                                            <p className="text-sm text-gray-500">{(cvFile.file.size / 1024).toFixed(1)} KB</p>
+                                        </div>
+                                   </div>
+                                    <div className="flex items-center gap-4 flex-shrink-0 ml-4">
+                                       <FileStatusChip status={cvFile.status} />
+                                       <button onClick={() => onClearFile(cvFile.id)} className="text-gray-400 hover:text-red-500 p-1 rounded-full">
+                                           <Icon name="close" className="w-5 h-5" />
+                                       </button>
                                     </div>
-                               </div>
-                                <div className="flex items-center gap-4">
-                                   <FileStatusChip status={cvFile.status} />
-                                   <button onClick={() => onClearFile(cvFile.id)} className="text-gray-400 hover:text-red-500 p-1 rounded-full">
-                                       <Icon name="close" className="w-5 h-5" />
-                                   </button>
                                 </div>
+                                {cvFile.status === 'error' && cvFile.error && (
+                                    <div className="mt-2 pl-10">
+                                        <p className="text-xs text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/30 p-2 rounded-md">
+                                            <strong>{t('upload.status.error')}: </strong>{cvFile.error}
+                                        </p>
+                                    </div>
+                                )}
                             </li>
                         ))}
                     </ul>

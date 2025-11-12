@@ -1,5 +1,5 @@
 // FIX: Changed to default react import and updated hooks usage to resolve JSX intrinsic element type errors.
-import React from 'react';
+import * as React from 'react';
 
 export const AnimatedBackground: React.FC = () => {
     React.useEffect(() => {

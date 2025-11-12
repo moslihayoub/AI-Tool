@@ -1,5 +1,5 @@
 // FIX: Changed to default react import and updated hooks usage to resolve JSX intrinsic element type errors.
-import React from 'react';
+import * as React from 'react';
 import { Sidebar } from './components/Sidebar';
 import { UploadView } from './components/UploadView';
 import { DashboardView } from './components/DashboardView';

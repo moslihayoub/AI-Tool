@@ -1,5 +1,5 @@
-// FIX: Changed React import to default to resolve JSX intrinsic element type errors.
-import React from 'react';
+// FIX: Changed React import to namespace import `import * as React from 'react'` to correctly resolve JSX types and intrinsic elements.
+import * as React from 'react';
 import { Icon } from './icons';
 import { View } from '../types';
 import { useTranslation } from '../i18n';

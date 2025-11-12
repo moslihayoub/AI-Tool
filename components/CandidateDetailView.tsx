@@ -1,11 +1,11 @@
 // FIX: Changed to default react import and updated hooks usage to resolve JSX intrinsic element type errors.
-import React from 'react';
+import * as React from 'react';
 import { CandidateProfile, ChatMessage, CVFile } from '../types';
 import { Icon } from './icons';
 import { createAIChat } from '../services/geminiService';
 import { Chat, GenerateContentResponse } from '@google/genai';
 import { useTranslation } from '../i18n';
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { Bar, BarChart, CartesianGrid, LabelList, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 interface AIAssistantProps {
     cvFile: CVFile;
@@ -105,13 +105,30 @@ interface CandidateDetailProps {
 export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate, cvFile, onBack, isFavorite, onToggleFavorite }) => {
     const { t } = useTranslation();
     
-    const skillsData = React.useMemo(() => {
-        if (!candidate?.skills?.hard) return [];
-        return candidate.skills.hard.map(skill => ({
-            subject: skill,
-            value: 100,
-            fullMark: 100,
-        }));
+    const skillsExpertiseData = React.useMemo(() => {
+        if (!candidate || !candidate.skills?.hard) {
+            return [];
+        }
+
+        const experienceText = (candidate.experience || [])
+            .map(exp => `${exp.title} ${exp.description}`)
+            .join(' ')
+            .toLowerCase();
+
+        return candidate.skills.hard
+            .map(skill => {
+                const skillLower = skill.toLowerCase();
+                const skillRegex = new RegExp(`\\b${skillLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g');
+                const count = (experienceText.match(skillRegex) || []).length;
+
+                // Base score of 1 for being listed, plus counts from experience.
+                return {
+                    name: skill,
+                    expertise: 1 + count,
+                };
+            })
+            .sort((a, b) => b.expertise - a.expertise)
+            .slice(0, 15); // Show top 15
     }, [candidate]);
     
     if (!candidate || !cvFile) return <div className="p-8 text-center">{t('detail.loading')}</div>;
@@ -181,21 +198,26 @@ export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate,
                     {hasHardSkills && (
                         <div>
                             <h3 className="font-semibold text-xl border-b pb-2 mb-3">{t('detail.skills_chart')}</h3>
-                            {skillsData.length > 2 ? (
-                                <div className="w-full h-96">
+                            <div className="w-full h-96">
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <RadarChart cx="50%" cy="50%" outerRadius="80%" data={skillsData}>
-                                        <PolarGrid />
-                                        <PolarAngleAxis dataKey="subject" tick={{ fill: 'currentColor', fontSize: 14 }} />
-                                        <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                                        <Radar name={candidate.name} dataKey="value" stroke="#ec4899" fill="#ec4899" fillOpacity={0.6} />
-                                        <Tooltip />
-                                    </RadarChart>
+                                    <BarChart
+                                        layout="vertical"
+                                        data={skillsExpertiseData}
+                                        margin={{ top: 5, right: 40, left: 20, bottom: 5 }}
+                                    >
+                                        <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                                        <XAxis type="number" allowDecimals={false} stroke="currentColor" />
+                                        <YAxis dataKey="name" type="category" width={120} tick={{ fontSize: 12, fill: 'currentColor' }} />
+                                        <Tooltip 
+                                            cursor={{fill: 'rgba(236, 72, 153, 0.1)'}} 
+                                        />
+                                        <Legend verticalAlign="top" height={36}/>
+                                        <Bar dataKey="expertise" name={t('detail.expertise_score')} fill="#ec4899">
+                                            <LabelList dataKey="expertise" position="right" style={{ fill: 'currentColor' }} />
+                                        </Bar>
+                                    </BarChart>
                                 </ResponsiveContainer>
-                                </div>
-                            ) : (
-                                <p className="italic text-gray-500 dark:text-gray-400">{t('detail.not_enough_skills_for_chart')}</p>
-                            )}
+                            </div>
                         </div>
                     )}
                     
