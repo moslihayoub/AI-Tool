@@ -1,4 +1,4 @@
-// FIX: Changed react import to default import to resolve JSX intrinsic element type errors.
+// FIX: Changed React import to default to resolve JSX intrinsic element type errors.
 import React from 'react';
 import { Icon } from './icons';
 import { View } from '../types';
@@ -19,6 +19,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, i
   const navItems = [
     { id: 'upload', label: t('sidebar.upload'), icon: 'upload' },
     { id: 'dashboard', label: t('sidebar.dashboard'), icon: 'dashboard' },
+    { id: 'favorites', label: t('sidebar.favorites'), icon: 'heart' },
     { id: 'settings', label: t('sidebar.settings'), icon: 'settings' },
   ];
 

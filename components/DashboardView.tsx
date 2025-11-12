@@ -1,24 +1,18 @@
-// FIX: Changed react import to default and named hooks import to resolve JSX intrinsic element type errors.
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+// FIX: Changed to default react import and updated hooks usage to resolve JSX intrinsic element type errors.
+import React from 'react';
 import { CandidateProfile } from '../types';
 import { Icon } from './icons';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList, LineChart, Line } from 'recharts';
 import { useTranslation } from '../i18n';
-
-// Add TypeScript definitions for the Lottie web component
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      'dotlottie-wc': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement> & { src: string; autoplay: boolean; loop: boolean; style?: React.CSSProperties }, HTMLElement>;
-    }
-  }
-}
 
 interface DashboardViewProps {
   candidates: CandidateProfile[];
   onSelectCandidate: (candidate: CandidateProfile) => void;
   onReset: () => void;
   setSearchQuery: (query: string) => void;
+  favorites: string[];
+  onToggleFavorite: (candidateId: string) => void;
+  isFavoritesView?: boolean;
 }
 
 const COLORS = ['#3b82f6', '#ec4899', '#f59e0b', '#10b981', '#8b5cf6', '#ef4444'];
@@ -28,14 +22,31 @@ const isProfileIncomplete = (candidate: CandidateProfile): boolean => {
            !candidate.jobCategory || candidate.jobCategory === 'N/A';
 };
 
-const CandidateCard: React.FC<{ candidate: CandidateProfile; onSelect: () => void; }> = ({ candidate, onSelect }) => {
+const getScoreEmoji = (score: number): string => {
+    if (score >= 90) return '🤩';
+    if (score >= 70) return '😜';
+    if (score >= 50) return '😅';
+    if (score >= 30) return '🤬';
+    if (score >= 10) return '😭';
+    return '';
+};
+
+const CandidateCard: React.FC<{ candidate: CandidateProfile; onSelect: () => void; isFavorite: boolean; onToggleFavorite: (e: React.MouseEvent) => void; }> = ({ candidate, onSelect, isFavorite, onToggleFavorite }) => {
     const { t } = useTranslation();
     
     return (
-        <div onClick={onSelect} className="bg-white dark:bg-gray-800 p-5 rounded-xl border dark:border-gray-700 shadow-md hover:shadow-xl hover:border-primary-500 cursor-pointer transition-all hover:scale-105 duration-200 flex flex-col justify-between min-h-[190px]">
+        <div onClick={onSelect} className={`relative bg-white dark:bg-gray-800 p-5 rounded-xl border shadow-md hover:shadow-xl hover:border-primary-500 cursor-pointer transition-all hover:scale-105 duration-200 flex flex-col justify-between min-h-[190px] ${isFavorite ? 'ring-2 ring-secondary-500 dark:ring-secondary-400' : 'dark:border-gray-700'}`}>
             <div>
                 <div className="flex justify-between items-start gap-2">
-                    <h3 className="font-bold text-lg text-primary-700 dark:text-primary-300 truncate pr-2">{candidate.name && candidate.name !== 'N/A' ? candidate.name : t('common.name_not_available')}</h3>
+                    <h3 className="font-bold text-lg text-primary-700 dark:text-primary-300 truncate pr-8">{candidate.name && candidate.name !== 'N/A' ? candidate.name : t('common.name_not_available')}</h3>
+                     <button 
+                        onClick={onToggleFavorite} 
+                        className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-secondary-100 dark:hover:bg-gray-700 transition-colors z-10"
+                        title={isFavorite ? t('detail.remove_from_favorites') : t('detail.add_to_favorites')}
+                        aria-label="Toggle favorite"
+                    >
+                        <Icon name="heart" className={`w-5 h-5 ${isFavorite ? 'fill-secondary-500 text-secondary-500' : 'text-gray-400'}`} />
+                    </button>
                     <div className="flex items-center gap-2 flex-shrink-0">
                         {isProfileIncomplete(candidate) && (
                             <div className="group relative flex items-center">
@@ -45,13 +56,16 @@ const CandidateCard: React.FC<{ candidate: CandidateProfile; onSelect: () => voi
                                 </span>
                             </div>
                         )}
-                        <span className={`text-sm font-bold px-3 py-1 rounded-full ${candidate.performanceScore > 75 ? 'bg-green-100 text-green-800' : candidate.performanceScore > 50 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
-                            {candidate.performanceScore || 0}/100
-                        </span>
+                         <div className="flex items-center gap-1.5">
+                           <span className="text-2xl">{getScoreEmoji(candidate.performanceScore)}</span>
+                           <span className={`text-sm font-bold px-3 py-1 rounded-full ${candidate.performanceScore > 75 ? 'bg-green-100 text-green-800' : candidate.performanceScore > 50 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+                             {candidate.performanceScore || 0}/100
+                           </span>
+                        </div>
                     </div>
                 </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 truncate mt-1">{candidate.jobCategory && candidate.jobCategory !== 'N/A' ? candidate.jobCategory : t('common.category_not_available')}</p>
-                <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center justify-between mt-1">
+                <p className="text-base text-gray-600 dark:text-gray-400 truncate mt-1">{candidate.jobCategory && candidate.jobCategory !== 'N/A' ? candidate.jobCategory : t('common.category_not_available')}</p>
+                <div className="text-base text-gray-500 dark:text-gray-400 flex items-center justify-between mt-1">
                   <span className="truncate pr-2">{candidate.location && candidate.location !== 'N/A' ? candidate.location : t('common.location_not_available')}</span>
                   <span className="font-medium flex-shrink-0">{t('dashboard.experience_years', {count: candidate.totalExperienceYears || 0})}</span>
                 </div>
@@ -59,7 +73,7 @@ const CandidateCard: React.FC<{ candidate: CandidateProfile; onSelect: () => voi
             <div className="mt-4">
                 <div className="flex flex-wrap gap-2">
                     {(candidate.skills.hard || []).slice(0, 3).map(skill => (
-                        <span key={skill} className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-full">{skill}</span>
+                        <span key={skill} className="text-sm bg-gradient-to-r from-primary-600 to-fuchsia-500 text-white px-3 py-1 rounded-full shadow-sm">{skill}</span>
                     ))}
                 </div>
                 {candidate.analysisDuration && <p className="text-xs text-right text-gray-400 mt-2">{t('common.analyzed_in', {duration: (candidate.analysisDuration / 1000).toFixed(1)})}</p>}
@@ -103,7 +117,7 @@ const EmptyChartState: React.FC = () => {
     return (
         <div className="flex flex-col items-center justify-center h-[300px] text-gray-500">
             <dotlottie-wc
-                src="https://lottie.host/6b351e48-1af9-4c6d-b373-79ea075fc9a6/Uott01F3kh.lottie"
+                src="https://lottie.host/89c66344-281d-4450-91d3-4574a47fec47/31ogoyP4Mh.lottie"
                 autoplay
                 loop
                 style={{ width: '120px', height: '120px' }}
@@ -113,26 +127,32 @@ const EmptyChartState: React.FC = () => {
     );
 };
 
-export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSelectCandidate, onReset }) => {
+export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSelectCandidate, onReset, favorites, onToggleFavorite, isFavoritesView = false }) => {
     const { t } = useTranslation();
-    const [selectedJobCategories, setSelectedJobCategories] = useState<string[]>([]);
-    const [isFilterOpen, setIsFilterOpen] = useState(false);
-    const [confirmReset, setConfirmReset] = useState(false);
-    const filterRef = useRef<HTMLDivElement>(null);
+    const [selectedJobCategories, setSelectedJobCategories] = React.useState<string[]>([]);
+    const [isFilterOpen, setIsFilterOpen] = React.useState(false);
+    const [confirmReset, setConfirmReset] = React.useState(false);
+    const filterRef = React.useRef<HTMLDivElement>(null);
 
-    const allJobCategories = useMemo(() => {
+    const allJobCategories = React.useMemo(() => {
         const categories = new Set(candidates.map(c => c.jobCategory).filter(c => c && c !== 'N/A'));
         return Array.from(categories).sort();
     }, [candidates]);
 
-    const filteredCandidates = useMemo(() => {
-        if (selectedJobCategories.length === 0) {
-            return candidates;
-        }
-        return candidates.filter(c => c.jobCategory && selectedJobCategories.includes(c.jobCategory));
+    const filteredCandidates = React.useMemo(() => {
+        const filtered = selectedJobCategories.length === 0
+            ? candidates
+            : candidates.filter(c => c.jobCategory && selectedJobCategories.includes(c.jobCategory));
+
+        return filtered.sort((a, b) => {
+            if (b.performanceScore !== a.performanceScore) {
+                return b.performanceScore - a.performanceScore;
+            }
+            return (a.jobCategory || '').localeCompare(b.jobCategory || '');
+        });
     }, [candidates, selectedJobCategories]);
 
-    useEffect(() => {
+    React.useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
                 setIsFilterOpen(false);
@@ -162,8 +182,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         );
     };
 
-    const locationDistribution = useMemo(() => groupData(filteredCandidates.map(c => c.location), t), [filteredCandidates, t]);
-    const jobCategoryDistribution = useMemo(() => {
+    const locationDistribution = React.useMemo(() => groupData(filteredCandidates.map(c => c.location), t), [filteredCandidates, t]);
+    const jobCategoryDistribution = React.useMemo(() => {
         const validData = filteredCandidates.map(c => c.jobCategory).filter(item => item && item.trim() && item.trim() !== 'N/A');
         const freqMap = validData.reduce((acc: Record<string, number>, item) => {
             const key = item.trim();
@@ -173,7 +193,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         return Object.entries(freqMap).map(([name, value]) => ({ name, value }));
     }, [filteredCandidates]);
     
-    const experienceDistribution = useMemo(() => {
+    const experienceDistribution = React.useMemo(() => {
         const buckets = { [t('dashboard.exp_buckets.junior')]: 0, [t('dashboard.exp_buckets.confirmed')]: 0, [t('dashboard.exp_buckets.senior')]: 0, [t('dashboard.exp_buckets.expert')]: 0, };
         filteredCandidates.forEach(c => {
             const years = c.totalExperienceYears || 0;
@@ -185,7 +205,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         return Object.entries(buckets).map(([name, count]) => ({ name, count }));
     }, [filteredCandidates, t]);
     
-     const performanceByJobCategory = useMemo(() => {
+     const performanceByJobCategory = React.useMemo(() => {
         const validCandidates = filteredCandidates.filter(c => c.jobCategory && c.jobCategory.trim() && c.jobCategory !== 'N/A');
         const categoryScores: Record<string, { totalScore: number, count: number }> = validCandidates.reduce((acc, candidate) => {
             const category = candidate.jobCategory;
@@ -200,16 +220,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         })).sort((a, b) => b.averageScore - a.averageScore);
     }, [filteredCandidates]);
 
-    if (candidates.length === 0) {
+    if (candidates.length === 0 && !isFavoritesView) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] p-8 text-center">
-                <dotlottie-wc
-                    src="https://lottie.host/6b351e48-1af9-4c6d-b373-79ea075fc9a6/Uott01F3kh.lottie"
-                    autoplay
-                    loop
-                    style={{ width: '300px', height: '300px' }}
-                ></dotlottie-wc>
-                <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">{t('dashboard.no_cv_analyzed')}</p>
+            <div className="p-4 sm:p-8 space-y-8">
+                <header>
+                    <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{t('dashboard.title')}</h2>
+                    <p className="text-gray-500 dark:text-gray-400 mt-1">{t('dashboard.subtitle')}</p>
+                </header>
+                <div className="flex flex-col items-center justify-center min-h-[calc(100vh-15rem)] text-center">
+                    <dotlottie-wc
+                        src="https://lottie.host/89c66344-281d-4450-91d3-4574a47fec47/31ogoyP4Mh.lottie"
+                        autoplay
+                        loop
+                        style={{ width: '200px', height: '200px' }}
+                    ></dotlottie-wc>
+                    <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">{t('dashboard.no_cv_analyzed')}</p>
+                </div>
             </div>
         );
     }
@@ -234,9 +260,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         <div className="p-4 sm:p-8 space-y-8">
             <header className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                 <div>
-                    <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{t('dashboard.title')}</h2>
-                    <p className="text-gray-500 dark:text-gray-400 mt-1">{t('dashboard.subtitle')}</p>
+                    <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{isFavoritesView ? t('dashboard.favorites_title') : t('dashboard.title')}</h2>
+                    {!isFavoritesView && <p className="text-gray-500 dark:text-gray-400 mt-1">{t('dashboard.subtitle')}</p>}
                 </div>
+                {!isFavoritesView && (
                  <div className="flex items-center gap-2">
                     <div className="relative" ref={filterRef}>
                         <button onClick={() => setIsFilterOpen(!isFilterOpen)} className="flex items-center gap-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-semibold px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors w-56 justify-between">
@@ -297,8 +324,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                         )}
                     </div>
                 </div>
+                )}
             </header>
 
+            {!isFavoritesView && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                  <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-lg">
                     <h3 className="font-semibold mb-4 text-lg">{t('dashboard.charts.perf_by_job')}</h3>
@@ -390,14 +419,35 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                     )}
                 </div>
             </div>
+            )}
 
             <div className="mt-8">
-                <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">{t('dashboard.candidate_profiles', {count: filteredCandidates.length})}</h3>
-                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {filteredCandidates.map(candidate => (
-                        <CandidateCard key={candidate.id} candidate={candidate} onSelect={() => onSelectCandidate(candidate)} />
-                    ))}
-                </div>
+                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">{t('dashboard.candidate_profiles', {count: filteredCandidates.length})}</h3>
+                 {filteredCandidates.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {filteredCandidates.map(candidate => (
+                            <CandidateCard 
+                                key={candidate.id} 
+                                candidate={candidate} 
+                                onSelect={() => onSelectCandidate(candidate)} 
+                                isFavorite={favorites.includes(candidate.id)}
+                                onToggleFavorite={(e) => { e.stopPropagation(); onToggleFavorite(candidate.id); }}
+                            />
+                        ))}
+                    </div>
+                 ) : (
+                    isFavoritesView && (
+                         <div className="flex flex-col items-center justify-center min-h-[50vh] p-8 text-center">
+                            <dotlottie-wc
+                                src="https://lottie.host/89c66344-281d-4450-91d3-4574a47fec47/31ogoyP4Mh.lottie"
+                                autoplay
+                                loop
+                                style={{ width: '200px', height: '200px' }}
+                            ></dotlottie-wc>
+                            <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">{t('dashboard.no_favorites')}</p>
+                        </div>
+                    )
+                 )}
             </div>
         </div>
     )

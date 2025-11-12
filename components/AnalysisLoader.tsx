@@ -1,5 +1,5 @@
-// FIX: Changed react import to default and named hooks import to resolve JSX intrinsic element type errors.
-import React, { useState, useEffect } from 'react';
+// FIX: Changed to default react import and updated hooks usage to resolve JSX intrinsic element type errors.
+import React from 'react';
 import { Icon } from './icons';
 import { useTranslation } from '../i18n';
 
@@ -11,10 +11,10 @@ interface AnalysisLoaderProps {
 
 export const AnalysisLoader: React.FC<AnalysisLoaderProps> = ({ progress, total, startTime }) => {
   const { t } = useTranslation();
-  const [elapsedTime, setElapsedTime] = useState(0);
+  const [elapsedTime, setElapsedTime] = React.useState(0);
   const percentage = total > 0 ? Math.round((progress / total) * 100) : 0;
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (startTime === null) return;
     
     const timer = setInterval(() => {
@@ -30,7 +30,7 @@ export const AnalysisLoader: React.FC<AnalysisLoaderProps> = ({ progress, total,
       <div className="absolute inset-0 bg-animated-gradient bg-200% animate-gradient-flow" aria-hidden="true" />
       <div className="absolute inset-0 bg-gray-900 opacity-70" aria-hidden="true" />
       <div className="relative flex flex-col items-center justify-center h-full w-full">
-        <Icon name="bot" className="w-20 h-20 text-primary-400" />
+        <dotlottie-wc src="https://lottie.host/f65b0508-f3b0-46d1-9a76-2974759efcb3/uA68bKWt6J.lottie" style={{ width: '300px', height: '300px' }} autoplay loop></dotlottie-wc>
         <h2 className="text-3xl font-bold mt-4">{t('analysis.title')}</h2>
         <p className="text-gray-300 mt-2">{t('analysis.subtitle')}</p>
         

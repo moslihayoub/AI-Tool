@@ -1,10 +1,11 @@
-// FIX: Changed react import to default and named hooks import to resolve JSX intrinsic element type errors.
-import React, { useState, useEffect, useRef } from 'react';
+// FIX: Changed to default react import and updated hooks usage to resolve JSX intrinsic element type errors.
+import React from 'react';
 import { CandidateProfile, ChatMessage, CVFile } from '../types';
 import { Icon } from './icons';
 import { createAIChat } from '../services/geminiService';
 import { Chat, GenerateContentResponse } from '@google/genai';
 import { useTranslation } from '../i18n';
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip } from 'recharts';
 
 interface AIAssistantProps {
     cvFile: CVFile;
@@ -12,13 +13,13 @@ interface AIAssistantProps {
 
 const AIAssistant: React.FC<AIAssistantProps> = ({ cvFile }) => {
     const { t } = useTranslation();
-    const [chat, setChat] = useState<Chat | null>(null);
-    const [messages, setMessages] = useState<ChatMessage[]>([{role: 'model', text: t('ai_assistant.greeting')}]);
-    const [input, setInput] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const messagesEndRef = useRef<HTMLDivElement>(null);
+    const [chat, setChat] = React.useState<Chat | null>(null);
+    const [messages, setMessages] = React.useState<ChatMessage[]>([{role: 'model', text: t('ai_assistant.greeting')}]);
+    const [input, setInput] = React.useState('');
+    const [isLoading, setIsLoading] = React.useState(false);
+    const messagesEndRef = React.useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
+    React.useEffect(() => {
         setChat(createAIChat(cvFile));
         setMessages([{role: 'model', text: t('ai_assistant.greeting')}]);
     }, [cvFile, t]);
@@ -27,7 +28,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ cvFile }) => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
-    useEffect(scrollToBottom, [messages]);
+    React.useEffect(scrollToBottom, [messages]);
 
     const sendMessage = async () => {
         if (!input.trim() || !chat || isLoading) return;
@@ -97,10 +98,21 @@ interface CandidateDetailProps {
     candidate: CandidateProfile | null;
     cvFile: CVFile | null;
     onBack: () => void;
+    isFavorite: boolean;
+    onToggleFavorite: () => void;
 }
 
-export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate, cvFile, onBack }) => {
+export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate, cvFile, onBack, isFavorite, onToggleFavorite }) => {
     const { t } = useTranslation();
+    
+    const skillsData = React.useMemo(() => {
+        if (!candidate?.skills?.hard) return [];
+        return candidate.skills.hard.map(skill => ({
+            subject: skill,
+            value: 100,
+            fullMark: 100,
+        }));
+    }, [candidate]);
     
     if (!candidate || !cvFile) return <div className="p-8 text-center">{t('detail.loading')}</div>;
 
@@ -117,21 +129,30 @@ export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate,
                         </button>
                         <div>
                             <h2 className="text-2xl font-bold text-primary-700 dark:text-primary-300">{candidate.name && candidate.name !== 'N/A' ? candidate.name : t('common.name_not_available')}</h2>
-                            <div className="text-gray-500 text-sm flex flex-wrap items-center gap-x-4 gap-y-1 mt-1">
+                            <div className="text-gray-500 text-base flex flex-wrap items-center gap-x-4 gap-y-1 mt-1">
                                 <span>{candidate.email && candidate.email !== 'N/A' ? candidate.email : t('common.email_not_available')}</span>
                                 <span className="hidden sm:inline">&bull;</span>
                                 <span>{candidate.location && candidate.location !== 'N/A' ? candidate.location : t('common.location_not_available')}</span>
                             </div>
                         </div>
                     </div>
-                     <span className={`text-lg font-bold px-4 py-2 rounded-lg ${candidate.performanceScore > 75 ? 'bg-green-100 text-green-800' : candidate.performanceScore > 50 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
-                        {t('detail.score')}: {candidate.performanceScore || 0}/100
-                    </span>
+                    <div className="flex items-center gap-4">
+                        <button 
+                            onClick={onToggleFavorite} 
+                            className="p-2 rounded-full hover:bg-secondary-100 dark:hover:bg-gray-700 transition-colors"
+                            title={isFavorite ? t('detail.remove_from_favorites') : t('detail.add_to_favorites')}
+                        >
+                            <Icon name="heart" className={`w-6 h-6 ${isFavorite ? 'fill-secondary-500 text-secondary-500' : 'text-gray-400'}`} />
+                        </button>
+                        <span className={`text-lg font-bold px-4 py-2 rounded-lg ${candidate.performanceScore > 75 ? 'bg-green-100 text-green-800' : candidate.performanceScore > 50 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+                            {t('detail.score')}: {candidate.performanceScore || 0}/100
+                        </span>
+                    </div>
                 </header>
                 <main className="p-6 overflow-y-auto space-y-8 flex-1">
                     <div>
                         <h3 className="font-semibold text-xl border-b pb-2 mb-3">{t('detail.profile_summary')}</h3>
-                        <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{candidate.summary && candidate.summary !== 'N/A' ? candidate.summary : <span className="italic text-gray-500">{t('detail.no_summary')}</span>}</p>
+                        <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-base">{candidate.summary && candidate.summary !== 'N/A' ? candidate.summary : <span className="italic text-gray-500">{t('detail.no_summary')}</span>}</p>
                     </div>
                     {(hasHardSkills || hasSoftSkills) && (
                     <div>
@@ -156,6 +177,28 @@ export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate,
                         </div>
                     </div>
                     )}
+
+                    {hasHardSkills && (
+                        <div>
+                            <h3 className="font-semibold text-xl border-b pb-2 mb-3">{t('detail.skills_chart')}</h3>
+                            {skillsData.length > 2 ? (
+                                <div className="w-full h-96">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <RadarChart cx="50%" cy="50%" outerRadius="80%" data={skillsData}>
+                                        <PolarGrid />
+                                        <PolarAngleAxis dataKey="subject" tick={{ fill: 'currentColor', fontSize: 14 }} />
+                                        <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                                        <Radar name={candidate.name} dataKey="value" stroke="#ec4899" fill="#ec4899" fillOpacity={0.6} />
+                                        <Tooltip />
+                                    </RadarChart>
+                                </ResponsiveContainer>
+                                </div>
+                            ) : (
+                                <p className="italic text-gray-500 dark:text-gray-400">{t('detail.not_enough_skills_for_chart')}</p>
+                            )}
+                        </div>
+                    )}
+                    
                     {candidate.experience?.length > 0 && (
                     <div>
                         <h3 className="font-semibold text-xl border-b pb-2 mb-4">{t('detail.work_experience')}</h3>
@@ -164,7 +207,7 @@ export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate,
                             <div key={i}>
                                 <h4 className="font-bold text-lg">{exp.title || t('common.title_not_available')}</h4>
                                 <p className="text-gray-600 dark:text-gray-400 font-medium">{exp.company || t('common.company_not_available')} &bull; <span className="italic">{exp.dates || t('common.dates_not_available')}</span></p>
-                                <p className="text-sm text-gray-700 dark:text-gray-300 mt-2 whitespace-pre-line">{exp.description || <span className="italic text-gray-500">{t('detail.no_description')}</span>}</p>
+                                <p className="text-base text-gray-700 dark:text-gray-300 mt-2 whitespace-pre-line">{exp.description || <span className="italic text-gray-500">{t('detail.no_description')}</span>}</p>
                             </div>
                         ))}
                         </div>
