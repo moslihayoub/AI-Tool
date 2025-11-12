@@ -422,7 +422,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
             )}
 
             <div className="mt-8">
-                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">{t('dashboard.candidate_profiles', {count: filteredCandidates.length})}</h3>
+                <h3 className="text-lg font-semibold text-gray-500 dark:text-gray-400 mb-4">{t('dashboard.candidate_profiles', {count: filteredCandidates.length})}</h3>
                  {filteredCandidates.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {filteredCandidates.map(candidate => (

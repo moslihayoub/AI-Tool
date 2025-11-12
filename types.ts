@@ -1,5 +1,7 @@
 // This file contains shared type definitions for the application.
-import type React from 'react';
+// FIX: Changed 'import type React' to 'import React' to ensure that React's global JSX namespace is loaded before augmentation.
+// This prevents overwriting the default intrinsic elements and fixes errors about properties like 'div' or 'svg' not existing on JSX.IntrinsicElements.
+import React from 'react';
 
 // FIX: Moved global type definition for 'dotlottie-wc' custom element here.
 // This is a better location for type definitions and augmentations to avoid overwriting React's default intrinsic elements.
