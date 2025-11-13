@@ -3,6 +3,7 @@ import * as React from 'react';
 import { Icon } from './icons';
 import { View } from '../types';
 import { useTranslation } from '../i18n';
+import { logoDark, logoIcon, logoLight } from '../assets';
 
 interface SidebarProps {
   currentView: View;
@@ -20,6 +21,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, i
     { id: 'upload', label: t('sidebar.upload'), icon: 'upload' },
     { id: 'dashboard', label: t('sidebar.dashboard'), icon: 'dashboard' },
     { id: 'favorites', label: t('sidebar.favorites'), icon: 'heart' },
+    { id: 'compare', label: t('sidebar.compare'), icon: 'compare' },
     { id: 'settings', label: t('sidebar.settings'), icon: 'settings' },
   ];
 
@@ -37,8 +39,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, i
       <aside className={`${sidebarClasses} md:relative md:translate-x-0 transform ${mobileTransformClasses}`}>
         <div className={`p-4 h-16 border-b border-gray-200 dark:border-gray-800 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
           <div className={`flex items-center gap-2 overflow-hidden transition-all duration-300 ${isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'}`}>
-            <Icon name="bot" className="w-8 h-8 text-primary-600 flex-shrink-0"/>
-            <h1 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-primary whitespace-nowrap">HR Auto Analyzer</h1>
+            <img src={logoLight} alt="ParseLIQ HR" className="h-9 dark:hidden" />
+            <img src={logoDark} alt="ParseLIQ HR" className="h-9 hidden dark:block" />
           </div>
           
           <button onClick={() => setIsCollapsed(!isCollapsed)} className="hidden md:block p-1 text-gray-500 hover:text-gray-200">
@@ -69,8 +71,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, i
             </button>
           ))}
         </nav>
-        <footer className={`p-4 border-t border-gray-200 dark:border-gray-800 ${isCollapsed ? 'text-center' : ''}`}>
-           <p className={`text-xs text-gray-500 dark:text-gray-400 transition-opacity duration-200 ${isCollapsed ? 'opacity-0 w-0 h-0' : 'opacity-100'}`}>
+        <footer className={`p-4 border-t border-gray-200 dark:border-gray-800 flex items-center gap-2 ${isCollapsed ? 'justify-center' : ''}`}>
+           <img src={logoIcon} alt="ParseLIQ HR Icon" className="w-6 h-6"/>
+           <p className={`text-sm text-gray-500 dark:text-gray-400 transition-opacity duration-200 ${isCollapsed ? 'opacity-0 w-0 h-0' : 'opacity-100'}`}>
               {t('sidebar.footer')}
             </p>
         </footer>

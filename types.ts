@@ -1,10 +1,5 @@
-// This file contains shared type definitions for the application.
 
-// FIX: To resolve widespread JSX intrinsic element type errors, imported React and moved the
-// JSX augmentation for 'dotlottie-wc' here. This ensures that React's default types are
-// loaded and augmented correctly before any component renders.
-// FIX: Changed to namespace import to correctly resolve `React.DetailedHTMLProps`.
-import * as React from 'react';
+// This file contains shared type definitions for the application.
 
 declare global {
   namespace JSX {
@@ -12,16 +7,24 @@ declare global {
       'dotlottie-wc': React.DetailedHTMLProps<
         React.HTMLAttributes<HTMLElement> & {
           src?: string;
-          // FIX: Changed prop name to `autoPlay` to align with React's camelCase convention for attributes.
-          autoPlay?: boolean;
+          autoplay?: boolean;
           loop?: boolean;
         },
         HTMLElement
       >;
     }
   }
+
+  interface AIStudio {
+    getAuthenticatedUser: () => Promise<User>;
+  }
+
+  interface Window {
+    aistudio?: AIStudio;
+  }
 }
 
+// This file contains shared type definitions for the application.
 export interface CVFile {
   id: string;
   file: File;
@@ -74,22 +77,10 @@ export interface ChatMessage {
     text: string;
 }
 
-export type View = 'upload' | 'dashboard' | 'favorites' | 'settings';
+export type View = 'upload' | 'dashboard' | 'favorites' | 'settings' | 'compare';
 export type Theme = 'light' | 'dark' | 'system';
 
 export interface User {
   id: string;
   email: string;
-}
-
-declare global {
-  // FIX: Moved AIStudio interface into declare global to resolve module conflicts.
-  interface AIStudio {
-    getAuthenticatedUser: () => Promise<User>;
-  }
-
-  interface Window {
-    // FIX: Use the consistent AIStudio interface. This resolves subsequent property declaration errors.
-    aistudio?: AIStudio;
-  }
 }

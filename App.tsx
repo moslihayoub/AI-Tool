@@ -1,9 +1,29 @@
 // FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
 import * as React from 'react';
+
+// FIX: Add global JSX type definition for the 'dotlottie-wc' custom element.
+// This is placed in the main App.tsx file to ensure it is recognized by the TypeScript compiler
+// for all components, resolving issues where the declaration in a .ts file was not being applied.
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'dotlottie-wc': React.DetailedHTMLProps<
+        React.HTMLAttributes<HTMLElement> & {
+          src?: string;
+          autoplay?: boolean;
+          loop?: boolean;
+        },
+        HTMLElement
+      >;
+    }
+  }
+}
+
 import { Sidebar } from './components/Sidebar';
 import { UploadView } from './components/UploadView';
 import { DashboardView } from './components/DashboardView';
 import { CandidateDetailView } from './components/CandidateDetailView';
+import { CompareView } from './components/CompareView';
 import { AnalysisLoader } from './components/AnalysisLoader';
 import { SettingsView } from './components/SettingsView';
 import { QuotaModal } from './components/QuotaModal';
@@ -11,6 +31,7 @@ import { CVFile, View, CandidateProfile, Theme, User } from './types';
 import { parseCvContent } from './services/geminiService';
 import { Icon } from './components/icons';
 import { LanguageProvider, useTranslation } from './i18n';
+import { logoDark, logoLight } from './assets';
 
 const dummyProfiles: Omit<CandidateProfile, 'id' | 'fileName' | 'analysisDuration'>[] = [
   {
@@ -154,6 +175,15 @@ function AppContent() {
 
     const [view, setView] = React.useState<View>('upload');
     const [selectedProfileId, setSelectedProfileId] = React.useState<string | null>(null);
+    const [comparisonList, setComparisonList] = React.useState<string[]>(() => {
+        try {
+            const saved = localStorage.getItem('comparisonList');
+            return saved ? JSON.parse(saved) : [];
+        } catch (error) {
+            console.error("Failed to load comparison list from localStorage", error);
+            return [];
+        }
+    });
     const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = React.useState(false);
     const [storageError, setStorageError] = React.useState<string | null>(null);
@@ -305,6 +335,14 @@ function AppContent() {
         }
     }, [favorites]);
 
+    React.useEffect(() => {
+        try {
+            localStorage.setItem('comparisonList', JSON.stringify(comparisonList));
+        } catch (error) {
+            console.error("Failed to save comparison list from localStorage", error);
+        }
+    }, [comparisonList]);
+
      React.useEffect(() => {
         try {
             localStorage.setItem('isDummyDataActive', String(isDummyDataActive));
@@ -322,6 +360,14 @@ function AppContent() {
     const favoriteProfiles = React.useMemo((): CandidateProfile[] => {
         return candidateProfiles.filter(p => favorites.includes(p.id));
     }, [candidateProfiles, favorites]);
+    
+    const comparisonProfiles = React.useMemo((): (CandidateProfile | undefined)[] => {
+        return [
+            candidateProfiles.find(p => p.id === comparisonList[0]),
+            candidateProfiles.find(p => p.id === comparisonList[1])
+        ];
+    }, [candidateProfiles, comparisonList]);
+
 
     const handleAddFiles = React.useCallback((files: File[]) => {
         setUploadError(null);
@@ -452,10 +498,39 @@ function AppContent() {
         setSelectedProfileId(null);
     };
 
+    const handleBackFromCompare = () => {
+        setView('dashboard');
+        // setComparisonList([]);
+    };
+
+    const handleToggleCompare = (candidateId: string) => {
+        // This is a special call from the header button to navigate
+        if (candidateId === '' && comparisonList.length === 2) {
+            setView('compare');
+            return;
+        }
+
+        setComparisonList(prev => {
+            if (prev.includes(candidateId)) {
+                return prev.filter(id => id !== candidateId);
+            }
+            if (prev.length < 2) {
+                const newList = [...prev, candidateId];
+                if (newList.length === 2) {
+                    // Automatically navigate to compare view when 2 are selected
+                    setView('compare');
+                }
+                return newList;
+            }
+            return prev; // Don't add if already 2
+        });
+    };
+
     const handleReset = () => {
         // Confirmation is now handled within the components.
         setCvFiles([]);
         setFavorites([]);
+        setComparisonList([]);
         setSelectedProfileId(null);
         setView('upload');
         setIsDummyDataActive(false);
@@ -464,6 +539,7 @@ function AppContent() {
         localStorage.removeItem('isDummyDataActive');
         localStorage.removeItem('analysisOperationUsage');
         localStorage.removeItem('specialUser');
+        localStorage.removeItem('comparisonList');
         setAnalysisLimit(prev => ({...prev, count: 0}));
         setStorageError(null);
         setAnalysisSummaryMessage(null);
@@ -544,9 +620,9 @@ function AppContent() {
             case 'upload':
                 return <UploadView cvFiles={cvFiles} onAddFiles={handleAddFiles} onStartAnalysis={handleStartAnalysis} onClearFile={handleClearFile} onClearAllFiles={handleReset} isAnalyzing={isAnalyzing} storageError={storageError} isOwner={isOwner} analysisLimit={analysisLimit} limitError={limitError} uploadLimit={isOwner ? Infinity : UPLOAD_SELECTION_LIMIT} />;
             case 'dashboard':
-                return <DashboardView candidates={candidateProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} setSearchQuery={() => {}} />;
+                return <DashboardView candidates={candidateProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} setSearchQuery={() => {}} comparisonList={comparisonList} onToggleCompare={handleToggleCompare} />;
             case 'favorites':
-                return <DashboardView candidates={favoriteProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} setSearchQuery={() => {}} isFavoritesView />;
+                return <DashboardView candidates={favoriteProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} setSearchQuery={() => {}} isFavoritesView comparisonList={comparisonList} onToggleCompare={handleToggleCompare} />;
             case 'settings':
                 return <SettingsView 
                             theme={theme} 
@@ -557,20 +633,17 @@ function AppContent() {
                             isOwner={isOwner}
                             onDisconnect={handleDisconnect}
                         />;
+            case 'compare':
+                 const [profile1, profile2] = comparisonProfiles;
+                 return <CompareView profile1={profile1} profile2={profile2} onBack={handleBackFromCompare} />;
             default:
                 return <UploadView cvFiles={cvFiles} onAddFiles={handleAddFiles} onStartAnalysis={handleStartAnalysis} onClearFile={handleClearFile} onClearAllFiles={handleReset} isAnalyzing={isAnalyzing} storageError={storageError} isOwner={isOwner} analysisLimit={analysisLimit} limitError={limitError} uploadLimit={isOwner ? Infinity : UPLOAD_SELECTION_LIMIT} />;
         }
     };
 
     return (
-        <div className="relative h-screen text-gray-800 dark:text-gray-200">
-            <div
-                className={`absolute inset-0 bg-200% animate-gradient-flow ${isDarkMode ? 'bg-animated-gradient' : 'bg-animated-gradient-light'}`}
-                aria-hidden="true"
-            />
-            {isDarkMode && <div className="absolute inset-0 bg-gray-900 opacity-60" aria-hidden="true" />}
-
-            <div className="relative flex h-full w-full">
+        <div className="h-screen text-gray-800 dark:text-gray-200 bg-white dark:bg-black">
+            <div className="flex h-full w-full">
                 {isAnalyzing && <AnalysisLoader progress={analysisProgress} total={analysisTotal} startTime={analysisStartTime} />}
                 {isQuotaModalOpen && <QuotaModal onClose={() => setIsQuotaModalOpen(false)} onConnect={handleConnect} />}
 
@@ -584,10 +657,13 @@ function AppContent() {
                 />
                 <div className="flex-1 flex flex-col overflow-hidden">
                     <header className="md:hidden flex items-center justify-between p-4 border-b dark:border-gray-800 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+                        <>
+                            <img src={logoLight} alt="ParseLIQ HR Logo" className="h-8 w-auto dark:hidden" />
+                            <img src={logoDark} alt="ParseLIQ HR Logo" className="h-8 w-auto hidden dark:block" />
+                        </>
                         <button onClick={() => setIsMobileSidebarOpen(true)}>
                             <Icon name="menu" className="w-6 h-6"/>
                         </button>
-                        <h1 className="text-lg font-bold text-transparent bg-clip-text bg-gradient-primary">HR Analyzer</h1>
                     </header>
                     {storageError ? (
                         <div className="p-4 mx-4 sm:mx-8 mt-4 sm:mt-8 bg-red-100 dark:bg-red-900/50 border-l-4 border-red-500 text-red-800 dark:text-red-200 rounded-r-lg flex justify-between items-center" role="alert">
@@ -611,7 +687,7 @@ function AppContent() {
                             </button>
                         </div>
                     ) : null}
-                    <main className="flex-1 overflow-y-auto bg-white/70 dark:bg-gray-900/70 backdrop-blur-lg">
+                    <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900">
                         {renderContent()}
                     </main>
                 </div>

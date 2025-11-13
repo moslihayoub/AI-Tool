@@ -1,6 +1,6 @@
 {
-    "name": "HR Auto Analyzer",
-    "short_name": "HR Analyzer",
+    "name": "ParseLIQ HR",
+    "short_name": "ParseLIQ HR",
     "description": "An AI-powered application for bulk resume management and analysis, featuring advanced filtering, interactive dashboards, and a contextual AI assistant to streamline the recruitment process.",
     "start_url": ".",
     "display": "standalone",

@@ -70,6 +70,12 @@ export const Icon: React.FC<IconProps> = ({ name, ...props }) => {
         return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" {...props}><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zM12.04 21.08c-1.52 0-3-.38-4.32-1.11L4.45 21l1.13-3.3c-.8-1.4-1.28-3.01-1.28-4.67 0-4.9 3.98-8.88 8.88-8.88s8.88 3.98 8.88 8.88-3.98 8.88-8.88 8.88zm4.83-6.14c-.27-.13-1.62-.8-1.87-.89s-.43-.13-.61.13c-.18.27-.71.89-.87 1.08-.16.18-.32.21-.59.08s-1.13-.42-2.15-1.33c-.8-.71-1.34-1.59-1.5-1.87s-.16-.43.06-.56c.21-.15.45-.4.61-.61s.21-.27.32-.45c.1-.18.05-.34-.02-.47s-.61-1.45-.83-2c-.22-.54-.45-.47-.61-.47h-.54c-.18 0-.48.06-.73.32s-.98.96-.98 2.34c0 1.38 1 2.71 1.13 2.89s1.98 3.01 4.8 4.25c.67.29 1.2.47 1.6.6c.68.21 1.3.18 1.78.11.52-.08 1.62-.66 1.85-1.3c.22-.63.22-1.18.16-1.3s-.18-.21-.45-.34z"/></svg>;
     case 'log-out':
       return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>;
+    case 'compare':
+      return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M8 17H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="12 15 9 12 12 9"/><line x1="15" y1="12" x2="9" y2="12"/><path d="M16 7h4a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-4"/><polyline points="12 9 15 12 12 15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>;
+    case 'copy':
+      return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg>;
+    case 'mail':
+      return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>;
     default:
       return null;
   }

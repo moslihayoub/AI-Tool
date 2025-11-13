@@ -27,21 +27,22 @@ export const AnalysisLoader: React.FC<AnalysisLoaderProps> = ({ progress, total,
 
   return (
     <div className="fixed inset-0 z-50 text-white">
-      <div className="absolute inset-0 bg-animated-gradient bg-200% animate-gradient-flow" aria-hidden="true" />
+      <div className="absolute inset-0 bg-white dark:bg-black" aria-hidden="true" />
       <div className="absolute inset-0 bg-gray-900 opacity-70" aria-hidden="true" />
       <div className="relative flex flex-col items-center justify-center h-full w-full">
-        <dotlottie-wc src="https://lottie.host/f65b0508-f3b0-46d1-9a76-2974759efcb3/uA68bKWt6J.lottie" style={{ width: '300px', height: '300px' }} autoPlay loop></dotlottie-wc>
-        <h2 className="text-3xl font-bold mt-4">{t('analysis.title')}</h2>
+        {/* FIX: Changed autoPlay to autoplay to align with web component standards. */}
+        <dotlottie-wc src="https://lottie.host/f65b0508-f3b0-46d1-9a76-2974759efcb3/uA68bKWt6J.lottie" style={{ width: '300px', height: '300px' }} autoplay loop></dotlottie-wc>
+        <h2 className="text-3xl font-bold font-display mt-4">{t('analysis.title')}</h2>
         <p className="text-gray-300 mt-2">{t('analysis.subtitle')}</p>
         
         <div className="w-full max-w-md mt-8 px-4">
           <div className="flex justify-between items-center mb-2 text-lg">
               <span className="font-bold">{t('analysis.progress_cvs', { progress, total })}</span>
-              <span className="font-bold bg-clip-text text-transparent bg-gradient-primary">{percentage}%</span>
+              <span className="font-bold bg-clip-text text-transparent bg-gradient-button">{percentage}%</span>
           </div>
           <div className="w-full bg-gray-700/50 rounded-full h-4">
             <div 
-              className="bg-gradient-primary h-4 rounded-full transition-all duration-500 ease-out" 
+              className="bg-gradient-button h-4 rounded-full transition-all duration-500 ease-out" 
               style={{ width: `${percentage}%` }}
             ></div>
           </div>

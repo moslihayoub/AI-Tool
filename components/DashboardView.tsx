@@ -13,6 +13,8 @@ interface DashboardViewProps {
   favorites: string[];
   onToggleFavorite: (candidateId: string) => void;
   isFavoritesView?: boolean;
+  comparisonList: string[];
+  onToggleCompare: (candidateId: string) => void;
 }
 
 const COLORS = ['#3b82f6', '#ec4899', '#f59e0b', '#10b981', '#8b5cf6', '#ef4444'];
@@ -31,23 +33,48 @@ const getScoreEmoji = (score: number): string => {
     return '';
 };
 
-const CandidateCard: React.FC<{ candidate: CandidateProfile; onSelect: () => void; isFavorite: boolean; onToggleFavorite: (e: React.MouseEvent) => void; }> = ({ candidate, onSelect, isFavorite, onToggleFavorite }) => {
+const CandidateCard: React.FC<{ 
+    candidate: CandidateProfile; 
+    onSelect: () => void; 
+    isFavorite: boolean; 
+    onToggleFavorite: (e: React.MouseEvent) => void;
+    isInCompare: boolean;
+    isCompareDisabled: boolean;
+    onToggleCompare: (e: React.MouseEvent) => void;
+}> = ({ candidate, onSelect, isFavorite, onToggleFavorite, isInCompare, isCompareDisabled, onToggleCompare }) => {
     const { t } = useTranslation();
     
     return (
-        <div onClick={onSelect} className={`relative bg-white dark:bg-gray-800 p-5 rounded-xl border shadow-md hover:shadow-xl hover:border-primary-500 cursor-pointer transition-all hover:scale-105 duration-200 flex flex-col justify-between min-h-[190px] ${isFavorite ? 'ring-2 ring-secondary-500 dark:ring-secondary-400' : 'dark:border-gray-700'}`}>
+        <div onClick={onSelect} className={`relative bg-white dark:bg-gray-800 p-5 rounded-xl border shadow-md hover:shadow-xl hover:border-pink-500 cursor-pointer transition-all hover:scale-[1.03] duration-200 flex flex-col justify-between min-h-[220px] ${isInCompare ? 'ring-2 ring-primary-500 dark:ring-primary-400' : isFavorite ? 'ring-2 ring-secondary-500 dark:ring-secondary-400' : 'dark:border-gray-700'}`}>
             <div>
-                <h3 className="font-bold text-lg text-primary-700 dark:text-primary-300">{candidate.name && candidate.name !== 'N/A' ? candidate.name : t('common.name_not_available')}</h3>
+                <h3 className="font-bold font-display text-lg text-gray-800 dark:text-gray-100">{candidate.name && candidate.name !== 'N/A' ? candidate.name : t('common.name_not_available')}</h3>
                 
-                <div className="flex justify-between items-center mt-2">
-                     <button 
-                        onClick={onToggleFavorite} 
-                        className="p-1.5 rounded-full hover:bg-secondary-100 dark:hover:bg-gray-700 transition-colors z-10"
-                        title={isFavorite ? t('detail.remove_from_favorites') : t('detail.add_to_favorites')}
-                        aria-label="Toggle favorite"
-                    >
-                        <Icon name="heart" className={`w-6 h-6 ${isFavorite ? 'fill-secondary-500 text-secondary-500' : 'text-gray-400'}`} />
-                    </button>
+                <div className="flex justify-between items-start mt-2">
+                     <div className="flex items-start gap-3">
+                        <button 
+                            onClick={onToggleFavorite} 
+                            className="flex flex-col items-center text-center text-gray-500 dark:text-gray-400 hover:text-secondary-500 dark:hover:text-secondary-400 transition-colors z-10 w-14"
+                            title={isFavorite ? t('detail.remove_from_favorites') : t('detail.add_to_favorites')}
+                            aria-label="Toggle favorite"
+                        >
+                            <div className={`p-1.5 rounded-full ${isFavorite ? '' : 'hover:bg-secondary-100 dark:hover:bg-gray-700'}`}>
+                                <Icon name="heart" className={`w-5 h-5 ${isFavorite ? 'fill-secondary-500 text-secondary-500' : 'text-gray-400'}`} />
+                            </div>
+                            <span className="text-xs mt-1">{t('dashboard.card.favorite')}</span>
+                        </button>
+                         <button 
+                            onClick={onToggleCompare} 
+                            disabled={isCompareDisabled}
+                            className={`flex flex-col items-center text-center transition-colors z-10 w-14 ${isInCompare ? 'text-primary-600 dark:text-primary-300' : 'text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-300'} disabled:opacity-50 disabled:cursor-not-allowed`}
+                            title={isInCompare ? t('dashboard.compare.remove') : isCompareDisabled ? t('dashboard.compare.limit_reached') : t('dashboard.compare.add')}
+                            aria-label="Toggle compare"
+                        >
+                            <div className={`p-1.5 rounded-full ${isInCompare ? 'bg-primary-100 dark:bg-primary-900/50' : 'hover:bg-primary-100 dark:hover:bg-gray-700'}`}>
+                                <Icon name="compare" className={`w-5 h-5`} />
+                            </div>
+                            <span className="text-xs mt-1">{t('dashboard.card.compare')}</span>
+                        </button>
+                    </div>
 
                     <div className="flex items-center gap-2 flex-shrink-0">
                         {isProfileIncomplete(candidate) && (
@@ -59,15 +86,15 @@ const CandidateCard: React.FC<{ candidate: CandidateProfile; onSelect: () => voi
                             </div>
                         )}
                          <div className="flex items-center gap-1.5">
-                           <span className="text-2xl">{getScoreEmoji(candidate.performanceScore)}</span>
-                           <span className={`text-sm font-bold px-3 py-1 rounded-full ${candidate.performanceScore > 75 ? 'bg-green-100 text-green-800' : candidate.performanceScore > 50 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+                           <span className="text-3xl">{getScoreEmoji(candidate.performanceScore)}</span>
+                           <span className={`text-base font-bold px-3 py-1.5 rounded-full ${candidate.performanceScore > 75 ? 'bg-green-100 text-green-800' : candidate.performanceScore > 50 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
                              {candidate.performanceScore || 0}/100
                            </span>
                         </div>
                     </div>
                 </div>
 
-                <p className="text-base text-gray-600 dark:text-gray-400 truncate mt-2">{candidate.jobCategory && candidate.jobCategory !== 'N/A' ? candidate.jobCategory : t('common.category_not_available')}</p>
+                <p className="text-base font-semibold text-gray-600 dark:text-gray-400 truncate mt-2">{candidate.jobCategory && candidate.jobCategory !== 'N/A' ? candidate.jobCategory : t('common.category_not_available')}</p>
                 <div className="text-base text-gray-500 dark:text-gray-400 flex items-center justify-between mt-1">
                   <span className="truncate pr-2">{candidate.location && candidate.location !== 'N/A' ? candidate.location : t('common.location_not_available')}</span>
                   <span className="font-medium flex-shrink-0">{t('dashboard.experience_years', {count: candidate.totalExperienceYears || 0})}</span>
@@ -76,7 +103,7 @@ const CandidateCard: React.FC<{ candidate: CandidateProfile; onSelect: () => voi
             <div className="mt-4">
                 <div className="flex flex-wrap gap-2">
                     {(candidate.skills.hard || []).slice(0, 3).map(skill => (
-                        <span key={skill} className="text-sm bg-gradient-to-r from-primary-600 to-fuchsia-500 text-white px-3 py-1 rounded-full shadow-sm">{skill}</span>
+                        <span key={skill} className="text-sm bg-gradient-to-r from-pink-500 to-red-600 text-white px-3 py-1 rounded-full shadow-sm">{skill}</span>
                     ))}
                 </div>
                 {candidate.analysisDuration && <p className="text-xs text-right text-gray-400 mt-2">{t('common.analyzed_in', {duration: (candidate.analysisDuration / 1000).toFixed(1)})}</p>}
@@ -107,7 +134,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
         return (
             <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border dark:border-gray-600 shadow-lg">
-                <p className="font-bold">{label || payload[0].name}</p>
+                <p className="font-bold">{label || payload[0].payload.name}</p>
                 <p className="text-sm" style={{ color: payload[0].stroke || payload[0].fill || payload[0].props?.fill }}>{`${payload[0].name}: ${payload[0].value}`}</p>
             </div>
         );
@@ -121,8 +148,8 @@ const EmptyChartState: React.FC = () => {
         <div className="flex flex-col items-center justify-center h-[300px] text-gray-500">
             <dotlottie-wc
                 src="https://lottie.host/89c66344-281d-4450-91d3-4574a47fec47/31ogoyP4Mh.lottie"
-                // FIX: Changed `autoplay` to `autoPlay` to match the updated type definition.
-                autoPlay
+                // FIX: Changed autoPlay back to autoplay to align with web component standards.
+                autoplay
                 loop
                 style={{ width: '120px', height: '120px' }}
             ></dotlottie-wc>
@@ -131,12 +158,21 @@ const EmptyChartState: React.FC = () => {
     );
 };
 
-export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSelectCandidate, onReset, favorites, onToggleFavorite, isFavoritesView = false }) => {
+export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSelectCandidate, onReset, favorites, onToggleFavorite, isFavoritesView = false, comparisonList, onToggleCompare }) => {
     const { t } = useTranslation();
     const [selectedJobCategories, setSelectedJobCategories] = React.useState<string[]>([]);
     const [isFilterOpen, setIsFilterOpen] = React.useState(false);
     const [confirmReset, setConfirmReset] = React.useState(false);
     const filterRef = React.useRef<HTMLDivElement>(null);
+
+    const shortenJobCategory = (category: string) => {
+        const mapping: { [key: string]: string } = {
+            'Product Design': 'Design',
+            'Développeur Full-Stack': 'Full-Stack',
+            'QA Automation': 'QA',
+        };
+        return mapping[category] || category;
+    };
 
     const allJobCategories = React.useMemo(() => {
         const categories = new Set(candidates.map(c => c.jobCategory).filter(c => c && c !== 'N/A'));
@@ -194,7 +230,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
             acc[key] = (acc[key] || 0) + 1;
             return acc;
         }, {});
-        return Object.entries(freqMap).map(([name, value]) => ({ name, value }));
+        return Object.entries(freqMap).map(([name, value]) => ({ name: shortenJobCategory(name), value }));
     }, [filteredCandidates]);
     
     const experienceDistribution = React.useMemo(() => {
@@ -220,7 +256,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         }, {} as Record<string, { totalScore: number, count: number }>);
 
         return Object.entries(categoryScores).map(([name, data]) => ({
-            name, averageScore: data.count > 0 ? Math.round(data.totalScore / data.count) : 0
+            name: shortenJobCategory(name), averageScore: data.count > 0 ? Math.round(data.totalScore / data.count) : 0
         })).sort((a, b) => b.averageScore - a.averageScore);
     }, [filteredCandidates]);
 
@@ -228,14 +264,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         return (
             <div className="p-4 sm:p-8 space-y-8">
                 <header>
-                    <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{t('dashboard.title')}</h2>
+                    <h2 className="text-3xl font-bold font-display text-gray-800 dark:text-gray-100">{t('dashboard.title')}</h2>
                     <p className="text-gray-500 dark:text-gray-400 mt-1">{t('dashboard.subtitle')}</p>
                 </header>
                 <div className="flex flex-col items-center justify-center min-h-[calc(100vh-15rem)] text-center">
+                    {/* FIX: Changed autoPlay to autoplay to align with web component standards. */}
                     <dotlottie-wc
                         src="https://lottie.host/89c66344-281d-4450-91d3-4574a47fec47/31ogoyP4Mh.lottie"
-                        // FIX: Changed `autoplay` to `autoPlay` to match the updated type definition.
-                        autoPlay
+                        autoplay
                         loop
                         style={{ width: '200px', height: '200px' }}
                     ></dotlottie-wc>
@@ -265,11 +301,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         <div className="p-4 sm:p-8 space-y-8">
             <header className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                 <div>
-                    <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{isFavoritesView ? t('dashboard.favorites_title') : t('dashboard.title')}</h2>
+                    <h2 className="text-3xl font-bold font-display text-gray-800 dark:text-gray-100">{isFavoritesView ? t('dashboard.favorites_title') : t('dashboard.title')}</h2>
                     {!isFavoritesView && <p className="text-gray-500 dark:text-gray-400 mt-1">{t('dashboard.subtitle')}</p>}
                 </div>
                 {!isFavoritesView && (
-                 <div className="flex items-center gap-2">
+                 <div className="flex items-center gap-2 flex-wrap">
                     <div className="relative" ref={filterRef}>
                         <button onClick={() => setIsFilterOpen(!isFilterOpen)} className="flex items-center gap-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-semibold px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors w-56 justify-between">
                             <span className="truncate">
@@ -310,17 +346,25 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                             </div>
                         )}
                     </div>
-                    <button onClick={exportToCsv} className="flex items-center gap-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-semibold px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
-                        <Icon name="export" className="w-5 h-5" /> {t('common.export')}
+                     <button
+                        onClick={() => onToggleCompare('')} // This is a trick to trigger the view change
+                        disabled={comparisonList.length !== 2}
+                        className="flex items-center gap-2 bg-primary-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    >
+                        <Icon name="compare" className="w-5 h-5" />
+                        <span>{t('dashboard.compare.cta', { count: comparisonList.length })}</span>
+                    </button>
+                    <button onClick={exportToCsv} title={t('common.export')} className="flex items-center justify-center gap-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-semibold px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors w-11 h-11 sm:w-auto sm:h-auto">
+                        <Icon name="export" className="w-5 h-5" /> <span className="hidden sm:inline">{t('common.export')}</span>
                     </button>
                     <div className="relative">
-                        <button onClick={handleResetClick} className={`flex items-center gap-2 font-semibold px-4 py-2 rounded-lg transition-colors ${
+                        <button onClick={handleResetClick} title={t('common.reset')} className={`flex items-center justify-center gap-2 font-semibold px-4 py-2 rounded-lg transition-colors w-11 h-11 sm:w-auto sm:h-auto ${
                             confirmReset 
                             ? 'bg-yellow-500 text-white hover:bg-yellow-600' 
                             : 'bg-red-600 text-white hover:bg-red-700'
                         }`}>
                             <Icon name="refresh-cw" className="w-5 h-5" />
-                            {confirmReset ? t('common.reset_confirm_action') : t('common.reset')}
+                            <span className="hidden sm:inline">{confirmReset ? t('common.reset_confirm_action') : t('common.reset')}</span>
                         </button>
                         {confirmReset && (
                             <div className="absolute bottom-full right-0 mb-2 w-max max-w-xs bg-gray-900 text-white text-xs rounded py-2 px-3 opacity-100 transition-opacity pointer-events-none z-10 shadow-lg text-center dark:bg-gray-700">
@@ -335,10 +379,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
             {!isFavoritesView && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                  <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-lg">
-                    <h3 className="font-semibold mb-4 text-lg">{t('dashboard.charts.perf_by_job')}</h3>
+                    <h3 className="font-semibold font-display mb-4 text-lg">{t('dashboard.charts.perf_by_job')}</h3>
                     {performanceByJobCategory.length > 0 ? (
                         <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={performanceByJobCategory} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                            <BarChart data={performanceByJobCategory} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                                 <defs>
                                     <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
@@ -349,8 +393,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                                 <XAxis dataKey="name" tick={{fontSize: 12}} />
                                 <YAxis domain={[0, 100]}/>
                                 <Tooltip content={<CustomTooltip />} cursor={{fill: 'rgba(236, 72, 153, 0.1)'}}/>
-                                <Bar dataKey="averageScore" fill="url(#colorScore)" name={t('dashboard.charts.avg_score')} barSize={40}>
-                                <LabelList dataKey="averageScore" position="top" style={{ fill: 'currentColor' }} />
+                                <Bar dataKey="averageScore" fill="url(#colorScore)" name={t('dashboard.charts.avg_score')} barSize={50}>
+                                <LabelList dataKey="averageScore" position="top" style={{ fill: 'currentColor', fontSize: 12 }} />
                                 </Bar>
                             </BarChart>
                         </ResponsiveContainer>
@@ -359,12 +403,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                     )}
                 </div>
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-lg">
-                    <h3 className="font-semibold mb-4 text-lg">{t('dashboard.charts.job_distribution')}</h3>
+                    <h3 className="font-semibold font-display mb-4 text-lg">{t('dashboard.charts.job_distribution')}</h3>
                     {jobCategoryDistribution.length > 0 ? (
                         <ResponsiveContainer width="100%" height={300}>
-                            <LineChart data={jobCategoryDistribution} margin={{ top: 5, right: 20, left: 10, bottom: 60 }}>
+                            <LineChart data={jobCategoryDistribution} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                <XAxis dataKey="name" tick={{fontSize: 12}} angle={-45} textAnchor="end" interval={0} height={70}/>
+                                <XAxis dataKey="name" tick={{fontSize: 12}} interval={0} />
                                 <YAxis allowDecimals={false} />
                                 <Tooltip content={<CustomTooltip />} />
                                 <Legend verticalAlign="top" height={36}/>
@@ -376,10 +420,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                     )}
                 </div>
                  <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-lg">
-                    <h3 className="font-semibold mb-4 text-lg">{t('dashboard.charts.exp_distribution')}</h3>
+                    <h3 className="font-semibold font-display mb-4 text-lg">{t('dashboard.charts.exp_distribution')}</h3>
                     {filteredCandidates.length > 0 ? (
                         <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={experienceDistribution} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                            <BarChart data={experienceDistribution} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                                 <defs>
                                     <linearGradient id="colorExp" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
@@ -388,10 +432,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                 <XAxis dataKey="name" tick={{fontSize: 12}}/>
-                                <YAxis />
+                                <YAxis allowDecimals={false} />
                                 <Tooltip content={<CustomTooltip />} cursor={{fill: 'rgba(59, 130, 246, 0.1)'}}/>
                                 <Bar dataKey="count" fill="url(#colorExp)" name={t('dashboard.charts.candidates')} barSize={60}>
-                                <LabelList dataKey="count" position="top" style={{ fill: 'currentColor' }}/>
+                                <LabelList dataKey="count" position="top" style={{ fill: 'currentColor', fontSize: 12 }}/>
                                 </Bar>
                             </BarChart>
                         </ResponsiveContainer>
@@ -400,10 +444,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                     )}
                 </div>
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-lg">
-                    <h3 className="font-semibold mb-4 text-lg">{t('dashboard.charts.location_distribution')}</h3>
+                    <h3 className="font-semibold font-display mb-4 text-lg">{t('dashboard.charts.location_distribution')}</h3>
                     {locationDistribution.length > 0 ? (
                         <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={locationDistribution} layout="vertical" margin={{ top: 5, right: 30, left: 50, bottom: 5 }}>
+                            <BarChart data={locationDistribution} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                                 <defs>
                                     <linearGradient id="colorLoc" x1="0" y1="0" x2="1" y2="0">
                                         <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.8}/>
@@ -411,11 +455,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                                <XAxis type="number" />
-                                <YAxis type="category" dataKey="name" width={100} tick={{fontSize: 12}} />
+                                <XAxis type="number" allowDecimals={false} />
+                                <YAxis type="category" dataKey="name" width={100} tick={{fontSize: 12}} interval={0} />
                                 <Tooltip content={<CustomTooltip />} cursor={{fill: 'rgba(245, 158, 11, 0.1)'}}/>
-                                <Bar dataKey="value" fill="url(#colorLoc)" name={t('dashboard.charts.num_cvs')} barSize={25}>
-                                    <LabelList dataKey="value" position="right" style={{ fill: 'currentColor' }}/>
+                                <Bar dataKey="value" fill="url(#colorLoc)" name={t('dashboard.charts.num_cvs')} barSize={30}>
+                                    <LabelList dataKey="value" position="right" style={{ fill: 'currentColor', fontSize: 12 }}/>
                                 </Bar>
                             </BarChart>
                         </ResponsiveContainer>
@@ -427,26 +471,32 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
             )}
 
             <div className="mt-8">
-                <h3 className="text-lg font-semibold text-gray-500 dark:text-gray-400 mb-4">{t('dashboard.candidate_profiles', {count: filteredCandidates.length})}</h3>
+                <h3 className="text-lg font-semibold font-display text-gray-500 dark:text-gray-400 mb-4">{t('dashboard.candidate_profiles', {count: filteredCandidates.length})}</h3>
                  {filteredCandidates.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {filteredCandidates.map(candidate => (
-                            <CandidateCard 
-                                key={candidate.id} 
-                                candidate={candidate} 
-                                onSelect={() => onSelectCandidate(candidate)} 
-                                isFavorite={favorites.includes(candidate.id)}
-                                onToggleFavorite={(e) => { e.stopPropagation(); onToggleFavorite(candidate.id); }}
-                            />
-                        ))}
+                        {filteredCandidates.map(candidate => {
+                            const isInCompare = comparisonList.includes(candidate.id);
+                            return (
+                                <CandidateCard 
+                                    key={candidate.id} 
+                                    candidate={candidate} 
+                                    onSelect={() => onSelectCandidate(candidate)} 
+                                    isFavorite={favorites.includes(candidate.id)}
+                                    onToggleFavorite={(e) => { e.stopPropagation(); onToggleFavorite(candidate.id); }}
+                                    isInCompare={isInCompare}
+                                    isCompareDisabled={!isInCompare && comparisonList.length >= 2}
+                                    onToggleCompare={(e) => { e.stopPropagation(); onToggleCompare(candidate.id); }}
+                                />
+                            );
+                        })}
                     </div>
                  ) : (
                     isFavoritesView && (
                          <div className="flex flex-col items-center justify-center min-h-[50vh] p-8 text-center">
+                            {/* FIX: Changed autoPlay to autoplay to align with web component standards. */}
                             <dotlottie-wc
                                 src="https://lottie.host/89c66344-281d-4450-91d3-4574a47fec47/31ogoyP4Mh.lottie"
-                                // FIX: Changed `autoplay` to `autoPlay` to match the updated type definition.
-                                autoPlay
+                                autoplay
                                 loop
                                 style={{ width: '200px', height: '200px' }}
                             ></dotlottie-wc>

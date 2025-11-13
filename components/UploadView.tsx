@@ -91,7 +91,7 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
     <div className="p-4 sm:p-8 space-y-8">
         {cvFiles.length === 0 && (
             <header>
-                <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{t('upload.title')}</h2>
+                <h2 className="text-3xl font-bold font-display text-gray-800 dark:text-gray-100">{t('upload.title')}</h2>
                 <p className="text-gray-500 dark:text-gray-400 mt-1">{t('upload.subtitle')}</p>
             </header>
         )}
@@ -127,11 +127,11 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
              {cvFiles.length > 0 && (
                  <div className="space-y-4 lg:order-1">
                     <header>
-                        <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{t('upload.results.title')}</h2>
+                        <h2 className="text-3xl font-bold font-display text-gray-800 dark:text-gray-100">{t('upload.results.title')}</h2>
                         <p className="text-gray-500 dark:text-gray-400 mt-1">{t('upload.results.subtitle')}</p>
                     </header>
                     <div className="flex justify-between items-center flex-wrap gap-4 pt-4">
-                        <h3 className="text-xl font-bold">{t('upload.pending_files.title', { count: cvFiles.length })}</h3>
+                        <h3 className="text-xl font-bold font-display">{t('upload.pending_files.title', { count: cvFiles.length })}</h3>
                         <div className="flex items-center gap-2">
                             <div className="relative">
                                 <button 
@@ -156,7 +156,7 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
                             <button 
                                 onClick={onStartAnalysis} 
                                 disabled={pendingFilesCount === 0 || isAnalyzing || (!isOwner && remainingAnalyses <= 0)}
-                                className="bg-primary-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+                                className="bg-gradient-button text-white font-bold py-2 px-6 rounded-full hover:opacity-90 transition-opacity disabled:bg-none disabled:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                             >
                             {isAnalyzing ? <Icon name="spinner" className="w-5 h-5"/> : <Icon name="check" className="w-5 h-5"/>}
                             <span>{t('upload.pending_files.analyze_button', { count: pendingFilesCount })}</span>
@@ -206,17 +206,18 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
               onClick={onButtonClick}
               className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 flex flex-col items-center justify-center min-h-[450px]
                 ${cvFiles.length > 0 ? 'lg:order-2' : 'col-span-1'}
-                ${isDragActive ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'border-gray-300 dark:border-gray-600 bg-white/30 dark:bg-gray-800/30'}
-                ${isInteractionDisabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:border-primary-400'}`}
+                ${isDragActive ? 'border-pink-500 bg-pink-50 dark:bg-pink-900/20' : 'border-gray-300 dark:border-gray-600 bg-white/30 dark:bg-gray-800/30'}
+                ${isInteractionDisabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:border-pink-400'}`}
                  title={isUploadDisabled ? t('errors.upload_limit_reached') : ''}
             >
                 <input ref={inputRef} type="file" multiple onChange={handleChange} className="hidden" accept=".pdf,.txt,.json,.md,.csv,.doc,.docx,.xls,.xlsx,.ppt,.pptx" disabled={isInteractionDisabled} />
                 
                 <div className="flex flex-col items-center justify-center text-gray-500 dark:text-gray-400">
-                    <dotlottie-wc src="https://lottie.host/05f02365-02dd-4b23-8289-b8d119e5c961/9dwTt6kpl2.lottie" style={{ width: '220px', height: '220px' }} autoPlay loop></dotlottie-wc>
+                    {/* FIX: Changed autoPlay to autoplay to align with web component standards. */}
+                    <dotlottie-wc src="https://lottie.host/05f02365-02dd-4b23-8289-b8d119e5c961/9dwTt6kpl2.lottie" style={{ width: '220px', height: '220px' }} autoplay loop></dotlottie-wc>
                     <div className="text-center">
                         {isDragActive ? (
-                            <p className="text-lg font-semibold text-primary-600">{t('upload.dropzone.release')}</p>
+                            <p className="text-lg font-semibold text-pink-600">{t('upload.dropzone.release')}</p>
                         ) : isInteractionDisabled ? (
                            <p className="text-lg font-semibold text-gray-600 dark:text-gray-400">{t('upload.dropzone.limit_reached_prompt')}</p>
                         ) : (

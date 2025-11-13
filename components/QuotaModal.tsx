@@ -50,9 +50,10 @@ export const QuotaModal: React.FC<QuotaModalProps> = ({ onClose, onConnect }) =>
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 animate-fade-in" role="dialog" aria-modal="true" aria-labelledby="quota-modal-title">
             <div ref={modalRef} className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md m-auto flex flex-col relative animate-scale-up max-h-[95vh] overflow-y-auto">
                 <div className="p-8 pt-12 text-center flex flex-col items-center">
-                    <h2 id="quota-modal-title" className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">{t('quota_modal.title')}</h2>
+                    <h2 id="quota-modal-title" className="text-2xl font-bold font-display text-gray-800 dark:text-gray-100 mb-2">{t('quota_modal.title')}</h2>
                     <div className="my-2">
-                         <dotlottie-wc src="https://lottie.host/352a0ebe-e2b1-4c2a-8e52-ca0386d46cfe/HRzXfUbyWz.lottie" style={{ width: '160px', height: '160px' }} autoPlay loop></dotlottie-wc>
+                         {/* FIX: Changed autoPlay to autoplay to align with web component standards. */}
+                         <dotlottie-wc src="https://lottie.host/352a0ebe-e2b1-4c2a-8e52-ca0386d46cfe/HRzXfUbyWz.lottie" style={{ width: '160px', height: '160px' }} autoplay loop></dotlottie-wc>
                     </div>
                     <p className="text-gray-500 dark:text-gray-400">{t('quota_modal.description')}</p>
                     
@@ -64,7 +65,7 @@ export const QuotaModal: React.FC<QuotaModalProps> = ({ onClose, onConnect }) =>
                                 type="text"
                                 value={userId}
                                 onChange={(e) => setUserId(e.target.value)}
-                                className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 sm:text-sm"
                                 placeholder={t('quota_modal.user_id_placeholder')}
                             />
                         </div>
@@ -75,7 +76,7 @@ export const QuotaModal: React.FC<QuotaModalProps> = ({ onClose, onConnect }) =>
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 sm:text-sm"
                                 placeholder={t('quota_modal.email_placeholder')}
                             />
                         </div>
@@ -85,7 +86,7 @@ export const QuotaModal: React.FC<QuotaModalProps> = ({ onClose, onConnect }) =>
                                 type="checkbox"
                                 checked={rememberMe}
                                 onChange={(e) => setRememberMe(e.target.checked)}
-                                className="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                                className="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500"
                             />
                             <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-900 dark:text-gray-200">{t('quota_modal.remember_me')}</label>
                         </div>
@@ -97,13 +98,13 @@ export const QuotaModal: React.FC<QuotaModalProps> = ({ onClose, onConnect }) =>
                                 <button
                                     type="button"
                                     onClick={onClose}
-                                    className="w-1/2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold py-3 px-4 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:focus:ring-offset-gray-800"
+                                    className="w-1/2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold py-3 px-4 rounded-full hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:focus:ring-offset-gray-800"
                                 >
                                     {t('quota_modal.close')}
                                 </button>
                                 <button
                                     type="submit"
-                                    className="w-1/2 bg-primary-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-primary-700 transition-colors disabled:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800"
+                                    className="w-1/2 bg-gray-900 text-white font-bold py-3 px-4 rounded-full hover:bg-gray-700 transition-colors disabled:bg-none disabled:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-700 dark:focus:ring-offset-gray-800"
                                 >
                                     {t('quota_modal.connect')}
                                 </button>
@@ -111,7 +112,7 @@ export const QuotaModal: React.FC<QuotaModalProps> = ({ onClose, onConnect }) =>
                             <button
                                 type="button"
                                 onClick={handleWhatsAppClick}
-                                className="w-full bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-800"
+                                className="w-full bg-green-500 text-white font-bold py-3 px-4 rounded-full hover:bg-green-600 transition-colors flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-800"
                             >
                                 {t('quota_modal.contact_support')}
                             </button>

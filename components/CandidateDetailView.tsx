@@ -70,14 +70,14 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ cvFile }) => {
     return (
         <div className="w-full md:w-2/5 xl:w-1/3 bg-gray-50 dark:bg-gray-900/50 border-l dark:border-gray-700 flex flex-col h-full">
             <div className="p-4 border-b dark:border-gray-700 flex-shrink-0">
-                <h4 className="font-bold text-lg flex items-center gap-2"><Icon name="bot" className="w-6 h-6 text-primary-500" /> {t('ai_assistant.title')}</h4>
+                <h4 className="font-bold font-display text-lg flex items-center gap-2"><Icon name="bot" className="w-6 h-6 text-pink-500" /> {t('ai_assistant.title')}</h4>
             </div>
             <div className="flex-1 p-4 overflow-y-auto space-y-4">
                 {messages.map((msg, index) => (
                     <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-xs lg:max-w-md p-3 rounded-xl shadow-sm ${
                             msg.role === 'user' 
-                            ? 'bg-primary-600 text-white' 
+                            ? 'bg-gradient-button text-white' 
                             : 'bg-white dark:bg-gray-700 prose prose-sm dark:prose-invert max-w-none'
                         }`}
                          dangerouslySetInnerHTML={{__html: formatMessage(msg.text)}}>
@@ -89,7 +89,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ cvFile }) => {
             </div>
             <div className="p-4 border-t dark:border-gray-700 bg-white dark:bg-gray-800">
                  <div className="flex flex-wrap gap-2 mb-3">
-                    {quickQuestions.map(q => <button key={q} onClick={() => setInput(q)} className="text-sm font-semibold bg-gray-900 text-gray-100 hover:bg-primary-600 dark:bg-black dark:text-gray-200 dark:hover:bg-primary-600 px-3 py-1 rounded-full transition-colors">{q}</button>)}
+                    {quickQuestions.map(q => <button key={q} onClick={() => setInput(q)} className="text-sm font-semibold bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 px-3 py-1 rounded-full transition-colors">{q}</button>)}
                 </div>
                 <div className="flex items-center gap-2">
                     <input 
@@ -98,9 +98,9 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ cvFile }) => {
                         onChange={e => setInput(e.target.value)}
                         onKeyPress={e => e.key === 'Enter' && sendMessage()}
                         placeholder={t('ai_assistant.input_placeholder')}
-                        className="w-full p-3 border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600 focus:ring-2 focus:ring-primary-500"
+                        className="w-full p-3 border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600 focus:ring-2 focus:ring-pink-500"
                     />
-                    <button onClick={sendMessage} disabled={isLoading} className="bg-primary-600 text-white p-3 rounded-lg disabled:bg-gray-400 hover:bg-primary-700 transition-colors">
+                    <button onClick={sendMessage} disabled={isLoading} className="bg-gradient-button text-white p-3 rounded-full disabled:bg-none disabled:bg-gray-400 hover:opacity-90 transition-opacity">
                         <Icon name="send" className="w-5 h-5" />
                     </button>
                 </div>
@@ -163,13 +163,14 @@ export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate,
     return (
         <div className="h-full flex flex-col md:flex-row bg-white dark:bg-gray-800">
             <div className="w-full md:w-3/5 xl:w-2/3 flex flex-col">
-                <header className="p-4 border-b dark:border-gray-700 flex justify-between items-center flex-shrink-0">
-                    <div className="flex items-center gap-3">
+                <header className="p-4 border-b dark:border-gray-700 flex flex-col sm:flex-row sm:justify-between sm:items-center flex-shrink-0 gap-4">
+                    {/* Left side: back button, name, details */}
+                    <div className="flex items-center gap-3 order-2 sm:order-1 w-full sm:w-auto">
                         <button onClick={onBack} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
                             <Icon name="chevron-left" className="w-6 h-6" />
                         </button>
                         <div>
-                            <h2 className="text-2xl font-bold text-primary-700 dark:text-primary-300">{candidate.name && candidate.name !== 'N/A' ? candidate.name : t('common.name_not_available')}</h2>
+                            <h2 className="text-2xl font-bold font-display text-gray-800 dark:text-gray-100">{candidate.name && candidate.name !== 'N/A' ? candidate.name : t('common.name_not_available')}</h2>
                             <div className="text-gray-500 text-base flex flex-wrap items-center gap-x-4 gap-y-1 mt-1">
                                 <span>{candidate.email && candidate.email !== 'N/A' ? candidate.email : t('common.email_not_available')}</span>
                                 <span className="hidden sm:inline">&bull;</span>
@@ -177,7 +178,8 @@ export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate,
                             </div>
                         </div>
                     </div>
-                    <div className="flex items-center gap-4">
+                    {/* Right side: favorite, score */}
+                    <div className="flex items-center gap-4 order-1 sm:order-2 w-full sm:w-auto">
                         <button 
                             onClick={onToggleFavorite} 
                             className="p-2 rounded-full hover:bg-secondary-100 dark:hover:bg-gray-700 transition-colors"
@@ -185,21 +187,22 @@ export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate,
                         >
                             <Icon name="heart" className={`w-6 h-6 ${isFavorite ? 'fill-secondary-500 text-secondary-500' : 'text-gray-400'}`} />
                         </button>
-                        <span className={`flex items-center gap-2 text-lg font-bold px-4 py-2 rounded-lg ${candidate.performanceScore > 75 ? 'bg-green-100 text-green-800' : candidate.performanceScore > 50 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+                        <span className={`flex-1 flex items-center justify-center gap-2 text-lg font-bold px-4 py-2 rounded-lg ${candidate.performanceScore > 75 ? 'bg-green-100 text-green-800' : candidate.performanceScore > 50 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
                             <span className="text-2xl">{getScoreEmoji(candidate.performanceScore)}</span>
                             <span>{t('detail.score')}: {candidate.performanceScore || 0}/100</span>
                         </span>
                     </div>
                 </header>
-                <main className="p-6 overflow-y-auto space-y-8 flex-1">
-                    <div>
-                        <h3 className="font-semibold text-xl border-b pb-2 mb-3">{t('detail.profile_summary')}</h3>
+                <main className="p-4 sm:p-6 space-y-6 flex-1 overflow-y-auto">
+                    <section className="bg-white dark:bg-gray-800/50 p-6 rounded-xl border dark:border-gray-700/50">
+                        <h3 className="font-semibold font-display text-xl border-b pb-2 mb-4">{t('detail.profile_summary')}</h3>
                         <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-base">{candidate.summary && candidate.summary !== 'N/A' ? candidate.summary : <span className="italic text-gray-500">{t('detail.no_summary')}</span>}</p>
-                    </div>
+                    </section>
+                    
                     {(hasHardSkills || hasSoftSkills) && (
-                    <div>
-                        <h3 className="font-semibold text-xl border-b pb-2 mb-3">{t('detail.skills')}</h3>
-                        <div className="flex flex-col gap-3">
+                    <section className="bg-white dark:bg-gray-800/50 p-6 rounded-xl border dark:border-gray-700/50">
+                        <h3 className="font-semibold font-display text-xl border-b pb-2 mb-4">{t('detail.skills')}</h3>
+                        <div className="flex flex-col gap-4">
                             {hasHardSkills && (
                             <div>
                                 <h4 className="font-bold text-sm uppercase text-gray-500 mb-2">{t('detail.hard_skills')}</h4>
@@ -217,13 +220,13 @@ export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate,
                             </div>
                             )}
                         </div>
-                    </div>
+                    </section>
                     )}
 
                     {hasHardSkills && (
-                        <div>
-                            <h3 className="font-semibold text-xl border-b pb-2 mb-3">{t('detail.skills_chart')}</h3>
-                            <div className="w-full h-96">
+                        <section className="bg-white dark:bg-gray-800/50 p-6 rounded-xl border dark:border-gray-700/50">
+                            <h3 className="font-semibold font-display text-xl border-b pb-2 mb-4">{t('detail.skills_chart')}</h3>
+                            <div className="w-full h-[400px]">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart
                                         layout="vertical"
@@ -232,23 +235,23 @@ export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate,
                                     >
                                         <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                                         <XAxis type="number" allowDecimals={false} stroke="currentColor" />
-                                        <YAxis dataKey="name" type="category" width={120} tick={{ fontSize: 12, fill: 'currentColor' }} />
+                                        <YAxis dataKey="name" type="category" width={140} tick={{ fontSize: 12, fill: 'currentColor' }} interval={0} />
                                         <Tooltip 
                                             cursor={{fill: 'rgba(236, 72, 153, 0.1)'}} 
                                         />
                                         <Legend verticalAlign="top" height={36}/>
                                         <Bar dataKey="expertise" name={t('detail.expertise_score')} fill="#ec4899">
-                                            <LabelList dataKey="expertise" position="right" style={{ fill: 'currentColor' }} />
+                                            <LabelList dataKey="expertise" position="right" style={{ fill: 'currentColor', fontSize: 12 }} />
                                         </Bar>
                                     </BarChart>
                                 </ResponsiveContainer>
                             </div>
-                        </div>
+                        </section>
                     )}
                     
                     {candidate.experience?.length > 0 && (
-                    <div>
-                        <h3 className="font-semibold text-xl border-b pb-2 mb-4">{t('detail.work_experience')}</h3>
+                    <section className="bg-white dark:bg-gray-800/50 p-6 rounded-xl border dark:border-gray-700/50">
+                        <h3 className="font-semibold font-display text-xl border-b pb-2 mb-4">{t('detail.work_experience')}</h3>
                         <div className="space-y-6">
                         {candidate.experience.map((exp, i) => (
                             <div key={i}>
@@ -258,11 +261,11 @@ export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate,
                             </div>
                         ))}
                         </div>
-                    </div>
+                    </section>
                     )}
                      {candidate.education?.length > 0 && (
-                     <div>
-                        <h3 className="font-semibold text-xl border-b pb-2 mb-4">{t('detail.education')}</h3>
+                     <section className="bg-white dark:bg-gray-800/50 p-6 rounded-xl border dark:border-gray-700/50">
+                        <h3 className="font-semibold font-display text-xl border-b pb-2 mb-4">{t('detail.education')}</h3>
                          <div className="space-y-4">
                         {candidate.education.map((edu, i) => (
                             <div key={i}>
@@ -271,7 +274,7 @@ export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate,
                             </div>
                         ))}
                         </div>
-                    </div>
+                    </section>
                     )}
                 </main>
             </div>
