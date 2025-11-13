@@ -15,6 +15,7 @@ interface DashboardViewProps {
   isFavoritesView?: boolean;
   comparisonList: string[];
   onToggleCompare: (candidateId: string) => void;
+  onImportCsv: (profiles: Partial<CandidateProfile>[]) => void;
 }
 
 const COLORS = ['#3b82f6', '#ec4899', '#f59e0b', '#10b981', '#8b5cf6', '#ef4444'];
@@ -95,6 +96,11 @@ const CandidateCard: React.FC<{
                 </div>
 
                 <p className="text-base font-semibold text-gray-600 dark:text-gray-400 truncate mt-2">{candidate.jobCategory && candidate.jobCategory !== 'N/A' ? candidate.jobCategory : t('common.category_not_available')}</p>
+                 {candidate.experience?.[0]?.title && (
+                    <p className="text-sm font-semibold text-[#FF585F] truncate mt-1">
+                        {candidate.experience[0].title}
+                    </p>
+                )}
                 <div className="text-base text-gray-500 dark:text-gray-400 flex items-center justify-between mt-1">
                   <span className="truncate pr-2">{candidate.location && candidate.location !== 'N/A' ? candidate.location : t('common.location_not_available')}</span>
                   <span className="font-medium flex-shrink-0">{t('dashboard.experience_years', {count: candidate.totalExperienceYears || 0})}</span>
@@ -106,7 +112,7 @@ const CandidateCard: React.FC<{
                         <span key={skill} className="text-sm bg-gradient-to-r from-pink-500 to-red-600 text-white px-3 py-1 rounded-full shadow-sm">{skill}</span>
                     ))}
                 </div>
-                {candidate.analysisDuration && <p className="text-xs text-right text-gray-400 mt-2">{t('common.analyzed_in', {duration: (candidate.analysisDuration / 1000).toFixed(1)})}</p>}
+                {candidate.analysisDuration !== undefined && <p className="text-xs text-right text-gray-400 mt-2">{candidate.analysisDuration > 0 ? t('common.analyzed_in', {duration: (candidate.analysisDuration / 1000).toFixed(1)}) : 'From cache'}</p>}
             </div>
         </div>
     );
@@ -158,12 +164,15 @@ const EmptyChartState: React.FC = () => {
     );
 };
 
-export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSelectCandidate, onReset, favorites, onToggleFavorite, isFavoritesView = false, comparisonList, onToggleCompare }) => {
+export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSelectCandidate, onReset, favorites, onToggleFavorite, isFavoritesView = false, comparisonList, onToggleCompare, onImportCsv }) => {
     const { t } = useTranslation();
     const [selectedJobCategories, setSelectedJobCategories] = React.useState<string[]>([]);
     const [isFilterOpen, setIsFilterOpen] = React.useState(false);
+    const [isExportOpen, setIsExportOpen] = React.useState(false);
     const [confirmReset, setConfirmReset] = React.useState(false);
     const filterRef = React.useRef<HTMLDivElement>(null);
+    const exportRef = React.useRef<HTMLDivElement>(null);
+    const importInputRef = React.useRef<HTMLInputElement>(null);
 
     const shortenJobCategory = (category: string) => {
         const mapping: { [key: string]: string } = {
@@ -196,6 +205,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         const handleClickOutside = (event: MouseEvent) => {
             if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
                 setIsFilterOpen(false);
+            }
+            if (exportRef.current && !exportRef.current.contains(event.target as Node)) {
+                setIsExportOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -260,6 +272,41 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         })).sort((a, b) => b.averageScore - a.averageScore);
     }, [filteredCandidates]);
 
+    const aggregatedSkillsExpertise = React.useMemo(() => {
+        const skillMap: Record<string, number> = {};
+    
+        filteredCandidates.forEach(candidate => {
+            if (!candidate.skills?.hard || candidate.skills.hard.length === 0) {
+                return;
+            }
+    
+            const experienceText = (candidate.experience || [])
+                .map(exp => `${exp.title || ''} ${exp.description || ''}`)
+                .join(' ')
+                .toLowerCase();
+    
+            candidate.skills.hard.forEach(skill => {
+                const skillLower = skill.toLowerCase();
+                if (!skillLower) return;
+                try {
+                    const skillRegex = new RegExp(`\\b${skillLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g');
+                    const countInExperience = (experienceText.match(skillRegex) || []).length;
+                    
+                    const expertiseScore = 1 + countInExperience;
+        
+                    skillMap[skill] = (skillMap[skill] || 0) + expertiseScore;
+                } catch (e) {
+                    console.warn(`Could not create regex for skill: "${skillLower}"`, e);
+                }
+            });
+        });
+    
+        return Object.entries(skillMap)
+            .map(([name, expertise]) => ({ name, expertise }))
+            .sort((a, b) => b.expertise - a.expertise)
+            .slice(0, 15);
+    }, [filteredCandidates]);
+
     if (candidates.length === 0 && !isFavoritesView) {
         return (
             <div className="p-4 sm:p-8 space-y-8">
@@ -282,10 +329,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
     }
 
     const exportToCsv = () => {
-        const headers = ['Name', 'Email', 'Phone', 'Location', 'Job Category', 'Experience Years', 'Performance Score', 'Hard Skills', 'Soft Skills'];
+        const headers = ['Name', 'Email', 'Phone', 'Location', 'Job Category', 'Current Title', 'Experience Years', 'Performance Score', 'Hard Skills', 'Soft Skills'];
         const rows = filteredCandidates.map(c => [
-            `"${c.name}"`, `"${c.email}"`, `"${c.phone}"`, `"${c.location}"`, `"${c.jobCategory}"`, c.totalExperienceYears, c.performanceScore,
-            `"${c.skills.hard.join(', ')}"`, `"${c.skills.soft.join(', ')}"`
+            `"${c.name || ''}"`,
+            `"${c.email || ''}"`,
+            `"${c.phone || ''}"`,
+            `"${c.location || ''}"`,
+            `"${c.jobCategory || ''}"`,
+            `"${c.experience?.[0]?.title || ''}"`,
+            c.totalExperienceYears || 0,
+            c.performanceScore || 0,
+            `"${(c.skills.hard || []).join(', ')}"`,
+            `"${(c.skills.soft || []).join(', ')}"`
         ].join(','));
         const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows].join('\n');
         const encodedUri = encodeURI(csvContent);
@@ -295,6 +350,67 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        setIsExportOpen(false);
+    };
+    
+    const exportToJson = () => {
+        const jsonString = JSON.stringify(filteredCandidates, null, 2);
+        const blob = new Blob([jsonString], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", "candidates_export.json");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        setIsExportOpen(false);
+    };
+
+    const handleImportClick = () => {
+        importInputRef.current?.click();
+    };
+
+    const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const text = e.target?.result as string;
+            const rows = text.split('\n').map(row => row.trim()).filter(row => row);
+            if (rows.length < 2) {
+                alert('Invalid or empty CSV file.');
+                return;
+            }
+            const header = rows[0].split(',').map(h => h.replace(/"/g, '').trim());
+            const profiles: Partial<CandidateProfile>[] = rows.slice(1).map(row => {
+                const values = row.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g)?.map(v => v.replace(/^"|"$/g, '').trim()) || [];
+                const profileData: any = {};
+                header.forEach((key, index) => {
+                    profileData[key] = values[index];
+                });
+
+                const reconstructedProfile: Partial<CandidateProfile> = {
+                    name: profileData['Name'],
+                    email: profileData['Email'],
+                    phone: profileData['Phone'],
+                    location: profileData['Location'],
+                    jobCategory: profileData['Job Category'],
+                    totalExperienceYears: parseFloat(profileData['Experience Years']) || 0,
+                    performanceScore: parseInt(profileData['Performance Score'], 10) || 0,
+                    skills: {
+                        hard: profileData['Hard Skills'] ? profileData['Hard Skills'].split(',').map(s => s.trim()) : [],
+                        soft: profileData['Soft Skills'] ? profileData['Soft Skills'].split(',').map(s => s.trim()) : [],
+                    },
+                    experience: profileData['Current Title'] ? [{ title: profileData['Current Title'], company: 'N/A', dates: 'N/A', description: 'Imported from CSV' }] : [],
+                };
+                return reconstructedProfile;
+            });
+            onImportCsv(profiles);
+        };
+        reader.readAsText(file);
+        event.target.value = '';
     };
 
     return (
@@ -354,9 +470,26 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                         <Icon name="compare" className="w-5 h-5" />
                         <span>{t('dashboard.compare.cta', { count: comparisonList.length })}</span>
                     </button>
-                    <button onClick={exportToCsv} title={t('common.export')} className="flex items-center justify-center gap-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-semibold px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors w-11 h-11 sm:w-auto sm:h-auto">
-                        <Icon name="export" className="w-5 h-5" /> <span className="hidden sm:inline">{t('common.export')}</span>
+                    <input type="file" ref={importInputRef} onChange={handleFileImport} accept=".csv" className="hidden" />
+                    <button onClick={handleImportClick} title={t('dashboard.import_csv')} className="flex items-center justify-center gap-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-semibold px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors w-11 h-11 sm:w-auto sm:h-auto">
+                        <Icon name="upload" className="w-5 h-5" /> <span className="hidden sm:inline">{t('dashboard.import_csv')}</span>
                     </button>
+                    <div className="relative" ref={exportRef}>
+                        <button onClick={() => setIsExportOpen(prev => !prev)} title={t('common.export')} className="flex items-center justify-center gap-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-semibold px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors w-11 h-11 sm:w-auto sm:h-auto">
+                            <Icon name="export" className="w-5 h-5" /> <span className="hidden sm:inline">{t('common.export')}</span>
+                            <Icon name="chevron-down" className={`w-4 h-4 transition-transform duration-200 ${isExportOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                        {isExportOpen && (
+                            <div className="absolute top-full right-0 mt-2 w-40 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-lg shadow-xl z-10 py-1">
+                                <button onClick={exportToCsv} className="w-full text-left flex items-center gap-2 p-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    {t('dashboard.export_as_csv')}
+                                </button>
+                                <button onClick={exportToJson} className="w-full text-left flex items-center gap-2 p-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    {t('dashboard.export_as_json')}
+                                </button>
+                            </div>
+                        )}
+                    </div>
                     <div className="relative">
                         <button onClick={handleResetClick} title={t('common.reset')} className={`flex items-center justify-center gap-2 font-semibold px-4 py-2 rounded-lg transition-colors w-11 h-11 sm:w-auto sm:h-auto ${
                             confirmReset 
@@ -460,6 +593,30 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                                 <Tooltip content={<CustomTooltip />} cursor={{fill: 'rgba(245, 158, 11, 0.1)'}}/>
                                 <Bar dataKey="value" fill="url(#colorLoc)" name={t('dashboard.charts.num_cvs')} barSize={30}>
                                     <LabelList dataKey="value" position="right" style={{ fill: 'currentColor', fontSize: 12 }}/>
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    ) : (
+                        <EmptyChartState />
+                    )}
+                </div>
+                 <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-lg lg:col-span-2">
+                    <h3 className="font-semibold font-display mb-4 text-lg">{t('dashboard.charts.aggregated_skills_expertise')}</h3>
+                    {aggregatedSkillsExpertise.length > 0 ? (
+                        <ResponsiveContainer width="100%" height={400}>
+                            <BarChart data={aggregatedSkillsExpertise} layout="vertical" margin={{ top: 5, right: 40, left: 20, bottom: 5 }}>
+                                 <defs>
+                                    <linearGradient id="colorSkill" x1="0" y1="0" x2="1" y2="0">
+                                        <stop offset="5%" stopColor="#ec4899" stopOpacity={0.8}/>
+                                        <stop offset="95%" stopColor="#F857A6" stopOpacity={0.8}/>
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                                <XAxis type="number" allowDecimals={false} />
+                                <YAxis type="category" dataKey="name" width={120} tick={{fontSize: 12}} interval={0} />
+                                <Tooltip content={<CustomTooltip />} cursor={{fill: 'rgba(236, 72, 153, 0.1)'}}/>
+                                <Bar dataKey="expertise" fill="url(#colorSkill)" name={t('detail.expertise_score')} barSize={20}>
+                                    <LabelList dataKey="expertise" position="right" style={{ fill: 'currentColor', fontSize: 12 }}/>
                                 </Bar>
                             </BarChart>
                         </ResponsiveContainer>

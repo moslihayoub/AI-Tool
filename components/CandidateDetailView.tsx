@@ -115,6 +115,8 @@ interface CandidateDetailProps {
     onBack: () => void;
     isFavorite: boolean;
     onToggleFavorite: () => void;
+    comparisonList: string[];
+    onToggleCompare: (candidateId: string) => void;
 }
 
 const getScoreEmoji = (score: number): string => {
@@ -126,7 +128,7 @@ const getScoreEmoji = (score: number): string => {
     return '';
 };
 
-export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate, cvFile, onBack, isFavorite, onToggleFavorite }) => {
+export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate, cvFile, onBack, isFavorite, onToggleFavorite, comparisonList, onToggleCompare }) => {
     const { t } = useTranslation();
     
     const skillsExpertiseData = React.useMemo(() => {
@@ -160,6 +162,9 @@ export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate,
     const hasHardSkills = candidate.skills?.hard && candidate.skills.hard.length > 0;
     const hasSoftSkills = candidate.skills?.soft && candidate.skills.soft.length > 0;
 
+    const isInCompare = comparisonList.includes(candidate.id);
+    const isCompareDisabled = !isInCompare && comparisonList.length >= 2;
+
     return (
         <div className="h-full flex flex-col md:flex-row bg-white dark:bg-gray-800">
             <div className="w-full md:w-3/5 xl:w-2/3 flex flex-col">
@@ -179,7 +184,15 @@ export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate,
                         </div>
                     </div>
                     {/* Right side: favorite, score */}
-                    <div className="flex items-center gap-4 order-1 sm:order-2 w-full sm:w-auto">
+                    <div className="flex items-center gap-2 order-1 sm:order-2 w-full sm:w-auto justify-end">
+                         <button
+                            onClick={() => onToggleCompare(candidate.id)}
+                            disabled={isCompareDisabled}
+                            className={`p-2 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${isInCompare ? 'bg-primary-100 dark:bg-primary-900/50' : 'hover:bg-primary-100 dark:hover:bg-gray-700'}`}
+                            title={isInCompare ? t('dashboard.compare.remove') : isCompareDisabled ? t('dashboard.compare.limit_reached') : t('dashboard.compare.add')}
+                        >
+                            <Icon name="compare" className={`w-6 h-6 ${isInCompare ? 'text-primary-600 dark:text-primary-300' : 'text-gray-400'}`} />
+                        </button>
                         <button 
                             onClick={onToggleFavorite} 
                             className="p-2 rounded-full hover:bg-secondary-100 dark:hover:bg-gray-700 transition-colors"
@@ -187,7 +200,7 @@ export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate,
                         >
                             <Icon name="heart" className={`w-6 h-6 ${isFavorite ? 'fill-secondary-500 text-secondary-500' : 'text-gray-400'}`} />
                         </button>
-                        <span className={`flex-1 flex items-center justify-center gap-2 text-lg font-bold px-4 py-2 rounded-lg ${candidate.performanceScore > 75 ? 'bg-green-100 text-green-800' : candidate.performanceScore > 50 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+                        <span className={`flex items-center justify-center gap-2 text-lg font-bold px-4 py-2 rounded-lg ${candidate.performanceScore > 75 ? 'bg-green-100 text-green-800' : candidate.performanceScore > 50 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
                             <span className="text-2xl">{getScoreEmoji(candidate.performanceScore)}</span>
                             <span>{t('detail.score')}: {candidate.performanceScore || 0}/100</span>
                         </span>

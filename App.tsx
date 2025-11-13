@@ -6,7 +6,11 @@ import * as React from 'react';
 // for all components, resolving issues where the declaration in a .ts file was not being applied.
 declare global {
   namespace JSX {
-    interface IntrinsicElements {
+    // FIX: Extended React's JSX.IntrinsicElements to correctly augment it with the
+    // 'dotlottie-wc' custom element instead of overwriting it. This resolves
+    // widespread TypeScript errors where standard HTML and SVG elements were not
+    // recognized as valid JSX.
+    interface IntrinsicElements extends React.JSX.IntrinsicElements {
       'dotlottie-wc': React.DetailedHTMLProps<
         React.HTMLAttributes<HTMLElement> & {
           src?: string;
@@ -149,6 +153,13 @@ const readFileAsBase64 = (file: File): Promise<{ mimeType: string; data: string 
   });
 };
 
+const calculateFileHash = async (file: File): Promise<string> => {
+    const buffer = await file.arrayBuffer();
+    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+};
+
 const UPLOAD_SELECTION_LIMIT = 5;
 
 function AppContent() {
@@ -195,6 +206,15 @@ function AppContent() {
     const [uploadError, setUploadError] = React.useState<string | null>(null);
     const [isQuotaModalOpen, setIsQuotaModalOpen] = React.useState(false);
     
+    const [processedCVsCache, setProcessedCVsCache] = React.useState<Record<string, CandidateProfile>>(() => {
+        try {
+            const cache = localStorage.getItem('processedCVsCache');
+            return cache ? JSON.parse(cache) : {};
+        } catch {
+            return {};
+        }
+    });
+
     const [theme, setTheme] = React.useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'system');
 
     // Refactored theme logic
@@ -208,6 +228,14 @@ function AppContent() {
             return false;
         }
     });
+
+    React.useEffect(() => {
+        try {
+            localStorage.setItem('processedCVsCache', JSON.stringify(processedCVsCache));
+        } catch (error) {
+            console.error("Failed to save CV cache to localStorage", error);
+        }
+    }, [processedCVsCache]);
 
     React.useEffect(() => {
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -369,24 +397,27 @@ function AppContent() {
     }, [candidateProfiles, comparisonList]);
 
 
-    const handleAddFiles = React.useCallback((files: File[]) => {
+    const handleAddFiles = React.useCallback(async (files: File[]) => {
         setUploadError(null);
-
+    
         const baseFiles = isDummyDataActive ? [] : cvFiles;
-
+    
         if (!isOwner && baseFiles.length >= UPLOAD_SELECTION_LIMIT) {
             setUploadError(t('errors.upload_limit_reached'));
             return;
         }
-
-        const remainingSlots = isOwner ? files.length : UPLOAD_SELECTION_LIMIT - baseFiles.length;
+    
+        const remainingSlots = isOwner ? Infinity : UPLOAD_SELECTION_LIMIT - baseFiles.length;
         const filesToAdd = files.slice(0, remainingSlots);
         
         if (!isOwner && files.length > remainingSlots && remainingSlots > 0) {
             setUploadError(t('errors.upload_selection_ignored', { count: remainingSlots }));
         }
-        
-        const newCvFiles: CVFile[] = filesToAdd
+    
+        const jsonFiles = filesToAdd.filter(f => f.name.endsWith('.json') || f.type === 'application/json');
+        const otherFiles = filesToAdd.filter(f => !jsonFiles.includes(f));
+    
+        const newOtherCvFiles: CVFile[] = otherFiles
             .filter(file => !baseFiles.some(cvFile => cvFile.file.name === file.name))
             .map(file => ({
                 id: `${file.name}-${Date.now()}`,
@@ -394,8 +425,52 @@ function AppContent() {
                 content: '',
                 status: 'pending',
             }));
-        
-        setCvFiles([...baseFiles, ...newCvFiles]);
+    
+        let importedProfilesFromFiles: CVFile[] = [];
+        for (const file of jsonFiles) {
+            try {
+                const content = await file.text();
+                // Handle both single profile object and array of profiles
+                const parsedData = JSON.parse(content);
+                const profiles: CandidateProfile[] = Array.isArray(parsedData) ? parsedData : [parsedData];
+                
+                const importedCvFiles = profiles.map((profile, index) => {
+                    const id = profile.id || `imported-json-${profile.name?.replace(/\s/g, '') || 'profile'}-${Date.now() + index}`;
+                    return {
+                        id,
+                        file: new File([], profile.fileName || file.name),
+                        status: 'success' as const,
+                        profile: { ...profile, id, fileName: profile.fileName || file.name, analysisDuration: 0 },
+                        error: undefined,
+                    };
+                });
+                importedProfilesFromFiles.push(...importedCvFiles);
+            } catch (error) {
+                console.error(`Failed to parse JSON file ${file.name}:`, error);
+                const errorFile: CVFile = {
+                    id: `${file.name}-${Date.now()}`,
+                    file,
+                    status: 'error',
+                    error: t('errors.invalid_json'),
+                    content: '',
+                };
+                importedProfilesFromFiles.push(errorFile);
+            }
+        }
+    
+        const existingEmails = new Set(baseFiles.map(f => f.profile?.email).filter(Boolean));
+        const uniqueImportedProfiles = importedProfilesFromFiles.filter(cvFile => {
+            if (cvFile.status !== 'success' || !cvFile.profile?.email) {
+                return true; // Keep error files and profiles without email
+            }
+            if (!existingEmails.has(cvFile.profile.email)) {
+                existingEmails.add(cvFile.profile.email);
+                return true;
+            }
+            return false; // Filter out duplicates
+        });
+    
+        setCvFiles(prev => [...prev.filter(f => !isDummyDataActive), ...newOtherCvFiles, ...uniqueImportedProfiles]);
         
         if (isDummyDataActive) {
             setIsDummyDataActive(false);
@@ -445,6 +520,15 @@ function AppContent() {
 
         const analysisPromises = pendingFiles.map(async (cvFile) => {
             const analysisStartTimeForFile = Date.now();
+            const hash = await calculateFileHash(cvFile.file);
+
+            if (processedCVsCache[hash]) {
+                const profile = processedCVsCache[hash];
+                // The profile from cache might have a different ID, so we re-assign the current file's ID.
+                const updatedProfile = { ...profile, id: cvFile.id, fileName: cvFile.file.name, analysisDuration: 0 };
+                 return { ...cvFile, status: 'success' as const, profile: updatedProfile, content: '', analysisDuration: 0, hash };
+            }
+
             try {
                 const fileData = await readFileAsBase64(cvFile.file);
                 const profileData = await parseCvContent(fileData);
@@ -455,12 +539,13 @@ function AppContent() {
                     fileName: cvFile.file.name,
                     analysisDuration: duration,
                 };
-
-                return { ...cvFile, status: 'success' as const, profile, content: '', analysisDuration: duration };
+                
+                setProcessedCVsCache(prev => ({ ...prev, [hash]: profile }));
+                return { ...cvFile, status: 'success' as const, profile, content: '', analysisDuration: duration, hash };
             } catch (error) {
                 const duration = Date.now() - analysisStartTimeForFile;
                 const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
-                return { ...cvFile, status: 'error' as const, error: errorMessage, analysisDuration: duration };
+                return { ...cvFile, status: 'error' as const, error: errorMessage, analysisDuration: duration, hash };
             }
         });
 
@@ -540,6 +625,8 @@ function AppContent() {
         localStorage.removeItem('analysisOperationUsage');
         localStorage.removeItem('specialUser');
         localStorage.removeItem('comparisonList');
+        localStorage.removeItem('processedCVsCache');
+        setProcessedCVsCache({});
         setAnalysisLimit(prev => ({...prev, count: 0}));
         setStorageError(null);
         setAnalysisSummaryMessage(null);
@@ -577,6 +664,44 @@ function AppContent() {
                 : [...prev, candidateId]
         );
     };
+
+    const handleImportCsv = (profiles: Partial<CandidateProfile>[]) => {
+        const existingEmails = new Set(cvFiles.map(f => f.profile?.email).filter(Boolean));
+        
+        const newCvFiles: CVFile[] = profiles
+            .filter(p => p.email && !existingEmails.has(p.email)) // Filter out duplicates by email
+            .map((profile, index) => {
+                const id = `imported-${profile.name?.replace(/\s/g, '') || 'profile'}-${Date.now() + index}`;
+                const fullProfile: CandidateProfile = {
+                    id,
+                    fileName: 'imported.csv',
+                    name: profile.name || 'N/A',
+                    email: profile.email || 'N/A',
+                    phone: profile.phone || 'N/A',
+                    location: profile.location || 'N/A',
+                    summary: profile.summary || 'Imported profile.',
+                    experience: profile.experience || [],
+                    education: profile.education || [],
+                    skills: profile.skills || { hard: [], soft: [] },
+                    languages: profile.languages || [],
+                    certifications: profile.certifications || [],
+                    detectedLanguage: profile.detectedLanguage || 'N/A',
+                    jobCategory: profile.jobCategory || 'Other',
+                    totalExperienceYears: profile.totalExperienceYears || 0,
+                    performanceScore: profile.performanceScore || 0,
+                    analysisDuration: 0,
+                };
+                return {
+                    id,
+                    file: new File([], 'imported.csv'),
+                    status: 'success',
+                    profile: fullProfile,
+                };
+            });
+        
+        setCvFiles(prev => [...prev, ...newCvFiles]);
+        setView('dashboard');
+    };
     
     const handleConnect = (credentials: { userId: string; email: string; rememberMe: boolean }): boolean => {
         const { userId, email, rememberMe } = credentials;
@@ -613,16 +738,16 @@ function AppContent() {
         if (selectedProfileId && selectedCvFile && selectedCvFile.profile) {
             const isFavorite = favorites.includes(selectedProfileId);
             const handleToggleFavorite = () => toggleFavorite(selectedProfileId);
-            return <CandidateDetailView candidate={selectedCvFile.profile} cvFile={selectedCvFile} onBack={handleBackToDashboard} isFavorite={isFavorite} onToggleFavorite={handleToggleFavorite}/>;
+            return <CandidateDetailView candidate={selectedCvFile.profile} cvFile={selectedCvFile} onBack={handleBackToDashboard} isFavorite={isFavorite} onToggleFavorite={handleToggleFavorite} comparisonList={comparisonList} onToggleCompare={handleToggleCompare}/>;
         }
 
         switch (view) {
             case 'upload':
                 return <UploadView cvFiles={cvFiles} onAddFiles={handleAddFiles} onStartAnalysis={handleStartAnalysis} onClearFile={handleClearFile} onClearAllFiles={handleReset} isAnalyzing={isAnalyzing} storageError={storageError} isOwner={isOwner} analysisLimit={analysisLimit} limitError={limitError} uploadLimit={isOwner ? Infinity : UPLOAD_SELECTION_LIMIT} />;
             case 'dashboard':
-                return <DashboardView candidates={candidateProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} setSearchQuery={() => {}} comparisonList={comparisonList} onToggleCompare={handleToggleCompare} />;
+                return <DashboardView candidates={candidateProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} setSearchQuery={() => {}} comparisonList={comparisonList} onToggleCompare={handleToggleCompare} onImportCsv={handleImportCsv} />;
             case 'favorites':
-                return <DashboardView candidates={favoriteProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} setSearchQuery={() => {}} isFavoritesView comparisonList={comparisonList} onToggleCompare={handleToggleCompare} />;
+                return <DashboardView candidates={favoriteProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} setSearchQuery={() => {}} isFavoritesView comparisonList={comparisonList} onToggleCompare={handleToggleCompare} onImportCsv={handleImportCsv} />;
             case 'settings':
                 return <SettingsView 
                             theme={theme} 

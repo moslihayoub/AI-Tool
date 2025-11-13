@@ -45,9 +45,12 @@ export const fr = {
         subtitle: "Visualisez les données et les profils extraits des CVs.",
         favorites_title: "Profils Favoris",
         no_favorites: "Vous n'avez ajouté aucun profil à vos favoris.",
-        filter_by_job: "Filtrer par métier",
+        filter_by_job: "Filtrer",
         jobs_selected: "{{count}} métier{{plural:count}} sélectionné{{plural:count}}",
         clear_filters: "Effacer les filtres",
+        import_csv: "Importer",
+        export_as_csv: "Exporter en CSV",
+        export_as_json: "Exporter en JSON",
         no_cv_analyzed: "Aucun CV n'a encore été analysé. Veuillez en importer depuis l'onglet \"Importer CVs\".",
         incomplete_profile_tooltip: "Informations clés (nom, métier) manquantes.",
         experience_years: "{{count}} an{{plural:count}} d'exp.",
@@ -57,6 +60,7 @@ export const fr = {
             job_distribution: "Répartition par métier",
             exp_distribution: "Distribution par niveau d'expérience",
             location_distribution: "Nombre de CVs par ville",
+            aggregated_skills_expertise: "Expertise Globale par Compétence",
             avg_score: "Score Moyen",
             candidates: "Candidats",
             num_cvs: "Nombre de CVs",
@@ -72,7 +76,7 @@ export const fr = {
         compare: {
             add: "Comparer",
             remove: "Sélectionné",
-            cta: "Comparer les profils ({{count}}/2)",
+            cta: "Comparer ({{count}}/2)",
             limit_reached: "Maximum 2 profils"
         },
         card: {
@@ -184,7 +188,8 @@ export const fr = {
         unknownSaveError: "Une erreur inconnue est survenue lors de la sauvegarde.",
         limit_exceeded: "Limite d'opérations d'analyse quotidienne atteinte. Vous ne pouvez effectuer que {{limit}} opérations d'analyse par jour.",
         upload_limit_reached: "Vous avez atteint la limite de 5 fichiers. Veuillez analyser ou réinitialiser pour en ajouter d'autres.",
-        upload_selection_ignored: "La limite de 5 fichiers a été atteinte. Seuls les {{count}} premiers fichiers ont été ajoutés."
+        upload_selection_ignored: "La limite de 5 fichiers a été atteinte. Seuls les {{count}} premiers fichiers ont été ajoutés.",
+        invalid_json: "Format JSON invalide."
     },
     quota_modal: {
         title: "Limite de quota atteinte",
@@ -248,9 +253,12 @@ export const en = {
         subtitle: "Visualize data and profiles extracted from the CVs.",
         favorites_title: "Favorite Profiles",
         no_favorites: "You haven't added any profiles to your favorites yet.",
-        filter_by_job: "Filter by Job",
+        filter_by_job: "Filter",
         jobs_selected: "{{count}} job{{plural:count}} selected",
         clear_filters: "Clear Filters",
+        import_csv: "Import",
+        export_as_csv: "Export as CSV",
+        export_as_json: "Export as JSON",
         no_cv_analyzed: "No CVs have been analyzed yet. Please import some from the \"Import CVs\" tab.",
         incomplete_profile_tooltip: "Key information (name, job) is missing.",
         experience_years: "{{count}} year{{plural:count}} exp.",
@@ -260,6 +268,7 @@ export const en = {
             job_distribution: "Job Category Distribution",
             exp_distribution: "Experience Level Distribution",
             location_distribution: "Number of CVs by City",
+            aggregated_skills_expertise: "Overall Skill Expertise",
             avg_score: "Average Score",
             candidates: "Candidates",
             num_cvs: "Number of CVs",
@@ -275,7 +284,7 @@ export const en = {
         compare: {
             add: "Compare",
             remove: "Selected",
-            cta: "Compare Profiles ({{count}}/2)",
+            cta: "Compare ({{count}}/2)",
             limit_reached: "Max 2 profiles"
         },
         card: {
@@ -387,7 +396,8 @@ export const en = {
         unknownSaveError: "An unknown error occurred while saving.",
         limit_exceeded: "Daily analysis operation limit reached. You can only perform {{limit}} analysis operations per day.",
         upload_limit_reached: "You have reached the 5-file limit. Please analyze or reset to add more.",
-        upload_selection_ignored: "The 5-file limit was reached. Only the first {{count}} files were added."
+        upload_selection_ignored: "The 5-file limit was reached. Only the first {{count}} files were added.",
+        invalid_json: "Invalid JSON format."
     },
     quota_modal: {
         title: "Quota Limit Reached",

@@ -1,20 +1,6 @@
-
 // This file contains shared type definitions for the application.
 
 declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      'dotlottie-wc': React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement> & {
-          src?: string;
-          autoplay?: boolean;
-          loop?: boolean;
-        },
-        HTMLElement
-      >;
-    }
-  }
-
   interface AIStudio {
     getAuthenticatedUser: () => Promise<User>;
   }
@@ -28,6 +14,7 @@ declare global {
 export interface CVFile {
   id: string;
   file: File;
+  hash?: string;
   content?: string;
   status: 'pending' | 'parsing' | 'success' | 'error';
   profile?: CandidateProfile;
