@@ -89,7 +89,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ cvFile }) => {
             </div>
             <div className="p-4 border-t dark:border-gray-700 bg-white dark:bg-gray-800">
                  <div className="flex flex-wrap gap-2 mb-3">
-                    {quickQuestions.map(q => <button key={q} onClick={() => setInput(q)} className="text-sm font-semibold bg-gray-900 text-gray-100 hover:bg-gray-700 dark:bg-black dark:text-gray-200 dark:hover:bg-gray-800 px-3 py-1 rounded-full transition-colors">{q}</button>)}
+                    {quickQuestions.map(q => <button key={q} onClick={() => setInput(q)} className="text-sm font-semibold bg-gray-900 text-gray-100 hover:bg-primary-600 dark:bg-black dark:text-gray-200 dark:hover:bg-primary-600 px-3 py-1 rounded-full transition-colors">{q}</button>)}
                 </div>
                 <div className="flex items-center gap-2">
                     <input 
@@ -116,6 +116,15 @@ interface CandidateDetailProps {
     isFavorite: boolean;
     onToggleFavorite: () => void;
 }
+
+const getScoreEmoji = (score: number): string => {
+    if (score >= 90) return '🤩';
+    if (score >= 70) return '😜';
+    if (score >= 50) return '😅';
+    if (score >= 30) return '🤬';
+    if (score >= 10) return '😭';
+    return '';
+};
 
 export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate, cvFile, onBack, isFavorite, onToggleFavorite }) => {
     const { t } = useTranslation();
@@ -176,8 +185,9 @@ export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate,
                         >
                             <Icon name="heart" className={`w-6 h-6 ${isFavorite ? 'fill-secondary-500 text-secondary-500' : 'text-gray-400'}`} />
                         </button>
-                        <span className={`text-lg font-bold px-4 py-2 rounded-lg ${candidate.performanceScore > 75 ? 'bg-green-100 text-green-800' : candidate.performanceScore > 50 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
-                            {t('detail.score')}: {candidate.performanceScore || 0}/100
+                        <span className={`flex items-center gap-2 text-lg font-bold px-4 py-2 rounded-lg ${candidate.performanceScore > 75 ? 'bg-green-100 text-green-800' : candidate.performanceScore > 50 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+                            <span className="text-2xl">{getScoreEmoji(candidate.performanceScore)}</span>
+                            <span>{t('detail.score')}: {candidate.performanceScore || 0}/100</span>
                         </span>
                     </div>
                 </header>

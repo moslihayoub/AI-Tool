@@ -121,7 +121,8 @@ const EmptyChartState: React.FC = () => {
         <div className="flex flex-col items-center justify-center h-[300px] text-gray-500">
             <dotlottie-wc
                 src="https://lottie.host/89c66344-281d-4450-91d3-4574a47fec47/31ogoyP4Mh.lottie"
-                autoplay
+                // FIX: Changed `autoplay` to `autoPlay` to match the updated type definition.
+                autoPlay
                 loop
                 style={{ width: '120px', height: '120px' }}
             ></dotlottie-wc>
@@ -233,7 +234,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                 <div className="flex flex-col items-center justify-center min-h-[calc(100vh-15rem)] text-center">
                     <dotlottie-wc
                         src="https://lottie.host/89c66344-281d-4450-91d3-4574a47fec47/31ogoyP4Mh.lottie"
-                        autoplay
+                        // FIX: Changed `autoplay` to `autoPlay` to match the updated type definition.
+                        autoPlay
                         loop
                         style={{ width: '200px', height: '200px' }}
                     ></dotlottie-wc>
@@ -443,7 +445,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                          <div className="flex flex-col items-center justify-center min-h-[50vh] p-8 text-center">
                             <dotlottie-wc
                                 src="https://lottie.host/89c66344-281d-4450-91d3-4574a47fec47/31ogoyP4Mh.lottie"
-                                autoplay
+                                // FIX: Changed `autoplay` to `autoPlay` to match the updated type definition.
+                                autoPlay
                                 loop
                                 style={{ width: '200px', height: '200px' }}
                             ></dotlottie-wc>

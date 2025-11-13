@@ -1,0 +1,16 @@
+{
+    "name": "HR Auto Analyzer",
+    "short_name": "HR Analyzer",
+    "description": "An AI-powered application for bulk resume management and analysis, featuring advanced filtering, interactive dashboards, and a contextual AI assistant to streamline the recruitment process.",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#3b82f6",
+    "icons": [
+        {
+            "src": "icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml"
+        }
+    ]
+}

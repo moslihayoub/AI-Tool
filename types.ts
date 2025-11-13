@@ -3,6 +3,7 @@
 // FIX: To resolve widespread JSX intrinsic element type errors, imported React and moved the
 // JSX augmentation for 'dotlottie-wc' here. This ensures that React's default types are
 // loaded and augmented correctly before any component renders.
+// FIX: Changed to namespace import to correctly resolve `React.DetailedHTMLProps`.
 import * as React from 'react';
 
 declare global {
@@ -11,7 +12,8 @@ declare global {
       'dotlottie-wc': React.DetailedHTMLProps<
         React.HTMLAttributes<HTMLElement> & {
           src?: string;
-          autoplay?: boolean;
+          // FIX: Changed prop name to `autoPlay` to align with React's camelCase convention for attributes.
+          autoPlay?: boolean;
           loop?: boolean;
         },
         HTMLElement
