@@ -1,5 +1,8 @@
 // This file contains shared type definitions for the application.
 
+// FIX: Added React import to enable JSX namespace augmentation for custom elements.
+import * as React from 'react';
+
 declare global {
   interface AIStudio {
     getAuthenticatedUser: () => Promise<User>;
@@ -7,6 +10,22 @@ declare global {
 
   interface Window {
     aistudio?: AIStudio;
+  }
+
+  // FIX: Centralized JSX namespace augmentation for the 'dotlottie-wc' custom element.
+  // Placing this in a shared types file ensures that TypeScript recognizes the custom element
+  // across all components without overriding React's default intrinsic elements.
+  namespace JSX {
+    interface IntrinsicElements {
+      'dotlottie-wc': React.DetailedHTMLProps<
+        React.HTMLAttributes<HTMLElement> & {
+          src?: string;
+          autoplay?: boolean;
+          loop?: boolean;
+        },
+        HTMLElement
+      >;
+    }
   }
 }
 

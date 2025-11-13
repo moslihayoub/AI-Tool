@@ -23,7 +23,7 @@ export const fr = {
         google_drive_import: "Importer via Google Drive",
         pending_files: {
             title: "Fichiers en attente ({{count}})",
-            analyze_button: "Analyser ({{count}})"
+            analyze_button: "Lancer le parsing ({{count}})"
         },
         status: {
             pending: "En attente",
@@ -231,7 +231,7 @@ export const en = {
         google_drive_import: "Import from Google Drive",
         pending_files: {
             title: "Pending Files ({{count}})",
-            analyze_button: "Analyze ({{count}})"
+            analyze_button: "Start Parsing ({{count}})"
         },
         status: {
             pending: "Pending",

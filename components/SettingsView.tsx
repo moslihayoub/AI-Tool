@@ -12,9 +12,11 @@ interface SettingsViewProps {
     onOpenQuotaModal: () => void;
     isOwner: boolean;
     onDisconnect: () => void;
+    isDummyDataActive: boolean;
+    onReset: () => void;
 }
 
-export const SettingsView: React.FC<SettingsViewProps> = ({ theme, setTheme, onLoadDummyData, isDummyDataButtonDisabled, onOpenQuotaModal, isOwner, onDisconnect }) => {
+export const SettingsView: React.FC<SettingsViewProps> = ({ theme, setTheme, onLoadDummyData, isDummyDataButtonDisabled, onOpenQuotaModal, isOwner, onDisconnect, isDummyDataActive, onReset }) => {
     const { t, language, setLanguage } = useTranslation();
     const [confirmDisconnect, setConfirmDisconnect] = React.useState(false);
 
@@ -44,14 +46,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ theme, setTheme, onL
                     <div className="flex space-x-2">
                         <button 
                             onClick={() => setLanguage('fr')} 
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors ${language === 'fr' ? 'bg-primary-600 text-white' : inactiveBtnClasses}`}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors ${language === 'fr' ? 'bg-primary-600 text-white' : inactiveBtnClasses}`}
                         >
                             <Icon name="fr-flag" className="w-6 h-6 rounded-full" />
                             <span>{t('settings.language.french')}</span>
                         </button>
                         <button
                             onClick={() => setLanguage('en')}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors ${language === 'en' ? 'bg-primary-600 text-white' : inactiveBtnClasses}`}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors ${language === 'en' ? 'bg-primary-600 text-white' : inactiveBtnClasses}`}
                         >
                              <Icon name="gb-flag" className="w-6 h-6 rounded-full" />
                             <span>{t('settings.language.english')}</span>
@@ -64,21 +66,21 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ theme, setTheme, onL
                     <div className="flex space-x-2">
                         <button 
                             onClick={() => setTheme('light')} 
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors w-full justify-center ${theme === 'light' ? 'bg-primary-600 text-white' : inactiveBtnClasses}`}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors w-full justify-center ${theme === 'light' ? 'bg-primary-600 text-white' : inactiveBtnClasses}`}
                         >
                             <Icon name="sun" className="w-5 h-5"/>
                             <span className="hidden sm:inline">{t('settings.theme.light')}</span>
                         </button>
                          <button 
                             onClick={() => setTheme('dark')} 
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors w-full justify-center ${theme === 'dark' ? 'bg-primary-600 text-white' : inactiveBtnClasses}`}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors w-full justify-center ${theme === 'dark' ? 'bg-primary-600 text-white' : inactiveBtnClasses}`}
                         >
                              <Icon name="moon" className="w-5 h-5"/>
                             <span className="hidden sm:inline">{t('settings.theme.dark')}</span>
                         </button>
                          <button 
                             onClick={() => setTheme('system')} 
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors w-full justify-center ${theme === 'system' ? 'bg-primary-600 text-white' : inactiveBtnClasses}`}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors w-full justify-center ${theme === 'system' ? 'bg-primary-600 text-white' : inactiveBtnClasses}`}
                         >
                              <Icon name="desktop" className="w-5 h-5"/>
                             <span className="hidden sm:inline">{t('settings.theme.system')}</span>
@@ -94,7 +96,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ theme, setTheme, onL
                             <div className="relative">
                                 <button
                                     onClick={handleDisconnectClick}
-                                    className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors ${
+                                    className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors ${
                                         confirmDisconnect 
                                         ? 'bg-yellow-500 text-white hover:bg-yellow-600' 
                                         : 'bg-red-600 text-white hover:bg-red-700'
@@ -129,14 +131,24 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ theme, setTheme, onL
                  <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700">
                     <h3 className="text-lg font-semibold font-display mb-3">{t('settings.data.title')}</h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{t('settings.data.dummy_description')}</p>
-                    <button 
-                        onClick={onLoadDummyData}
-                        disabled={isDummyDataButtonDisabled}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-full font-semibold transition-opacity bg-gradient-button text-white hover:opacity-90 disabled:bg-none disabled:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        <Icon name="bot" className="w-5 h-5"/>
-                        <span>{t('settings.data.load_dummy')}</span>
-                    </button>
+                    {isDummyDataActive ? (
+                        <button
+                            onClick={onReset}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors bg-gray-900 text-white hover:bg-gray-700 dark:bg-gray-200 dark:text-black dark:hover:bg-gray-300"
+                        >
+                            <Icon name="refresh-cw" className="w-5 h-5"/>
+                            <span>{t('common.reset')}</span>
+                        </button>
+                    ) : (
+                         <button
+                            onClick={onLoadDummyData}
+                            disabled={isDummyDataButtonDisabled}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-full font-semibold transition-opacity bg-gradient-button text-white hover:opacity-90 disabled:bg-none disabled:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <Icon name="bot" className="w-5 h-5"/>
+                            <span>{t('settings.data.load_dummy')}</span>
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

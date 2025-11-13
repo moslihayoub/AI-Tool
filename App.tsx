@@ -1,27 +1,8 @@
 // FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
 import * as React from 'react';
 
-// FIX: Add global JSX type definition for the 'dotlottie-wc' custom element.
-// This is placed in the main App.tsx file to ensure it is recognized by the TypeScript compiler
-// for all components, resolving issues where the declaration in a .ts file was not being applied.
-declare global {
-  namespace JSX {
-    // FIX: Extended React's JSX.IntrinsicElements to correctly augment it with the
-    // 'dotlottie-wc' custom element instead of overwriting it. This resolves
-    // widespread TypeScript errors where standard HTML and SVG elements were not
-    // recognized as valid JSX.
-    interface IntrinsicElements extends React.JSX.IntrinsicElements {
-      'dotlottie-wc': React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement> & {
-          src?: string;
-          autoplay?: boolean;
-          loop?: boolean;
-        },
-        HTMLElement
-      >;
-    }
-  }
-}
+// FIX: Moved the global JSX type definition for 'dotlottie-wc' to types.ts to centralize
+// global type definitions and resolve JSX intrinsic element errors across the application.
 
 import { Sidebar } from './components/Sidebar';
 import { UploadView } from './components/UploadView';
@@ -292,7 +273,7 @@ function AppContent() {
                 if (window.aistudio && typeof window.aistudio.getAuthenticatedUser === 'function') {
                     const user = await window.aistudio.getAuthenticatedUser();
                     setCurrentUser(user);
-                    if (user && (user.email.toLowerCase() === 'moslihayoub@gmail.com' || user.id === 'moslih84')) {
+                    if (user && (user.email.toLowerCase() === 'moslihayoub@gmail.com' || user.id === 'Moslih84')) {
                         setIsOwner(true);
                     }
                 } else if (!specialUserFound) {
@@ -400,14 +381,14 @@ function AppContent() {
     const handleAddFiles = React.useCallback(async (files: File[]) => {
         setUploadError(null);
     
-        const baseFiles = isDummyDataActive ? [] : cvFiles;
+        let currentFiles = isDummyDataActive ? [] : cvFiles;
     
-        if (!isOwner && baseFiles.length >= UPLOAD_SELECTION_LIMIT) {
+        if (!isOwner && currentFiles.length >= UPLOAD_SELECTION_LIMIT) {
             setUploadError(t('errors.upload_limit_reached'));
             return;
         }
     
-        const remainingSlots = isOwner ? Infinity : UPLOAD_SELECTION_LIMIT - baseFiles.length;
+        const remainingSlots = isOwner ? Infinity : UPLOAD_SELECTION_LIMIT - currentFiles.length;
         const filesToAdd = files.slice(0, remainingSlots);
         
         if (!isOwner && files.length > remainingSlots && remainingSlots > 0) {
@@ -417,62 +398,81 @@ function AppContent() {
         const jsonFiles = filesToAdd.filter(f => f.name.endsWith('.json') || f.type === 'application/json');
         const otherFiles = filesToAdd.filter(f => !jsonFiles.includes(f));
     
+        // 1. Process JSON imports to update existing profiles or add new ones
+        let wasUpdatedFromJson = false;
+        if (jsonFiles.length > 0) {
+            const importedProfilesByEmail = new Map<string, CandidateProfile>();
+            const errorFiles: CVFile[] = [];
+
+            for (const file of jsonFiles) {
+                try {
+                    const content = await file.text();
+                    const parsedData = JSON.parse(content);
+                    const profiles: CandidateProfile[] = Array.isArray(parsedData) ? parsedData : [parsedData];
+                    
+                    profiles.forEach(profile => {
+                        if (profile.email) {
+                            // Last one wins if duplicate emails in same import
+                            importedProfilesByEmail.set(profile.email, {
+                                ...profile,
+                                fileName: profile.fileName || file.name,
+                                analysisDuration: 0,
+                            });
+                        }
+                    });
+                } catch (error) {
+                    console.error(`Failed to parse JSON file ${file.name}:`, error);
+                    errorFiles.push({
+                        id: `${file.name}-${Date.now()}`,
+                        file,
+                        status: 'error',
+                        error: t('errors.invalid_json'),
+                    });
+                }
+            }
+
+            const updatedFiles = currentFiles.map(cvFile => {
+                if (cvFile.profile?.email && importedProfilesByEmail.has(cvFile.profile.email)) {
+                    const newProfileData = importedProfilesByEmail.get(cvFile.profile.email)!;
+                    importedProfilesByEmail.delete(cvFile.profile.email); // Remove so it's not added again
+                    wasUpdatedFromJson = true;
+                    return {
+                        ...cvFile,
+                        status: 'success' as const,
+                        profile: { ...newProfileData, id: cvFile.id },
+                        error: undefined,
+                    };
+                }
+                return cvFile;
+            });
+
+            const newFilesFromJson = Array.from(importedProfilesByEmail.values()).map(profile => {
+                const id = profile.id || `imported-${profile.name?.replace(/\s/g, '') || 'profile'}-${Date.now()}`;
+                return {
+                    id,
+                    file: new File([], profile.fileName || 'imported.json'),
+                    status: 'success' as const,
+                    profile: { ...profile, id },
+                };
+            });
+            
+            currentFiles = [...updatedFiles, ...newFilesFromJson, ...errorFiles];
+        }
+
+        // 2. Process other file uploads (PDF, DOCX, etc.)
+        const existingFileNames = new Set(currentFiles.map(f => f.file.name));
         const newOtherCvFiles: CVFile[] = otherFiles
-            .filter(file => !baseFiles.some(cvFile => cvFile.file.name === file.name))
+            .filter(file => !existingFileNames.has(file.name))
             .map(file => ({
                 id: `${file.name}-${Date.now()}`,
                 file,
-                content: '',
                 status: 'pending',
             }));
-    
-        let importedProfilesFromFiles: CVFile[] = [];
-        for (const file of jsonFiles) {
-            try {
-                const content = await file.text();
-                // Handle both single profile object and array of profiles
-                const parsedData = JSON.parse(content);
-                const profiles: CandidateProfile[] = Array.isArray(parsedData) ? parsedData : [parsedData];
-                
-                const importedCvFiles = profiles.map((profile, index) => {
-                    const id = profile.id || `imported-json-${profile.name?.replace(/\s/g, '') || 'profile'}-${Date.now() + index}`;
-                    return {
-                        id,
-                        file: new File([], profile.fileName || file.name),
-                        status: 'success' as const,
-                        profile: { ...profile, id, fileName: profile.fileName || file.name, analysisDuration: 0 },
-                        error: undefined,
-                    };
-                });
-                importedProfilesFromFiles.push(...importedCvFiles);
-            } catch (error) {
-                console.error(`Failed to parse JSON file ${file.name}:`, error);
-                const errorFile: CVFile = {
-                    id: `${file.name}-${Date.now()}`,
-                    file,
-                    status: 'error',
-                    error: t('errors.invalid_json'),
-                    content: '',
-                };
-                importedProfilesFromFiles.push(errorFile);
-            }
-        }
-    
-        const existingEmails = new Set(baseFiles.map(f => f.profile?.email).filter(Boolean));
-        const uniqueImportedProfiles = importedProfilesFromFiles.filter(cvFile => {
-            if (cvFile.status !== 'success' || !cvFile.profile?.email) {
-                return true; // Keep error files and profiles without email
-            }
-            if (!existingEmails.has(cvFile.profile.email)) {
-                existingEmails.add(cvFile.profile.email);
-                return true;
-            }
-            return false; // Filter out duplicates
-        });
-    
-        setCvFiles(prev => [...prev.filter(f => !isDummyDataActive), ...newOtherCvFiles, ...uniqueImportedProfiles]);
+            
+        // 3. Combine everything and set state
+        setCvFiles([...currentFiles, ...newOtherCvFiles]);
         
-        if (isDummyDataActive) {
+        if (isDummyDataActive && (wasUpdatedFromJson || newOtherCvFiles.length > 0 || jsonFiles.length > 0)) {
             setIsDummyDataActive(false);
         }
     }, [cvFiles, isDummyDataActive, t, isOwner]);
@@ -665,7 +665,7 @@ function AppContent() {
         );
     };
 
-    const handleImportCsv = (profiles: Partial<CandidateProfile>[]) => {
+    const handleImportProfiles = (profiles: Partial<CandidateProfile>[]) => {
         const existingEmails = new Set(cvFiles.map(f => f.profile?.email).filter(Boolean));
         
         const newCvFiles: CVFile[] = profiles
@@ -745,9 +745,9 @@ function AppContent() {
             case 'upload':
                 return <UploadView cvFiles={cvFiles} onAddFiles={handleAddFiles} onStartAnalysis={handleStartAnalysis} onClearFile={handleClearFile} onClearAllFiles={handleReset} isAnalyzing={isAnalyzing} storageError={storageError} isOwner={isOwner} analysisLimit={analysisLimit} limitError={limitError} uploadLimit={isOwner ? Infinity : UPLOAD_SELECTION_LIMIT} />;
             case 'dashboard':
-                return <DashboardView candidates={candidateProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} setSearchQuery={() => {}} comparisonList={comparisonList} onToggleCompare={handleToggleCompare} onImportCsv={handleImportCsv} />;
+                return <DashboardView candidates={candidateProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} setSearchQuery={() => {}} comparisonList={comparisonList} onToggleCompare={handleToggleCompare} onImportProfiles={handleImportProfiles} />;
             case 'favorites':
-                return <DashboardView candidates={favoriteProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} setSearchQuery={() => {}} isFavoritesView comparisonList={comparisonList} onToggleCompare={handleToggleCompare} onImportCsv={handleImportCsv} />;
+                return <DashboardView candidates={favoriteProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} setSearchQuery={() => {}} isFavoritesView comparisonList={comparisonList} onToggleCompare={handleToggleCompare} onImportProfiles={handleImportProfiles} />;
             case 'settings':
                 return <SettingsView 
                             theme={theme} 
@@ -757,6 +757,8 @@ function AppContent() {
                             onOpenQuotaModal={() => setIsQuotaModalOpen(true)}
                             isOwner={isOwner}
                             onDisconnect={handleDisconnect}
+                            isDummyDataActive={isDummyDataActive}
+                            onReset={handleReset}
                         />;
             case 'compare':
                  const [profile1, profile2] = comparisonProfiles;

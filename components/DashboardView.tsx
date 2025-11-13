@@ -15,7 +15,7 @@ interface DashboardViewProps {
   isFavoritesView?: boolean;
   comparisonList: string[];
   onToggleCompare: (candidateId: string) => void;
-  onImportCsv: (profiles: Partial<CandidateProfile>[]) => void;
+  onImportProfiles: (profiles: Partial<CandidateProfile>[]) => void;
 }
 
 const COLORS = ['#3b82f6', '#ec4899', '#f59e0b', '#10b981', '#8b5cf6', '#ef4444'];
@@ -164,7 +164,7 @@ const EmptyChartState: React.FC = () => {
     );
 };
 
-export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSelectCandidate, onReset, favorites, onToggleFavorite, isFavoritesView = false, comparisonList, onToggleCompare, onImportCsv }) => {
+export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSelectCandidate, onReset, favorites, onToggleFavorite, isFavoritesView = false, comparisonList, onToggleCompare, onImportProfiles }) => {
     const { t } = useTranslation();
     const [selectedJobCategories, setSelectedJobCategories] = React.useState<string[]>([]);
     const [isFilterOpen, setIsFilterOpen] = React.useState(false);
@@ -173,6 +173,77 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
     const filterRef = React.useRef<HTMLDivElement>(null);
     const exportRef = React.useRef<HTMLDivElement>(null);
     const importInputRef = React.useRef<HTMLInputElement>(null);
+
+    // FIX: Hoisted function declarations to the top of the component body to prevent "used before its declaration" errors in the early return statement.
+    const handleImportClick = () => {
+        importInputRef.current?.click();
+    };
+
+    const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const text = e.target?.result as string;
+            
+            try {
+                let profiles: Partial<CandidateProfile>[] = [];
+
+                if (file.name.endsWith('.csv')) {
+                    const rows = text.split('\n').map(row => row.trim()).filter(row => row);
+                    if (rows.length < 2) {
+                        alert('Invalid or empty CSV file.');
+                        return;
+                    }
+                    const header = rows[0].split(',').map(h => h.replace(/"/g, '').trim());
+                    profiles = rows.slice(1).map(row => {
+                        const values = row.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g)?.map(v => v.replace(/^"|"$/g, '').trim()) || [];
+                        const profileData: any = {};
+                        header.forEach((key, index) => {
+                            profileData[key] = values[index];
+                        });
+
+                        const reconstructedProfile: Partial<CandidateProfile> = {
+                            name: profileData['Name'],
+                            email: profileData['Email'],
+                            phone: profileData['Phone'],
+                            location: profileData['Location'],
+                            jobCategory: profileData['Job Category'],
+                            totalExperienceYears: parseFloat(profileData['Experience Years']) || 0,
+                            performanceScore: parseInt(profileData['Performance Score'], 10) || 0,
+                            skills: {
+                                hard: profileData['Hard Skills'] ? profileData['Hard Skills'].split(',').map(s => s.trim()) : [],
+                                soft: profileData['Soft Skills'] ? profileData['Soft Skills'].split(',').map(s => s.trim()) : [],
+                            },
+                            experience: profileData['Current Title'] ? [{ title: profileData['Current Title'], company: 'N/A', dates: 'N/A', description: 'Imported from CSV' }] : [],
+                        };
+                        return reconstructedProfile;
+                    });
+                } else if (file.name.endsWith('.json')) {
+                    const parsedData = JSON.parse(text);
+                    const rawProfiles = Array.isArray(parsedData) ? parsedData : [parsedData];
+                    if (rawProfiles.every(p => typeof p === 'object' && p !== null)) {
+                        profiles = rawProfiles;
+                    } else {
+                        throw new Error("Invalid JSON structure for profiles.");
+                    }
+                } else {
+                    alert("Unsupported file type for import. Please use CSV or JSON.");
+                    return;
+                }
+
+                if (profiles.length > 0) {
+                    onImportProfiles(profiles);
+                }
+            } catch (error) {
+                console.error("Failed to parse import file:", error);
+                alert(`Error parsing file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = ''; // Reset input
+    };
 
     const shortenJobCategory = (category: string) => {
         const mapping: { [key: string]: string } = {
@@ -314,7 +385,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                     <h2 className="text-3xl font-bold font-display text-gray-800 dark:text-gray-100">{t('dashboard.title')}</h2>
                     <p className="text-gray-500 dark:text-gray-400 mt-1">{t('dashboard.subtitle')}</p>
                 </header>
-                <div className="flex flex-col items-center justify-center min-h-[calc(100vh-15rem)] text-center">
+                <div className="flex flex-col items-center justify-center min-h-[calc(100vh-15rem)] text-center -mt-8">
+                    <input type="file" ref={importInputRef} onChange={handleFileImport} accept=".csv,.json" className="hidden" />
                     {/* FIX: Changed autoPlay to autoplay to align with web component standards. */}
                     <dotlottie-wc
                         src="https://lottie.host/89c66344-281d-4450-91d3-4574a47fec47/31ogoyP4Mh.lottie"
@@ -323,6 +395,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                         style={{ width: '200px', height: '200px' }}
                     ></dotlottie-wc>
                     <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">{t('dashboard.no_cv_analyzed')}</p>
+                    <div className="mt-6">
+                        <button onClick={handleImportClick} className="flex items-center justify-center gap-2 bg-primary-600 text-white font-semibold px-6 py-3 rounded-full hover:bg-primary-700 transition-colors">
+                            <Icon name="upload" className="w-5 h-5" />
+                            <span>{t('dashboard.import_csv')}</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         );
@@ -367,52 +445,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         setIsExportOpen(false);
     };
 
-    const handleImportClick = () => {
-        importInputRef.current?.click();
-    };
-
-    const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const text = e.target?.result as string;
-            const rows = text.split('\n').map(row => row.trim()).filter(row => row);
-            if (rows.length < 2) {
-                alert('Invalid or empty CSV file.');
-                return;
-            }
-            const header = rows[0].split(',').map(h => h.replace(/"/g, '').trim());
-            const profiles: Partial<CandidateProfile>[] = rows.slice(1).map(row => {
-                const values = row.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g)?.map(v => v.replace(/^"|"$/g, '').trim()) || [];
-                const profileData: any = {};
-                header.forEach((key, index) => {
-                    profileData[key] = values[index];
-                });
-
-                const reconstructedProfile: Partial<CandidateProfile> = {
-                    name: profileData['Name'],
-                    email: profileData['Email'],
-                    phone: profileData['Phone'],
-                    location: profileData['Location'],
-                    jobCategory: profileData['Job Category'],
-                    totalExperienceYears: parseFloat(profileData['Experience Years']) || 0,
-                    performanceScore: parseInt(profileData['Performance Score'], 10) || 0,
-                    skills: {
-                        hard: profileData['Hard Skills'] ? profileData['Hard Skills'].split(',').map(s => s.trim()) : [],
-                        soft: profileData['Soft Skills'] ? profileData['Soft Skills'].split(',').map(s => s.trim()) : [],
-                    },
-                    experience: profileData['Current Title'] ? [{ title: profileData['Current Title'], company: 'N/A', dates: 'N/A', description: 'Imported from CSV' }] : [],
-                };
-                return reconstructedProfile;
-            });
-            onImportCsv(profiles);
-        };
-        reader.readAsText(file);
-        event.target.value = '';
-    };
-
     return (
         <div className="p-4 sm:p-8 space-y-8">
             <header className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
@@ -423,7 +455,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                 {!isFavoritesView && (
                  <div className="flex items-center gap-2 flex-wrap">
                     <div className="relative" ref={filterRef}>
-                        <button onClick={() => setIsFilterOpen(!isFilterOpen)} className="flex items-center gap-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-semibold px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors w-56 justify-between">
+                        <button onClick={() => setIsFilterOpen(!isFilterOpen)} className="flex items-center gap-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-semibold px-4 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors w-56 justify-between">
                             <span className="truncate">
                                 {selectedJobCategories.length === 0
                                     ? t('dashboard.filter_by_job')
@@ -465,17 +497,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                      <button
                         onClick={() => onToggleCompare('')} // This is a trick to trigger the view change
                         disabled={comparisonList.length !== 2}
-                        className="flex items-center gap-2 bg-primary-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        className="flex items-center gap-2 bg-primary-600 text-white font-semibold px-4 py-2 rounded-full hover:bg-primary-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                     >
                         <Icon name="compare" className="w-5 h-5" />
                         <span>{t('dashboard.compare.cta', { count: comparisonList.length })}</span>
                     </button>
-                    <input type="file" ref={importInputRef} onChange={handleFileImport} accept=".csv" className="hidden" />
-                    <button onClick={handleImportClick} title={t('dashboard.import_csv')} className="flex items-center justify-center gap-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-semibold px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors w-11 h-11 sm:w-auto sm:h-auto">
+                    <input type="file" ref={importInputRef} onChange={handleFileImport} accept=".csv,.json" className="hidden" />
+                    <button onClick={handleImportClick} title={t('dashboard.import_csv')} className="flex items-center justify-center gap-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-semibold px-4 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors w-11 h-11 sm:w-auto sm:h-auto">
                         <Icon name="upload" className="w-5 h-5" /> <span className="hidden sm:inline">{t('dashboard.import_csv')}</span>
                     </button>
                     <div className="relative" ref={exportRef}>
-                        <button onClick={() => setIsExportOpen(prev => !prev)} title={t('common.export')} className="flex items-center justify-center gap-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-semibold px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors w-11 h-11 sm:w-auto sm:h-auto">
+                        <button onClick={() => setIsExportOpen(prev => !prev)} title={t('common.export')} className="flex items-center justify-center gap-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-semibold px-4 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors w-11 h-11 sm:w-auto sm:h-auto">
                             <Icon name="export" className="w-5 h-5" /> <span className="hidden sm:inline">{t('common.export')}</span>
                             <Icon name="chevron-down" className={`w-4 h-4 transition-transform duration-200 ${isExportOpen ? 'rotate-180' : ''}`} />
                         </button>
@@ -491,10 +523,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                         )}
                     </div>
                     <div className="relative">
-                        <button onClick={handleResetClick} title={t('common.reset')} className={`flex items-center justify-center gap-2 font-semibold px-4 py-2 rounded-lg transition-colors w-11 h-11 sm:w-auto sm:h-auto ${
+                        <button onClick={handleResetClick} title={t('common.reset')} className={`flex items-center justify-center gap-2 font-semibold px-4 py-2 rounded-full transition-colors w-11 h-11 sm:w-auto sm:h-auto ${
                             confirmReset 
                             ? 'bg-yellow-500 text-white hover:bg-yellow-600' 
-                            : 'bg-red-600 text-white hover:bg-red-700'
+                            : 'bg-gray-900 text-white hover:bg-gray-700 dark:bg-gray-200 dark:text-black dark:hover:bg-gray-300'
                         }`}>
                             <Icon name="refresh-cw" className="w-5 h-5" />
                             <span className="hidden sm:inline">{confirmReset ? t('common.reset_confirm_action') : t('common.reset')}</span>
