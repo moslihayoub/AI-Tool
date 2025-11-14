@@ -102,9 +102,10 @@ export const QuotaModal: React.FC<QuotaModalProps> = ({ onClose, onConnect }) =>
                                 >
                                     {t('quota_modal.close')}
                                 </button>
+                                {/* FIX: Applied primary gradient style to the 'Connect' button for UI consistency. */}
                                 <button
                                     type="submit"
-                                    className="w-1/2 bg-gray-900 text-white font-bold py-3 px-4 rounded-full hover:bg-gray-700 transition-colors disabled:bg-none disabled:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-700 dark:focus:ring-offset-gray-800"
+                                    className="w-1/2 bg-gradient-button text-white font-bold py-3 px-4 rounded-full hover:opacity-90 transition-opacity disabled:bg-none disabled:bg-gray-400 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 dark:focus:ring-offset-gray-800"
                                 >
                                     {t('quota_modal.connect')}
                                 </button>

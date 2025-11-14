@@ -1,7 +1,9 @@
-// This file contains shared type definitions for the application.
-
-// FIX: Added React import to enable JSX namespace augmentation for custom elements.
+// FIX: Changed the React import to a namespace import and used it to correctly
+// augment the global JSX namespace. The previous `import 'react'` was not
+// sufficient in this project's setup, leading to JSX types being overwritten.
 import * as React from 'react';
+
+// This file contains shared type definitions for the application.
 
 declare global {
   interface AIStudio {
@@ -11,20 +13,22 @@ declare global {
   interface Window {
     aistudio?: AIStudio;
   }
+}
 
-  // FIX: Centralized JSX namespace augmentation for the 'dotlottie-wc' custom element.
-  // Placing this in a shared types file ensures that TypeScript recognizes the custom element
-  // across all components without overriding React's default intrinsic elements.
+// FIX: Switched from augmenting the global JSX namespace to module augmentation for 'react'.
+// This is a more robust way to extend JSX's IntrinsicElements without the risk of
+// overwriting all of React's built-in element types, which was the root cause of
+// the widespread JSX-related TypeScript errors.
+declare module 'react' {
   namespace JSX {
     interface IntrinsicElements {
-      'dotlottie-wc': React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement> & {
-          src?: string;
-          autoplay?: boolean;
-          loop?: boolean;
-        },
-        HTMLElement
-      >;
+      'dotlottie-wc': {
+        src?: string;
+        autoplay?: boolean;
+        loop?: boolean;
+        style?: React.CSSProperties;
+        [key: string]: any;
+      };
     }
   }
 }

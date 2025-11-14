@@ -137,10 +137,10 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
                                 <button 
                                     onClick={handleResetClick}
                                     disabled={isAnalyzing}
-                                    className={`font-semibold py-2 px-4 rounded-full transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2 ${
+                                    className={`font-semibold py-2 px-4 rounded-full text-white transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2 ${
                                         confirmReset 
-                                        ? 'bg-yellow-500 text-white hover:bg-yellow-600' 
-                                        : 'bg-gray-900 text-white hover:bg-gray-700 dark:bg-gray-200 dark:text-black dark:hover:bg-gray-300'
+                                        ? 'bg-green-600 hover:bg-green-700' 
+                                        : 'bg-red-600 hover:bg-red-700'
                                     }`}
                                     aria-label={confirmReset ? t('common.reset_confirm_action') : t('common.reset')}
                                 >

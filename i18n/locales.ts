@@ -23,7 +23,7 @@ export const fr = {
         google_drive_import: "Importer via Google Drive",
         pending_files: {
             title: "Fichiers en attente ({{count}})",
-            analyze_button: "Lancer le parsing ({{count}})"
+            analyze_button: "Commencer ({{count}})"
         },
         status: {
             pending: "En attente",
@@ -55,6 +55,10 @@ export const fr = {
         incomplete_profile_tooltip: "Informations clés (nom, métier) manquantes.",
         experience_years: "{{count}} an{{plural:count}} d'exp.",
         candidate_profiles: "Profils des candidats ({{count}})",
+        quick_nav: {
+            graphs: "Graphiques",
+            profiles: "Candidats"
+        },
         charts: {
             perf_by_job: "Score de Performance par Métier",
             job_distribution: "Répartition par métier",
@@ -104,10 +108,10 @@ export const fr = {
     compare: {
         title: "Comparaison de Profils",
         back_to_dashboard: "Retour au tableau de bord",
-        share_title: "Partager la comparaison",
+        share_title: "Partager",
         share_whatsapp: "WhatsApp",
         share_email: "Email",
-        copy_summary: "Copier le résumé",
+        copy_summary: "Copier",
         copied: "Copié !",
         summary_title: "Résumé",
         experience_title: "Expérience",
@@ -161,7 +165,19 @@ export const fr = {
         subtitle: "Votre patience est appréciée pendant que nous traitons les CVs.",
         progress_cvs: "{{progress}} / {{total}} CVs",
         elapsed_time: "Temps écoulé : {{time}}s",
-        summary_incomplete: "Analyse terminée. {{count}} CV{{plural:count}} ont des informations clés manquantes et pourrait nécessiter une vérification."
+        summary_incomplete: "Analyse terminée. {{count}} CV{{plural:count}} ont des informations clés manquantes et pourrait nécessiter une vérification.",
+        game_title: "Light Cycle",
+        game_instructions: "Utilisez les flèches ou les boutons pour vous diriger.",
+        score: "Score",
+        high_score: "Meilleur Score",
+        game_over: "Game Over",
+        restart_game: "Appuyez sur Entrée pour rejouer",
+        fullscreen: "Plein écran",
+        exit_fullscreen: "Quitter plein écran",
+        analyse_terminee: "Analyse terminée !",
+        voir_resultats: "Voir les résultats",
+        close_game: "Fermer",
+        replay_game: "Rejouer"
     },
     common: {
         reset: "Réinitialiser",
@@ -180,7 +196,10 @@ export const fr = {
         dates_not_available: "Dates non renseignées",
         degree_not_available: "Diplôme non renseigné",
         school_not_available: "École non renseignée",
-        name: "Nom"
+        name: "Nom",
+        import: "Importer",
+        actions: "Actions",
+        cancel: "Annuler"
     },
     errors: {
         storageFull: "L'espace de stockage est plein. Veuillez réinitialiser les données pour libérer de l'espace.",
@@ -263,6 +282,10 @@ export const en = {
         incomplete_profile_tooltip: "Key information (name, job) is missing.",
         experience_years: "{{count}} year{{plural:count}} exp.",
         candidate_profiles: "Candidate Profiles ({{count}})",
+        quick_nav: {
+            graphs: "Graphs",
+            profiles: "Profiles"
+        },
         charts: {
             perf_by_job: "Performance Score by Job Category",
             job_distribution: "Job Category Distribution",
@@ -312,10 +335,10 @@ export const en = {
     compare: {
         title: "Profile Comparison",
         back_to_dashboard: "Back to Dashboard",
-        share_title: "Share Comparison",
+        share_title: "Share",
         share_whatsapp: "WhatsApp",
         share_email: "Email",
-        copy_summary: "Copy Summary",
+        copy_summary: "Copy",
         copied: "Copied!",
         summary_title: "Summary",
         experience_title: "Experience",
@@ -369,7 +392,19 @@ export const en = {
         subtitle: "Your patience is appreciated while we process the CVs.",
         progress_cvs: "{{progress}} / {{total}} CVs",
         elapsed_time: "Elapsed time: {{time}}s",
-        summary_incomplete: "Analysis complete. {{count}} CV{{plural:count}} have missing key information and may require review."
+        summary_incomplete: "Analysis complete. {{count}} CV{{plural:count}} have missing key information and may require review.",
+        game_title: "Light Cycle",
+        game_instructions: "Use arrow keys or buttons to steer.",
+        score: "Score",
+        high_score: "High Score",
+        game_over: "Game Over",
+        restart_game: "Press Enter to restart",
+        fullscreen: "Fullscreen",
+        exit_fullscreen: "Exit Fullscreen",
+        analyse_terminee: "Analysis Complete!",
+        voir_resultats: "View Results",
+        close_game: "Close",
+        replay_game: "Replay"
     },
     common: {
         reset: "Reset",
@@ -388,7 +423,10 @@ export const en = {
         dates_not_available: "Dates not provided",
         degree_not_available: "Degree not provided",
         school_not_available: "School not provided",
-        name: "Name"
+        name: "Name",
+        import: "Import",
+        actions: "Actions",
+        cancel: "Cancel"
     },
     errors: {
         storageFull: "Storage space is full. Please reset data to free up space.",

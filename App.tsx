@@ -1,8 +1,8 @@
 // FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
 import * as React from 'react';
 
-// FIX: Moved the global JSX type definition for 'dotlottie-wc' to types.ts to centralize
-// global type definitions and resolve JSX intrinsic element errors across the application.
+// NOTE: The global JSX type definition for 'dotlottie-wc' has been moved to types.ts
+// to centralize all global type definitions and fix JSX intrinsic element errors.
 
 import { Sidebar } from './components/Sidebar';
 import { UploadView } from './components/UploadView';
@@ -12,6 +12,7 @@ import { CompareView } from './components/CompareView';
 import { AnalysisLoader } from './components/AnalysisLoader';
 import { SettingsView } from './components/SettingsView';
 import { QuotaModal } from './components/QuotaModal';
+import { MobileNavBar } from './components/MobileNavBar';
 import { CVFile, View, CandidateProfile, Theme, User } from './types';
 import { parseCvContent } from './services/geminiService';
 import { Icon } from './components/icons';
@@ -209,6 +210,11 @@ function AppContent() {
             return false;
         }
     });
+    
+    // FIX: Removed state and scroll listeners for mobile nav visibility.
+    // The nav bars will now be persistently visible on mobile.
+    const mainContentRef = React.useRef<HTMLElement>(null);
+
 
     React.useEffect(() => {
         try {
@@ -246,7 +252,7 @@ function AppContent() {
     // End of refactored theme logic
 
     const [isAnalyzing, setIsAnalyzing] = React.useState(false);
-    const [analysisProgress, setAnalysisProgress] = React.useState(0);
+    const [isAnalysisDone, setIsAnalysisDone] = React.useState(false);
     const [analysisStartTime, setAnalysisStartTime] = React.useState<number | null>(null);
     const [analysisTotal, setAnalysisTotal] = React.useState(0);
 
@@ -359,6 +365,7 @@ function AppContent() {
             console.error("Failed to save dummy data state to localStorage", error);
         }
     }, [isDummyDataActive]);
+    
 
     const candidateProfiles = React.useMemo((): CandidateProfile[] => {
         return cvFiles
@@ -508,7 +515,7 @@ function AppContent() {
 
         setAnalysisTotal(pendingFiles.length);
         setIsAnalyzing(true);
-        setAnalysisProgress(0);
+        setIsAnalysisDone(false);
         setAnalysisStartTime(Date.now());
         
         // Set all pending files to 'parsing' state at once for immediate UI feedback.
@@ -570,13 +577,22 @@ function AppContent() {
             setAnalysisSummaryMessage(t('analysis.summary_incomplete', {count: incompleteCount}));
         }
 
+        setIsAnalysisDone(true);
+    };
+
+    const handleCancelAnalysis = () => {
         setIsAnalyzing(false);
-        setAnalysisStartTime(null);
+        // Note: background analysis might continue, this just closes the UI.
+    };
+
+    const handleViewResults = () => {
+        setIsAnalyzing(false);
         setView('dashboard');
     };
 
     const handleSelectCandidate = (candidate: CandidateProfile) => {
         setSelectedProfileId(candidate.id);
+        mainContentRef.current?.scrollTo(0, 0);
     };
 
     const handleBackToDashboard = () => {
@@ -626,6 +642,7 @@ function AppContent() {
         localStorage.removeItem('specialUser');
         localStorage.removeItem('comparisonList');
         localStorage.removeItem('processedCVsCache');
+        localStorage.removeItem('lightCycleHighScore');
         setProcessedCVsCache({});
         setAnalysisLimit(prev => ({...prev, count: 0}));
         setStorageError(null);
@@ -768,28 +785,31 @@ function AppContent() {
         }
     };
 
+    // FIX: Removed 'compare' from the full-screen view conditions to fix a bug where the mobile nav bar would disappear.
+    const isFullScreenView = view === 'settings' || !!selectedProfileId;
+
     return (
         <div className="h-screen text-gray-800 dark:text-gray-200 bg-white dark:bg-black">
             <div className="flex h-full w-full">
-                {isAnalyzing && <AnalysisLoader progress={analysisProgress} total={analysisTotal} startTime={analysisStartTime} />}
+                {isAnalyzing && <AnalysisLoader total={analysisTotal} startTime={analysisStartTime} isAnalysisDone={isAnalysisDone} onViewResults={handleViewResults} onCancel={handleCancelAnalysis} />}
                 {isQuotaModalOpen && <QuotaModal onClose={() => setIsQuotaModalOpen(false)} onConnect={handleConnect} />}
 
                 <Sidebar
                     currentView={view}
                     setCurrentView={(v) => { setView(v); setSelectedProfileId(null); }}
-                    isMobileOpen={isMobileSidebarOpen}
-                    setIsMobileOpen={setIsMobileSidebarOpen}
                     isCollapsed={isSidebarCollapsed}
                     setIsCollapsed={setIsSidebarCollapsed}
+                    isMobileOpen={isMobileSidebarOpen}
+                    setIsMobileOpen={setIsMobileSidebarOpen}
                 />
                 <div className="flex-1 flex flex-col overflow-hidden">
-                    <header className="md:hidden flex items-center justify-between p-4 border-b dark:border-gray-800 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+                    <header className={`md:hidden flex items-center justify-between p-4 border-b dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-20`}>
                         <>
                             <img src={logoLight} alt="ParseLIQ HR Logo" className="h-8 w-auto dark:hidden" />
                             <img src={logoDark} alt="ParseLIQ HR Logo" className="h-8 w-auto hidden dark:block" />
                         </>
-                        <button onClick={() => setIsMobileSidebarOpen(true)}>
-                            <Icon name="menu" className="w-6 h-6"/>
+                        <button onClick={() => setIsMobileSidebarOpen(true)} className="p-1 text-gray-600 dark:text-gray-300">
+                           <Icon name="menu" className="w-6 h-6"/>
                         </button>
                     </header>
                     {storageError ? (
@@ -814,9 +834,14 @@ function AppContent() {
                             </button>
                         </div>
                     ) : null}
-                    <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900">
+                    <main ref={mainContentRef} className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 pb-16 md:pb-0">
                         {renderContent()}
                     </main>
+                     <MobileNavBar 
+                        currentView={view}
+                        setCurrentView={(v) => { setView(v); setSelectedProfileId(null); }}
+                        isVisible={!isMobileSidebarOpen && !isFullScreenView}
+                    />
                 </div>
             </div>
         </div>

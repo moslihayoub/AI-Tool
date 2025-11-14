@@ -9,9 +9,11 @@ import { Bar, BarChart, CartesianGrid, LabelList, Legend, ResponsiveContainer, T
 
 interface AIAssistantProps {
     cvFile: CVFile;
+    isOpen: boolean;
+    onClose: () => void;
 }
 
-const AIAssistant: React.FC<AIAssistantProps> = ({ cvFile }) => {
+const AIAssistant: React.FC<AIAssistantProps> = ({ cvFile, isOpen, onClose }) => {
     const { t } = useTranslation();
     const [chat, setChat] = React.useState<Chat | null>(null);
     const [messages, setMessages] = React.useState<ChatMessage[]>([{role: 'model', text: t('ai_assistant.greeting')}]);
@@ -68,44 +70,50 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ cvFile }) => {
     ];
 
     return (
-        <div className="w-full md:w-2/5 xl:w-1/3 bg-gray-50 dark:bg-gray-900/50 border-l dark:border-gray-700 flex flex-col h-full">
-            <div className="p-4 border-b dark:border-gray-700 flex-shrink-0">
-                <h4 className="font-bold font-display text-lg flex items-center gap-2"><Icon name="bot" className="w-6 h-6 text-pink-500" /> {t('ai_assistant.title')}</h4>
-            </div>
-            <div className="flex-1 p-4 overflow-y-auto space-y-4">
-                {messages.map((msg, index) => (
-                    <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-xs lg:max-w-md p-3 rounded-xl shadow-sm ${
-                            msg.role === 'user' 
-                            ? 'bg-gradient-button text-white' 
-                            : 'bg-white dark:bg-gray-700 prose prose-sm dark:prose-invert max-w-none'
-                        }`}
-                         dangerouslySetInnerHTML={{__html: formatMessage(msg.text)}}>
-                        </div>
-                    </div>
-                ))}
-                {isLoading && <div className="flex justify-start"><div className="p-3 rounded-lg bg-white dark:bg-gray-700"><Icon name="spinner" className="w-5 h-5"/></div></div>}
-                <div ref={messagesEndRef} />
-            </div>
-            <div className="p-4 border-t dark:border-gray-700 bg-white dark:bg-gray-800">
-                 <div className="flex flex-wrap gap-2 mb-3">
-                    {quickQuestions.map(q => <button key={q} onClick={() => setInput(q)} className="text-sm font-semibold bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 px-3 py-1 rounded-full transition-colors">{q}</button>)}
-                </div>
-                <div className="flex items-center gap-2">
-                    <input 
-                        type="text" 
-                        value={input}
-                        onChange={e => setInput(e.target.value)}
-                        onKeyPress={e => e.key === 'Enter' && sendMessage()}
-                        placeholder={t('ai_assistant.input_placeholder')}
-                        className="w-full p-3 border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600 focus:ring-2 focus:ring-pink-500"
-                    />
-                    <button onClick={sendMessage} disabled={isLoading} className="bg-gradient-button text-white p-3 rounded-full disabled:bg-none disabled:bg-gray-400 hover:opacity-90 transition-opacity">
-                        <Icon name="send" className="w-5 h-5" />
+        <>
+            <div onClick={onClose} className={`fixed inset-0 bg-black/50 z-40 transition-opacity ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} />
+            <div className={`fixed top-0 right-0 h-full w-full max-w-md bg-gray-50 dark:bg-gray-900/80 dark:backdrop-blur-sm border-l dark:border-gray-700 flex flex-col z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                <div className="p-4 border-b dark:border-gray-700 flex-shrink-0 flex items-center justify-between">
+                    <h4 className="font-bold font-display text-lg flex items-center gap-2"><Icon name="sparkles" className="w-6 h-6 text-pink-500" /> {t('ai_assistant.title')}</h4>
+                    <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+                        <Icon name="close" className="w-6 h-6" />
                     </button>
                 </div>
+                <div className="flex-1 p-4 overflow-y-auto space-y-4">
+                    {messages.map((msg, index) => (
+                        <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                            <div className={`max-w-xs lg:max-w-md p-3 rounded-xl shadow-sm ${
+                                msg.role === 'user' 
+                                ? 'bg-gradient-button text-white' 
+                                : 'bg-white dark:bg-gray-700 prose prose-sm dark:prose-invert max-w-none'
+                            }`}
+                            dangerouslySetInnerHTML={{__html: formatMessage(msg.text)}}>
+                            </div>
+                        </div>
+                    ))}
+                    {isLoading && <div className="flex justify-start"><div className="p-3 rounded-lg bg-white dark:bg-gray-700"><Icon name="spinner" className="w-5 h-5"/></div></div>}
+                    <div ref={messagesEndRef} />
+                </div>
+                <div className="p-4 border-t dark:border-gray-700 bg-white dark:bg-gray-800">
+                    <div className="flex flex-wrap gap-2 mb-3">
+                        {quickQuestions.map(q => <button key={q} onClick={() => setInput(q)} className="text-sm font-semibold bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 px-3 py-1 rounded-full transition-colors">{q}</button>)}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <input 
+                            type="text" 
+                            value={input}
+                            onChange={e => setInput(e.target.value)}
+                            onKeyPress={e => e.key === 'Enter' && sendMessage()}
+                            placeholder={t('ai_assistant.input_placeholder')}
+                            className="w-full p-3 border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600 focus:ring-2 focus:ring-pink-500"
+                        />
+                        <button onClick={sendMessage} disabled={isLoading} className="bg-gradient-button text-white p-3 rounded-full disabled:bg-none disabled:bg-gray-400 hover:opacity-90 transition-opacity">
+                            <Icon name="send" className="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
             </div>
-        </div>
+        </>
     )
 }
 
@@ -128,9 +136,25 @@ const getScoreEmoji = (score: number): string => {
     return '';
 };
 
+// FIX: Added a consistent, enhanced custom tooltip for charts.
+const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+        return (
+            <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border dark:border-gray-600 shadow-lg">
+                <p className="font-bold text-gray-500 dark:text-gray-400 text-sm mb-1">{label}</p>
+                <p className="font-bold text-lg" style={{ color: '#ec4899' }}>
+                    {`${payload[0].name}: ${payload[0].value}`}
+                </p>
+            </div>
+        );
+    }
+    return null;
+};
+
 export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate, cvFile, onBack, isFavorite, onToggleFavorite, comparisonList, onToggleCompare }) => {
     const { t } = useTranslation();
-    
+    const [isAiAssistantOpen, setIsAiAssistantOpen] = React.useState(false);
+
     const skillsExpertiseData = React.useMemo(() => {
         if (!candidate || !candidate.skills?.hard) {
             return [];
@@ -144,14 +168,14 @@ export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate,
         return candidate.skills.hard
             .map(skill => {
                 const skillLower = skill.toLowerCase();
-                const skillRegex = new RegExp(`\\b${skillLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g');
-                const count = (experienceText.match(skillRegex) || []).length;
-
-                // Base score of 1 for being listed, plus counts from experience.
-                return {
-                    name: skill,
-                    expertise: 1 + count,
-                };
+                try {
+                    const skillRegex = new RegExp(`\\b${skillLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g');
+                    const count = (experienceText.match(skillRegex) || []).length;
+                    return { name: skill, expertise: 1 + count };
+                } catch(e) {
+                    console.warn("Could not create regex for skill", skillLower);
+                    return { name: skill, expertise: 1 };
+                }
             })
             .sort((a, b) => b.expertise - a.expertise)
             .slice(0, 15); // Show top 15
@@ -166,8 +190,8 @@ export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate,
     const isCompareDisabled = !isInCompare && comparisonList.length >= 2;
 
     return (
-        <div className="h-full flex flex-col md:flex-row bg-white dark:bg-gray-800">
-            <div className="w-full md:w-3/5 xl:w-2/3 flex flex-col">
+        <div className="h-full flex flex-col bg-white dark:bg-gray-800 relative">
+            <div className="w-full flex flex-col">
                 <header className="p-4 border-b dark:border-gray-700 flex flex-col sm:flex-row sm:justify-between sm:items-center flex-shrink-0 gap-4">
                     {/* Left side: back button, name, details */}
                     <div className="flex items-center gap-3 order-2 sm:order-1 w-full sm:w-auto">
@@ -236,7 +260,7 @@ export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate,
                     </section>
                     )}
 
-                    {hasHardSkills && (
+                    {hasHardSkills && skillsExpertiseData.length > 2 && (
                         <section className="bg-white dark:bg-gray-800/50 p-6 rounded-xl border dark:border-gray-700/50">
                             <h3 className="font-semibold font-display text-xl border-b pb-2 mb-4">{t('detail.skills_chart')}</h3>
                             <div className="w-full h-[400px]">
@@ -251,6 +275,7 @@ export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate,
                                         <YAxis dataKey="name" type="category" width={140} tick={{ fontSize: 12, fill: 'currentColor' }} interval={0} />
                                         <Tooltip 
                                             cursor={{fill: 'rgba(236, 72, 153, 0.1)'}} 
+                                            content={<CustomTooltip />}
                                         />
                                         <Legend verticalAlign="top" height={36}/>
                                         <Bar dataKey="expertise" name={t('detail.expertise_score')} fill="#ec4899">
@@ -291,7 +316,15 @@ export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate,
                     )}
                 </main>
             </div>
-            <AIAssistant cvFile={cvFile} />
+             <button
+                onClick={() => setIsAiAssistantOpen(true)}
+                className="fixed bottom-6 right-6 md:bottom-8 md:right-8 bg-secondary-500 text-white font-semibold rounded-full px-5 py-3 shadow-lg hover:bg-secondary-600 transition-transform hover:scale-110 z-30 flex items-center gap-2"
+                >
+                {/* FIX: Replaced icon with a more thematic 'bot' icon and made text label always visible. */}
+                <Icon name="bot" className="w-6 h-6" />
+                <span className="">{t('ai_assistant.title')}</span>
+            </button>
+            <AIAssistant cvFile={cvFile} isOpen={isAiAssistantOpen} onClose={() => setIsAiAssistantOpen(false)} />
         </div>
     );
 };

@@ -59,7 +59,7 @@ const CandidateCard: React.FC<{
                             aria-label="Toggle favorite"
                         >
                             <div className={`p-1.5 rounded-full ${isFavorite ? '' : 'hover:bg-secondary-100 dark:hover:bg-gray-700'}`}>
-                                <Icon name="heart" className={`w-5 h-5 ${isFavorite ? 'fill-secondary-500 text-secondary-500' : 'text-gray-400'}`} />
+                                <Icon name="heart" className={`w-6 h-6 ${isFavorite ? 'fill-secondary-500 text-secondary-500' : 'text-gray-400'}`} />
                             </div>
                             <span className="text-xs mt-1">{t('dashboard.card.favorite')}</span>
                         </button>
@@ -71,7 +71,7 @@ const CandidateCard: React.FC<{
                             aria-label="Toggle compare"
                         >
                             <div className={`p-1.5 rounded-full ${isInCompare ? 'bg-primary-100 dark:bg-primary-900/50' : 'hover:bg-primary-100 dark:hover:bg-gray-700'}`}>
-                                <Icon name="compare" className={`w-5 h-5`} />
+                                <Icon name="compare" className={`w-6 h-6`} />
                             </div>
                             <span className="text-xs mt-1">{t('dashboard.card.compare')}</span>
                         </button>
@@ -139,9 +139,12 @@ const groupData = (data: string[], t: (key: string) => string) => {
 const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
         return (
+            // FIX: Redesigned tooltip for better readability and visual appeal, with a pink accent color for values.
             <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border dark:border-gray-600 shadow-lg">
-                <p className="font-bold">{label || payload[0].payload.name}</p>
-                <p className="text-sm" style={{ color: payload[0].stroke || payload[0].fill || payload[0].props?.fill }}>{`${payload[0].name}: ${payload[0].value}`}</p>
+                <p className="font-bold text-gray-500 dark:text-gray-400 text-sm mb-1">{label || payload[0].payload.name}</p>
+                <p className="font-bold text-lg" style={{ color: '#ec4899' }}>
+                    {`${payload[0].name}: ${payload[0].value}`}
+                </p>
             </div>
         );
     }
@@ -168,15 +171,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
     const { t } = useTranslation();
     const [selectedJobCategories, setSelectedJobCategories] = React.useState<string[]>([]);
     const [isFilterOpen, setIsFilterOpen] = React.useState(false);
-    const [isExportOpen, setIsExportOpen] = React.useState(false);
+    const [isActionsOpen, setIsActionsOpen] = React.useState(false);
     const [confirmReset, setConfirmReset] = React.useState(false);
     const filterRef = React.useRef<HTMLDivElement>(null);
-    const exportRef = React.useRef<HTMLDivElement>(null);
+    const actionsRef = React.useRef<HTMLDivElement>(null);
     const importInputRef = React.useRef<HTMLInputElement>(null);
+    const graphsRef = React.useRef<HTMLDivElement>(null);
+    const profilesRef = React.useRef<HTMLDivElement>(null);
+
+    const handleScrollTo = (ref: React.RefObject<HTMLDivElement>) => {
+        ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
 
     // FIX: Hoisted function declarations to the top of the component body to prevent "used before its declaration" errors in the early return statement.
     const handleImportClick = () => {
         importInputRef.current?.click();
+        setIsActionsOpen(false);
     };
 
     const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -277,8 +287,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
             if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
                 setIsFilterOpen(false);
             }
-            if (exportRef.current && !exportRef.current.contains(event.target as Node)) {
-                setIsExportOpen(false);
+            if (actionsRef.current && !actionsRef.current.contains(event.target as Node)) {
+                setIsActionsOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -396,9 +406,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                     ></dotlottie-wc>
                     <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">{t('dashboard.no_cv_analyzed')}</p>
                     <div className="mt-6">
-                        <button onClick={handleImportClick} className="flex items-center justify-center gap-2 bg-primary-600 text-white font-semibold px-6 py-3 rounded-full hover:bg-primary-700 transition-colors">
-                            <Icon name="upload" className="w-5 h-5" />
-                            <span>{t('dashboard.import_csv')}</span>
+                        <button onClick={handleImportClick} className="flex items-center justify-center gap-2 bg-gradient-button text-white font-semibold px-6 py-3 rounded-full hover:opacity-90 transition-opacity">
+                            <Icon name="upload" className="w-6 h-6" />
+                            <span>{t('common.import')}</span>
                         </button>
                     </div>
                 </div>
@@ -428,7 +438,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        setIsExportOpen(false);
+        setIsActionsOpen(false);
     };
     
     const exportToJson = () => {
@@ -442,26 +452,26 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
-        setIsExportOpen(false);
+        setIsActionsOpen(false);
     };
 
     return (
-        <div className="p-4 sm:p-8 space-y-8">
-            <header className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+        <div>
+            {/* FIX: Made header sticky for desktop and redesigned mobile layout for better usability. */}
+            <header className="sticky top-0 z-20 bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-sm px-4 sm:px-8 py-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b dark:border-gray-800">
                 <div>
                     <h2 className="text-3xl font-bold font-display text-gray-800 dark:text-gray-100">{isFavoritesView ? t('dashboard.favorites_title') : t('dashboard.title')}</h2>
-                    {!isFavoritesView && <p className="text-gray-500 dark:text-gray-400 mt-1">{t('dashboard.subtitle')}</p>}
+                    {!isFavoritesView && <p className="text-gray-500 dark:text-gray-400 mt-1 hidden sm:block">{t('dashboard.subtitle')}</p>}
                 </div>
                 {!isFavoritesView && (
-                 <div className="flex items-center gap-2 flex-wrap">
+                 <div className="w-full sm:w-auto flex justify-between items-center gap-2">
+                    {/* Left: Filter */}
                     <div className="relative" ref={filterRef}>
-                        <button onClick={() => setIsFilterOpen(!isFilterOpen)} className="flex items-center gap-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-semibold px-4 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors w-56 justify-between">
-                            <span className="truncate">
-                                {selectedJobCategories.length === 0
-                                    ? t('dashboard.filter_by_job')
-                                    : t('dashboard.jobs_selected', { count: selectedJobCategories.length })}
-                            </span>
-                            <Icon name="chevron-down" className={`w-5 h-5 transition-transform duration-200 ${isFilterOpen ? 'rotate-180' : ''}`} />
+                        {/* FIX: Added text labels to mobile header buttons for improved clarity. */}
+                        <button onClick={() => setIsFilterOpen(!isFilterOpen)} title={t('dashboard.filter_by_job')} className="flex items-center justify-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 font-semibold px-3 sm:px-4 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                            <Icon name="filter" className="w-5 h-5"/>
+                            <span>{t('dashboard.filter_by_job')}</span>
+                            {selectedJobCategories.length > 0 && <span className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">{selectedJobCategories.length}</span>}
                         </button>
                         {isFilterOpen && (
                             <div className="absolute top-full mt-2 w-56 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-lg shadow-xl z-10">
@@ -494,205 +504,227 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                             </div>
                         )}
                     </div>
-                     <button
-                        onClick={() => onToggleCompare('')} // This is a trick to trigger the view change
-                        disabled={comparisonList.length !== 2}
-                        className="flex items-center gap-2 bg-primary-600 text-white font-semibold px-4 py-2 rounded-full hover:bg-primary-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-                    >
-                        <Icon name="compare" className="w-5 h-5" />
-                        <span>{t('dashboard.compare.cta', { count: comparisonList.length })}</span>
-                    </button>
-                    <input type="file" ref={importInputRef} onChange={handleFileImport} accept=".csv,.json" className="hidden" />
-                    <button onClick={handleImportClick} title={t('dashboard.import_csv')} className="flex items-center justify-center gap-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-semibold px-4 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors w-11 h-11 sm:w-auto sm:h-auto">
-                        <Icon name="upload" className="w-5 h-5" /> <span className="hidden sm:inline">{t('dashboard.import_csv')}</span>
-                    </button>
-                    <div className="relative" ref={exportRef}>
-                        <button onClick={() => setIsExportOpen(prev => !prev)} title={t('common.export')} className="flex items-center justify-center gap-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-semibold px-4 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors w-11 h-11 sm:w-auto sm:h-auto">
-                            <Icon name="export" className="w-5 h-5" /> <span className="hidden sm:inline">{t('common.export')}</span>
-                            <Icon name="chevron-down" className={`w-4 h-4 transition-transform duration-200 ${isExportOpen ? 'rotate-180' : ''}`} />
+
+                    {/* Desktop Quick Nav */}
+                    <div className="hidden lg:flex items-center gap-2">
+                        {/* FIX: Applied primary gradient style to quick navigation buttons for consistency. */}
+                        <button onClick={() => handleScrollTo(graphsRef)} className="bg-gradient-button text-white font-semibold py-2 px-4 rounded-full hover:opacity-90 transition-opacity items-center gap-2 flex">
+                            <Icon name="dashboard" className="w-5 h-5"/>
+                            <span>{t('dashboard.quick_nav.graphs')}</span>
                         </button>
-                        {isExportOpen && (
-                            <div className="absolute top-full right-0 mt-2 w-40 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-lg shadow-xl z-10 py-1">
-                                <button onClick={exportToCsv} className="w-full text-left flex items-center gap-2 p-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    {t('dashboard.export_as_csv')}
-                                </button>
-                                <button onClick={exportToJson} className="w-full text-left flex items-center gap-2 p-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    {t('dashboard.export_as_json')}
-                                </button>
-                            </div>
-                        )}
+                        <button onClick={() => handleScrollTo(profilesRef)} className="bg-gradient-button text-white font-semibold py-2 px-4 rounded-full hover:opacity-90 transition-opacity items-center gap-2 flex">
+                            <Icon name="users" className="w-5 h-5"/>
+                            <span>{t('dashboard.quick_nav.profiles')}</span>
+                        </button>
                     </div>
-                    <div className="relative">
-                        <button onClick={handleResetClick} title={t('common.reset')} className={`flex items-center justify-center gap-2 font-semibold px-4 py-2 rounded-full transition-colors w-11 h-11 sm:w-auto sm:h-auto ${
-                            confirmReset 
-                            ? 'bg-yellow-500 text-white hover:bg-yellow-600' 
-                            : 'bg-gray-900 text-white hover:bg-gray-700 dark:bg-gray-200 dark:text-black dark:hover:bg-gray-300'
-                        }`}>
-                            <Icon name="refresh-cw" className="w-5 h-5" />
-                            <span className="hidden sm:inline">{confirmReset ? t('common.reset_confirm_action') : t('common.reset')}</span>
-                        </button>
-                        {confirmReset && (
-                            <div className="absolute bottom-full right-0 mb-2 w-max max-w-xs bg-gray-900 text-white text-xs rounded py-2 px-3 opacity-100 transition-opacity pointer-events-none z-10 shadow-lg text-center dark:bg-gray-700">
-                                {t('common.reset_confirm')}
-                            </div>
-                        )}
+                    
+                    <input type="file" ref={importInputRef} onChange={handleFileImport} accept=".csv,.json" className="hidden" />
+                    
+                    {/* Right: Actions */}
+                    <div className="flex items-center gap-2">
+                        <div className="relative">
+                            <button onClick={handleResetClick} title={t('common.reset')} className={`flex items-center justify-center gap-2 font-semibold px-3 sm:px-4 py-2 rounded-full transition-colors ${
+                                confirmReset 
+                                ? 'bg-green-600 text-white hover:bg-green-700' 
+                                : 'bg-red-600 text-white hover:bg-red-700'
+                            }`}>
+                                <Icon name="refresh-cw" className="w-5 h-5" />
+                                <span>{confirmReset ? t('common.reset_confirm_action') : t('common.reset')}</span>
+                            </button>
+                            {confirmReset && (
+                                <div className="absolute bottom-full right-0 mb-2 w-max max-w-xs bg-gray-900 text-white text-xs rounded py-2 px-3 opacity-100 transition-opacity pointer-events-none z-10 shadow-lg text-center dark:bg-gray-700">
+                                    {t('common.reset_confirm')}
+                                </div>
+                            )}
+                        </div>
+                        <div className="relative" ref={actionsRef}>
+                            <button onClick={() => setIsActionsOpen(prev => !prev)} title={t('common.actions')} className="flex items-center justify-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 font-semibold p-2.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                <Icon name="plus" className="w-5 h-5" />
+                            </button>
+                            {isActionsOpen && (
+                                <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-lg shadow-xl z-10 py-1">
+                                    <button onClick={handleImportClick} className="w-full text-left flex items-center gap-3 p-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
+                                        <Icon name="upload" className="w-5 h-5"/> {t('common.import')}
+                                    </button>
+                                    <button onClick={exportToCsv} className="w-full text-left flex items-center gap-3 p-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
+                                        <Icon name="export" className="w-5 h-5"/> {t('dashboard.export_as_csv')}
+                                    </button>
+                                    <button onClick={exportToJson} className="w-full text-left flex items-center gap-3 p-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
+                                        <Icon name="export" className="w-5 h-5"/> {t('dashboard.export_as_json')}
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
                 )}
             </header>
-
-            {!isFavoritesView && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                 <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-lg">
-                    <h3 className="font-semibold font-display mb-4 text-lg">{t('dashboard.charts.perf_by_job')}</h3>
-                    {performanceByJobCategory.length > 0 ? (
-                        <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={performanceByJobCategory} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                                <defs>
-                                    <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
-                                        <stop offset="95%" stopColor="#ec4899" stopOpacity={0.8}/>
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                <XAxis dataKey="name" tick={{fontSize: 12}} />
-                                <YAxis domain={[0, 100]}/>
-                                <Tooltip content={<CustomTooltip />} cursor={{fill: 'rgba(236, 72, 153, 0.1)'}}/>
-                                <Bar dataKey="averageScore" fill="url(#colorScore)" name={t('dashboard.charts.avg_score')} barSize={50}>
-                                <LabelList dataKey="averageScore" position="top" style={{ fill: 'currentColor', fontSize: 12 }} />
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
-                    ) : (
-                        <EmptyChartState />
-                    )}
-                </div>
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-lg">
-                    <h3 className="font-semibold font-display mb-4 text-lg">{t('dashboard.charts.job_distribution')}</h3>
-                    {jobCategoryDistribution.length > 0 ? (
-                        <ResponsiveContainer width="100%" height={300}>
-                            <LineChart data={jobCategoryDistribution} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                <XAxis dataKey="name" tick={{fontSize: 12}} interval={0} />
-                                <YAxis allowDecimals={false} />
-                                <Tooltip content={<CustomTooltip />} />
-                                <Legend verticalAlign="top" height={36}/>
-                                <Line type="monotone" dataKey="value" name={t('dashboard.charts.num_cvs')} stroke={COLORS[0]} strokeWidth={2} activeDot={{ r: 8 }} />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    ) : (
-                        <EmptyChartState />
-                    )}
-                </div>
-                 <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-lg">
-                    <h3 className="font-semibold font-display mb-4 text-lg">{t('dashboard.charts.exp_distribution')}</h3>
-                    {filteredCandidates.length > 0 ? (
-                        <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={experienceDistribution} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                                <defs>
-                                    <linearGradient id="colorExp" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
-                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0.8}/>
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                <XAxis dataKey="name" tick={{fontSize: 12}}/>
-                                <YAxis allowDecimals={false} />
-                                <Tooltip content={<CustomTooltip />} cursor={{fill: 'rgba(59, 130, 246, 0.1)'}}/>
-                                <Bar dataKey="count" fill="url(#colorExp)" name={t('dashboard.charts.candidates')} barSize={60}>
-                                <LabelList dataKey="count" position="top" style={{ fill: 'currentColor', fontSize: 12 }}/>
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
-                    ) : (
-                        <EmptyChartState />
-                    )}
-                </div>
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-lg">
-                    <h3 className="font-semibold font-display mb-4 text-lg">{t('dashboard.charts.location_distribution')}</h3>
-                    {locationDistribution.length > 0 ? (
-                        <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={locationDistribution} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                                <defs>
-                                    <linearGradient id="colorLoc" x1="0" y1="0" x2="1" y2="0">
-                                        <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.8}/>
-                                        <stop offset="95%" stopColor="#ef4444" stopOpacity={0.8}/>
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                                <XAxis type="number" allowDecimals={false} />
-                                <YAxis type="category" dataKey="name" width={100} tick={{fontSize: 12}} interval={0} />
-                                <Tooltip content={<CustomTooltip />} cursor={{fill: 'rgba(245, 158, 11, 0.1)'}}/>
-                                <Bar dataKey="value" fill="url(#colorLoc)" name={t('dashboard.charts.num_cvs')} barSize={30}>
-                                    <LabelList dataKey="value" position="right" style={{ fill: 'currentColor', fontSize: 12 }}/>
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
-                    ) : (
-                        <EmptyChartState />
-                    )}
-                </div>
-                 <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-lg lg:col-span-2">
-                    <h3 className="font-semibold font-display mb-4 text-lg">{t('dashboard.charts.aggregated_skills_expertise')}</h3>
-                    {aggregatedSkillsExpertise.length > 0 ? (
-                        <ResponsiveContainer width="100%" height={400}>
-                            <BarChart data={aggregatedSkillsExpertise} layout="vertical" margin={{ top: 5, right: 40, left: 20, bottom: 5 }}>
-                                 <defs>
-                                    <linearGradient id="colorSkill" x1="0" y1="0" x2="1" y2="0">
-                                        <stop offset="5%" stopColor="#ec4899" stopOpacity={0.8}/>
-                                        <stop offset="95%" stopColor="#F857A6" stopOpacity={0.8}/>
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                                <XAxis type="number" allowDecimals={false} />
-                                <YAxis type="category" dataKey="name" width={120} tick={{fontSize: 12}} interval={0} />
-                                <Tooltip content={<CustomTooltip />} cursor={{fill: 'rgba(236, 72, 153, 0.1)'}}/>
-                                <Bar dataKey="expertise" fill="url(#colorSkill)" name={t('detail.expertise_score')} barSize={20}>
-                                    <LabelList dataKey="expertise" position="right" style={{ fill: 'currentColor', fontSize: 12 }}/>
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
-                    ) : (
-                        <EmptyChartState />
-                    )}
-                </div>
-            </div>
-            )}
-
-            <div className="mt-8">
-                <h3 className="text-lg font-semibold font-display text-gray-500 dark:text-gray-400 mb-4">{t('dashboard.candidate_profiles', {count: filteredCandidates.length})}</h3>
-                 {filteredCandidates.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {filteredCandidates.map(candidate => {
-                            const isInCompare = comparisonList.includes(candidate.id);
-                            return (
-                                <CandidateCard 
-                                    key={candidate.id} 
-                                    candidate={candidate} 
-                                    onSelect={() => onSelectCandidate(candidate)} 
-                                    isFavorite={favorites.includes(candidate.id)}
-                                    onToggleFavorite={(e) => { e.stopPropagation(); onToggleFavorite(candidate.id); }}
-                                    isInCompare={isInCompare}
-                                    isCompareDisabled={!isInCompare && comparisonList.length >= 2}
-                                    onToggleCompare={(e) => { e.stopPropagation(); onToggleCompare(candidate.id); }}
-                                />
-                            );
-                        })}
-                    </div>
-                 ) : (
-                    isFavoritesView && (
-                         <div className="flex flex-col items-center justify-center min-h-[50vh] p-8 text-center">
-                            {/* FIX: Changed autoPlay to autoplay to align with web component standards. */}
-                            <dotlottie-wc
-                                src="https://lottie.host/89c66344-281d-4450-91d3-4574a47fec47/31ogoyP4Mh.lottie"
-                                autoplay
-                                loop
-                                style={{ width: '200px', height: '200px' }}
-                            ></dotlottie-wc>
-                            <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">{t('dashboard.no_favorites')}</p>
+            
+            <div className="p-4 sm:p-8">
+                {!isFavoritesView && (
+                    <div className="lg:hidden fixed bottom-20 left-0 right-0 w-full flex justify-center z-30 pointer-events-none">
+                        {/* FIX: Applied primary gradient style to floating navigation buttons for visual consistency. */}
+                        <div className="flex gap-2 pointer-events-auto p-1.5 rounded-full shadow-lg">
+                            <button onClick={() => handleScrollTo(graphsRef)} className="bg-gradient-button text-white font-semibold py-2 px-5 rounded-full shadow-sm hover:opacity-90 transition-opacity">{t('dashboard.quick_nav.graphs')}</button>
+                            <button onClick={() => handleScrollTo(profilesRef)} className="bg-gradient-button text-white font-semibold py-2 px-5 rounded-full shadow-sm hover:opacity-90 transition-opacity">{t('dashboard.quick_nav.profiles')}</button>
                         </div>
-                    )
-                 )}
+                    </div>
+                )}
+
+
+                {!isFavoritesView && (
+                <div ref={graphsRef} className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-lg">
+                        <h3 className="font-semibold font-display mb-4 text-lg">{t('dashboard.charts.perf_by_job')}</h3>
+                        {performanceByJobCategory.length > 0 ? (
+                            <ResponsiveContainer width="100%" height={300}>
+                                <BarChart data={performanceByJobCategory} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                                    <defs>
+                                        <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
+                                            <stop offset="95%" stopColor="#ec4899" stopOpacity={0.8}/>
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                    <XAxis dataKey="name" tick={{fontSize: 12}} />
+                                    <YAxis domain={[0, 100]}/>
+                                    <Tooltip content={<CustomTooltip />} cursor={{fill: 'rgba(236, 72, 153, 0.1)'}}/>
+                                    <Bar dataKey="averageScore" fill="url(#colorScore)" name={t('dashboard.charts.avg_score')} barSize={50}>
+                                    <LabelList dataKey="averageScore" position="top" style={{ fill: 'currentColor', fontSize: 12 }} />
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <EmptyChartState />
+                        )}
+                    </div>
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-lg">
+                        <h3 className="font-semibold font-display mb-4 text-lg">{t('dashboard.charts.job_distribution')}</h3>
+                        {jobCategoryDistribution.length > 0 ? (
+                            <ResponsiveContainer width="100%" height={300}>
+                                <LineChart data={jobCategoryDistribution} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                    <XAxis dataKey="name" tick={{fontSize: 12}} interval={0} />
+                                    <YAxis allowDecimals={false} />
+                                    <Tooltip content={<CustomTooltip />} />
+                                    <Legend verticalAlign="top" height={36}/>
+                                    <Line type="monotone" dataKey="value" name={t('dashboard.charts.num_cvs')} stroke={COLORS[0]} strokeWidth={2} activeDot={{ r: 8 }} />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <EmptyChartState />
+                        )}
+                    </div>
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-lg">
+                        <h3 className="font-semibold font-display mb-4 text-lg">{t('dashboard.charts.exp_distribution')}</h3>
+                        {filteredCandidates.length > 0 ? (
+                            <ResponsiveContainer width="100%" height={300}>
+                                <BarChart data={experienceDistribution} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                                    <defs>
+                                        <linearGradient id="colorExp" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                                            <stop offset="95%" stopColor="#10b981" stopOpacity={0.8}/>
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                    <XAxis dataKey="name" tick={{fontSize: 12}}/>
+                                    <YAxis allowDecimals={false} />
+                                    <Tooltip content={<CustomTooltip />} cursor={{fill: 'rgba(59, 130, 246, 0.1)'}}/>
+                                    <Bar dataKey="count" fill="url(#colorExp)" name={t('dashboard.charts.candidates')} barSize={60}>
+                                    <LabelList dataKey="count" position="top" style={{ fill: 'currentColor', fontSize: 12 }}/>
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <EmptyChartState />
+                        )}
+                    </div>
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-lg">
+                        <h3 className="font-semibold font-display mb-4 text-lg">{t('dashboard.charts.location_distribution')}</h3>
+                        {locationDistribution.length > 0 ? (
+                            <ResponsiveContainer width="100%" height={300}>
+                                <BarChart data={locationDistribution} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                                    <defs>
+                                        <linearGradient id="colorLoc" x1="0" y1="0" x2="1" y2="0">
+                                            <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.8}/>
+                                            <stop offset="95%" stopColor="#ef4444" stopOpacity={0.8}/>
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                                    <XAxis type="number" allowDecimals={false} />
+                                    <YAxis type="category" dataKey="name" width={100} tick={{fontSize: 12}} interval={0} />
+                                    <Tooltip content={<CustomTooltip />} cursor={{fill: 'rgba(245, 158, 11, 0.1)'}}/>
+                                    <Bar dataKey="value" fill="url(#colorLoc)" name={t('dashboard.charts.num_cvs')} barSize={30}>
+                                        <LabelList dataKey="value" position="right" style={{ fill: 'currentColor', fontSize: 12 }}/>
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <EmptyChartState />
+                        )}
+                    </div>
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-lg lg:col-span-2">
+                        <h3 className="font-semibold font-display mb-4 text-lg">{t('dashboard.charts.aggregated_skills_expertise')}</h3>
+                        {aggregatedSkillsExpertise.length > 0 ? (
+                            <ResponsiveContainer width="100%" height={400}>
+                                <BarChart data={aggregatedSkillsExpertise} layout="vertical" margin={{ top: 5, right: 40, left: 20, bottom: 5 }}>
+                                    <defs>
+                                        <linearGradient id="colorSkill" x1="0" y1="0" x2="1" y2="0">
+                                            <stop offset="5%" stopColor="#ec4899" stopOpacity={0.8}/>
+                                            <stop offset="95%" stopColor="#F857A6" stopOpacity={0.8}/>
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                                    <XAxis type="number" allowDecimals={false} />
+                                    <YAxis type="category" dataKey="name" width={120} tick={{fontSize: 12}} interval={0} />
+                                    <Tooltip content={<CustomTooltip />} cursor={{fill: 'rgba(236, 72, 153, 0.1)'}}/>
+                                    <Bar dataKey="expertise" fill="url(#colorSkill)" name={t('detail.expertise_score')} barSize={20}>
+                                        <LabelList dataKey="expertise" position="right" style={{ fill: 'currentColor', fontSize: 12 }}/>
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <EmptyChartState />
+                        )}
+                    </div>
+                </div>
+                )}
+
+                <div ref={profilesRef} className="mt-8">
+                    <h3 className="text-lg font-semibold font-display text-gray-500 dark:text-gray-400 mb-4">{t('dashboard.candidate_profiles', {count: filteredCandidates.length})}</h3>
+                    {filteredCandidates.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            {filteredCandidates.map(candidate => {
+                                const isInCompare = comparisonList.includes(candidate.id);
+                                return (
+                                    <CandidateCard 
+                                        key={candidate.id} 
+                                        candidate={candidate} 
+                                        onSelect={() => onSelectCandidate(candidate)} 
+                                        isFavorite={favorites.includes(candidate.id)}
+                                        onToggleFavorite={(e) => { e.stopPropagation(); onToggleFavorite(candidate.id); }}
+                                        isInCompare={isInCompare}
+                                        isCompareDisabled={!isInCompare && comparisonList.length >= 2}
+                                        onToggleCompare={(e) => { e.stopPropagation(); onToggleCompare(candidate.id); }}
+                                    />
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        isFavoritesView && (
+                            <div className="flex flex-col items-center justify-center min-h-[50vh] p-8 text-center">
+                                {/* FIX: Changed autoPlay to autoplay to align with web component standards. */}
+                                <dotlottie-wc
+                                    src="https://lottie.host/89c66344-281d-4450-91d3-4574a47fec47/31ogoyP4Mh.lottie"
+                                    autoplay
+                                    loop
+                                    style={{ width: '200px', height: '200px' }}
+                                ></dotlottie-wc>
+                                <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">{t('dashboard.no_favorites')}</p>
+                            </div>
+                        )
+                    )}
+                </div>
             </div>
         </div>
     )

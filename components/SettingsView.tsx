@@ -20,8 +20,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ theme, setTheme, onL
     const { t, language, setLanguage } = useTranslation();
     const [confirmDisconnect, setConfirmDisconnect] = React.useState(false);
 
-    const activeBtnClasses = "bg-gradient-button text-white";
-    const inactiveBtnClasses = "bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600";
+    const activeBtnClasses = "bg-primary-600 text-white";
+    const inactiveBtnClasses = "bg-white dark:bg-gray-700 border border-gray-900 dark:border-gray-200 text-gray-900 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700";
     
     const handleDisconnectClick = () => {
         if (confirmDisconnect) {
@@ -46,14 +46,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ theme, setTheme, onL
                     <div className="flex space-x-2">
                         <button 
                             onClick={() => setLanguage('fr')} 
-                            className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors ${language === 'fr' ? 'bg-primary-600 text-white' : inactiveBtnClasses}`}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors ${language === 'fr' ? activeBtnClasses : inactiveBtnClasses}`}
                         >
                             <Icon name="fr-flag" className="w-6 h-6 rounded-full" />
                             <span>{t('settings.language.french')}</span>
                         </button>
                         <button
                             onClick={() => setLanguage('en')}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors ${language === 'en' ? 'bg-primary-600 text-white' : inactiveBtnClasses}`}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors ${language === 'en' ? activeBtnClasses : inactiveBtnClasses}`}
                         >
                              <Icon name="gb-flag" className="w-6 h-6 rounded-full" />
                             <span>{t('settings.language.english')}</span>
@@ -66,21 +66,21 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ theme, setTheme, onL
                     <div className="flex space-x-2">
                         <button 
                             onClick={() => setTheme('light')} 
-                            className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors w-full justify-center ${theme === 'light' ? 'bg-primary-600 text-white' : inactiveBtnClasses}`}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors w-full justify-center ${theme === 'light' ? activeBtnClasses : inactiveBtnClasses}`}
                         >
                             <Icon name="sun" className="w-5 h-5"/>
                             <span className="hidden sm:inline">{t('settings.theme.light')}</span>
                         </button>
                          <button 
                             onClick={() => setTheme('dark')} 
-                            className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors w-full justify-center ${theme === 'dark' ? 'bg-primary-600 text-white' : inactiveBtnClasses}`}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors w-full justify-center ${theme === 'dark' ? activeBtnClasses : inactiveBtnClasses}`}
                         >
                              <Icon name="moon" className="w-5 h-5"/>
                             <span className="hidden sm:inline">{t('settings.theme.dark')}</span>
                         </button>
                          <button 
                             onClick={() => setTheme('system')} 
-                            className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors w-full justify-center ${theme === 'system' ? 'bg-primary-600 text-white' : inactiveBtnClasses}`}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors w-full justify-center ${theme === 'system' ? activeBtnClasses : inactiveBtnClasses}`}
                         >
                              <Icon name="desktop" className="w-5 h-5"/>
                             <span className="hidden sm:inline">{t('settings.theme.system')}</span>
@@ -96,10 +96,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ theme, setTheme, onL
                             <div className="relative">
                                 <button
                                     onClick={handleDisconnectClick}
-                                    className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors ${
+                                    className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-full font-semibold text-white transition-colors ${
                                         confirmDisconnect 
-                                        ? 'bg-yellow-500 text-white hover:bg-yellow-600' 
-                                        : 'bg-red-600 text-white hover:bg-red-700'
+                                        ? 'bg-green-600 hover:bg-green-700' 
+                                        : 'bg-red-600 hover:bg-red-700'
                                     }`}
                                 >
                                     <Icon name="log-out" className="w-5 h-5"/>
@@ -118,7 +118,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ theme, setTheme, onL
                             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{t('settings.connection.description')}</p>
                             <button
                                 onClick={onOpenQuotaModal}
-                                className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors bg-gray-900 text-white hover:bg-gray-700"
+                                className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors bg-gradient-button text-white hover:opacity-90"
                             >
                                 <Icon name="link" className="w-5 h-5"/>
                                 <span>{t('settings.connection.button')}</span>
@@ -134,7 +134,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ theme, setTheme, onL
                     {isDummyDataActive ? (
                         <button
                             onClick={onReset}
-                            className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors bg-gray-900 text-white hover:bg-gray-700 dark:bg-gray-200 dark:text-black dark:hover:bg-gray-300"
+                            className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors bg-red-600 text-white hover:bg-red-700"
                         >
                             <Icon name="refresh-cw" className="w-5 h-5"/>
                             <span>{t('common.reset')}</span>

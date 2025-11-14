@@ -36,6 +36,18 @@ const CompareSectionCard: React.FC<{ title: string, children: React.ReactNode }>
 export const CompareView: React.FC<CompareViewProps> = ({ profile1, profile2, onBack }) => {
     const { t } = useTranslation();
     const [isCopied, setIsCopied] = React.useState(false);
+    const [isShareOpen, setIsShareOpen] = React.useState(false);
+    const shareRef = React.useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (shareRef.current && !shareRef.current.contains(event.target as Node)) {
+                setIsShareOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     if (!profile1 || !profile2) {
         return (
@@ -95,6 +107,7 @@ export const CompareView: React.FC<CompareViewProps> = ({ profile1, profile2, on
 
     const handleShare = (platform: 'whatsapp' | 'email' | 'copy') => {
         const summary = generateComparisonSummary();
+        setIsShareOpen(false);
         if (platform === 'whatsapp') {
             window.open(`https://wa.me/?text=${encodeURIComponent(summary)}`, '_blank');
         } else if (platform === 'email') {
@@ -180,26 +193,35 @@ export const CompareView: React.FC<CompareViewProps> = ({ profile1, profile2, on
 
     return (
         <div className="p-4 sm:p-8 space-y-8">
-            <header className="flex flex-wrap justify-between items-center gap-4">
-                <div className="flex items-center gap-3">
-                    <button onClick={onBack} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+            <header className="flex justify-between items-center gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                    <button onClick={onBack} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 flex-shrink-0">
                         <Icon name="chevron-left" className="w-6 h-6" />
                     </button>
-                    <div>
-                        <h2 className="text-3xl font-bold font-display text-gray-800 dark:text-gray-100">{t('compare.title')}</h2>
-                        <p className="text-gray-500 dark:text-gray-400 mt-1">{`${profile1.name} vs ${profile2.name}`}</p>
+                    <div className="truncate">
+                        <h2 className="text-2xl sm:text-3xl font-bold font-display text-gray-800 dark:text-gray-100 truncate">{t('compare.title')}</h2>
+                        <p className="text-gray-500 dark:text-gray-400 mt-1 truncate">{`${profile1.name} vs ${profile2.name}`}</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-3">
-                    <span className="text-gray-600 dark:text-gray-300 font-medium">Partager :</span>
-                    <div className="bg-white dark:bg-gray-800 p-1 rounded-full border dark:border-gray-700 flex items-center gap-2">
-                        <button onClick={() => handleShare('whatsapp')} title={t('compare.share_whatsapp')} className="p-2 rounded-full bg-green-500 text-white hover:bg-green-600 transition-colors"><Icon name="whatsapp" className="w-6 h-6"/></button>
-                        <button onClick={() => handleShare('email')} title={t('compare.share_email')} className="p-2 rounded-full bg-blue-500 text-white hover:bg-blue-600 transition-colors"><Icon name="mail" className="w-6 h-6"/></button>
-                        <button onClick={() => handleShare('copy')} title={t('compare.copy_summary')} className="relative p-2 rounded-full bg-gray-600 text-white hover:bg-gray-700 transition-colors">
-                            <Icon name="copy" className="w-6 h-6"/>
-                            {isCopied && <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs rounded py-1 px-2">{t('compare.copied')}</span>}
-                        </button>
-                    </div>
+                <div ref={shareRef} className="relative">
+                    <button onClick={() => setIsShareOpen(prev => !prev)} className="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-full py-2 px-4 font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <Icon name="share" className="w-5 h-5" />
+                        <span>{t('compare.share_title')}</span>
+                         {isCopied && <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs rounded py-1 px-2">{t('compare.copied')}</span>}
+                    </button>
+                    {isShareOpen && (
+                        <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-lg shadow-xl z-10 py-1">
+                            <button onClick={() => handleShare('whatsapp')} className="w-full text-left flex items-center gap-3 p-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <Icon name="whatsapp" className="w-5 h-5 text-green-500"/> {t('compare.share_whatsapp')}
+                            </button>
+                            <button onClick={() => handleShare('email')} className="w-full text-left flex items-center gap-3 p-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <Icon name="mail" className="w-5 h-5"/> {t('compare.share_email')}
+                            </button>
+                            <button onClick={() => handleShare('copy')} className="w-full text-left flex items-center gap-3 p-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <Icon name="copy" className="w-5 h-5"/> {t('compare.copy_summary')}
+                            </button>
+                        </div>
+                    )}
                 </div>
             </header>
 

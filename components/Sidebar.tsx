@@ -8,13 +8,13 @@ import { logoDark, logoIcon, logoLight } from '../assets';
 interface SidebarProps {
   currentView: View;
   setCurrentView: (view: View) => void;
-  isMobileOpen: boolean;
-  setIsMobileOpen: (isOpen: boolean) => void;
   isCollapsed: boolean;
   setIsCollapsed: (isCollapsed: boolean) => void;
+  isMobileOpen: boolean;
+  setIsMobileOpen: (isOpen: boolean) => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, isMobileOpen, setIsMobileOpen, isCollapsed, setIsCollapsed }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen }) => {
   const { t } = useTranslation();
   
   const navItems = [
@@ -26,17 +26,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, i
   ];
 
   const sidebarClasses = `
-    fixed top-0 left-0 h-full bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 
+    h-full bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 
     flex flex-col z-40 transition-all duration-300 ease-in-out
+    fixed md:relative inset-y-0 left-0 transform
+    ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0
     ${isCollapsed ? 'w-20' : 'w-64'}
   `;
-
-  const mobileTransformClasses = isMobileOpen ? 'translate-x-0' : '-translate-x-full';
   
   return (
     <>
-      <div onClick={() => setIsMobileOpen(false)} className={`fixed inset-0 bg-black/60 z-30 md:hidden transition-opacity ${isMobileOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} aria-hidden="true" />
-      <aside className={`${sidebarClasses} md:relative md:translate-x-0 transform ${mobileTransformClasses}`}>
+      {isMobileOpen && <div onClick={() => setIsMobileOpen(false)} className="fixed inset-0 bg-black/50 z-30 md:hidden" />}
+      <aside className={sidebarClasses}>
         <div className={`p-4 h-16 border-b border-gray-200 dark:border-gray-800 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
           <div className={`flex items-center gap-2 overflow-hidden transition-all duration-300 ${isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'}`}>
             <img src={logoLight} alt="ParseLIQ HR" className="h-9 dark:hidden" />
@@ -46,9 +46,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, i
           <button onClick={() => setIsCollapsed(!isCollapsed)} className="hidden md:block p-1 text-gray-500 hover:text-gray-200">
             <Icon name="panel-left" className={`w-6 h-6 transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`}/>
           </button>
-          
-          <button onClick={() => setIsMobileOpen(false)} className={`md:hidden p-1`}>
-              <Icon name="close" className="w-5 h-5"/>
+           <button onClick={() => setIsMobileOpen(false)} className="md:hidden p-1 text-gray-500 hover:text-gray-200">
+            <Icon name="close" className="w-6 h-6"/>
           </button>
         </div>
         <nav className="flex-1 p-2 space-y-2">
