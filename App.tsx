@@ -175,7 +175,7 @@ function AppContent() {
             return [];
         }
     });
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(window.innerWidth < 1024);
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = React.useState(false);
     const [storageError, setStorageError] = React.useState<string | null>(null);
     const [analysisSummaryMessage, setAnalysisSummaryMessage] = React.useState<string | null>(null);
