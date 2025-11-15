@@ -1,5 +1,5 @@
-// FIX: Replaced `import * as React from 'react'` with `import 'react'` to ensure React's global JSX namespace is available for augmentation, resolving widespread 'Property does not exist on type 'JSX.IntrinsicElements'' errors. The `import 'react'` statement loads React's type definitions globally without creating a local variable, which seems to resolve the type-stripping or namespace-overwriting issue.
-import 'react';
+// FIX: Changed `import 'react'` to `import * as React from 'react'` to resolve the 'Cannot find namespace React' error for `React.CSSProperties`. This also makes the React import style consistent across all files, which should help TypeScript correctly resolve the global JSX namespace and fix the widespread 'Property does not exist on type JSX.IntrinsicElements' errors.
+import * as React from 'react';
 
 // This file contains shared type definitions for the application.
 

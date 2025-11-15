@@ -36,11 +36,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, i
     { id: 'settings', label: t('sidebar.settings'), icon: 'settings' },
   ];
 
+  // FIX: Updated sidebar classes to ensure it remains visible on desktop. The `md:translate-x-0` class now overrides any mobile-specific transform, fixing the bug where the sidebar would disappear after navigation clicks on larger screens.
   const sidebarClasses = `
     h-full bg-gray-50 dark:bg-gray-900 ltr:border-r rtl:border-l border-gray-200 dark:border-gray-800
     flex flex-col z-40 transition-all duration-300 ease-in-out
-    fixed md:static inset-y-0 ltr:left-0 rtl:right-0 transform md:transform-none
+    fixed md:static inset-y-0 ltr:left-0 rtl:right-0 transform
     ${isMobileOpen ? 'translate-x-0' : 'ltr:-translate-x-full rtl:translate-x-full'}
+    md:translate-x-0
     ${isCollapsed ? 'w-20' : 'w-64'} flex-shrink-0
   `;
   
