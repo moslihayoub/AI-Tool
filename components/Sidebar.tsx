@@ -72,7 +72,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, i
                 }
               }}
               title={isCollapsed ? item.label : undefined}
-              className={`w-full flex items-center p-3 rounded-lg ltr:text-left rtl:text-right rtl:flex-row-reverse transition-colors ${isCollapsed ? 'justify-center' : 'gap-3'} ${
+              className={`w-full flex items-center p-3 rounded-lg rtl:flex-row-reverse transition-colors ${
+                isCollapsed 
+                  ? 'justify-center' 
+                  : 'gap-3 ltr:text-left rtl:text-right'
+              } ${
                 currentView === item.id
                   ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-200'
                   : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'

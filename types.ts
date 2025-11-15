@@ -14,16 +14,13 @@ declare global {
   // fixing widespread JSX intrinsic element type errors.
   namespace JSX {
     interface IntrinsicElements {
-      // FIX: Changed the type definition to extend from `div`'s intrinsic element type.
-      // This is a more robust way to type custom elements in React with TypeScript,
-      // ensuring all standard HTML attributes (like style, className) are included,
-      // which resolves the "Property 'dotlottie-wc' does not exist on type 'JSX.IntrinsicElements'" errors.
-      // FIX: Replaced `JSX.IntrinsicElements['div']` with a more explicit type to resolve "Property 'div' does not exist" error.
-      'dotlottie-wc': React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> & {
+      // FIX: Simplified the 'dotlottie-wc' custom element type. The previous dependency on React.DetailedHTMLProps was causing a cascading type failure because the base JSX types were not being found during compilation. This change removes that dependency, which should allow the base React JSX types to load correctly and resolve the widespread 'Property does not exist on type 'JSX.IntrinsicElements'' errors.
+      'dotlottie-wc': {
         src?: string;
-        // FIX: Reverted `autoPlay` to `autoplay`. The camelCase `autoPlay` might conflict with React's built-in prop types for media elements, causing TypeScript to ignore this custom element declaration entirely. Using lowercase is safer for web components.
         autoplay?: boolean;
         loop?: boolean;
+        style?: React.CSSProperties;
+        className?: string;
       };
     }
   }
