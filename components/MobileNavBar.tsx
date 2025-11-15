@@ -16,8 +16,10 @@ export const MobileNavBar: React.FC<MobileNavBarProps> = ({ currentView, setCurr
   const navItems = [
     { id: 'upload', label: t('sidebar.upload'), icon: 'upload' },
     { id: 'dashboard', label: t('sidebar.dashboard'), icon: 'dashboard' },
+    { id: 'ai', label: t('sidebar.ai_assistant'), icon: 'bot' },
     { id: 'favorites', label: t('sidebar.favorites'), icon: 'heart' },
     { id: 'compare', label: t('sidebar.compare'), icon: 'compare' },
+    { id: 'settings', label: t('sidebar.settings'), icon: 'settings' },
   ];
   
   // FIX: Fixed bug where navbar would disappear on scroll by ensuring it is always visible.
@@ -28,15 +30,15 @@ export const MobileNavBar: React.FC<MobileNavBarProps> = ({ currentView, setCurr
           <button
             key={item.id}
             onClick={() => setCurrentView(item.id as View)}
-            className={`flex flex-col items-center justify-center flex-grow py-2 mx-1 rounded-lg transition-all duration-200
+            title={item.label}
+            className={`flex flex-col items-center justify-center flex-grow py-2 mx-1 rounded-lg transition-all duration-200 h-14
             ${
                 currentView === item.id
                 ? 'bg-gradient-button text-white shadow-md'
                 : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
             }`}
           >
-            <Icon name={item.icon} className="w-6 h-6 mb-1" />
-            <span className="text-xs font-medium">{item.label}</span>
+            <Icon name={item.icon} className="w-7 h-7" />
           </button>
         ))}
       </div>

@@ -52,7 +52,7 @@ export const QuotaModal: React.FC<QuotaModalProps> = ({ onClose, onConnect }) =>
                 <div className="p-8 pt-12 text-center flex flex-col items-center">
                     <h2 id="quota-modal-title" className="text-2xl font-bold font-display text-gray-800 dark:text-gray-100 mb-2">{t('quota_modal.title')}</h2>
                     <div className="my-2">
-                         {/* FIX: Changed autoPlay to autoplay to align with web component standards. */}
+                         {/* FIX: Changed `autoPlay` prop to `autoplay` to align with the updated global type definition for the 'dotlottie-wc' custom element. */}
                          <dotlottie-wc src="https://lottie.host/352a0ebe-e2b1-4c2a-8e52-ca0386d46cfe/HRzXfUbyWz.lottie" style={{ width: '160px', height: '160px' }} autoplay loop></dotlottie-wc>
                     </div>
                     <p className="text-gray-500 dark:text-gray-400">{t('quota_modal.description')}</p>

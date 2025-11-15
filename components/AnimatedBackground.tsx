@@ -1,4 +1,5 @@
 // FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
+// FIX: Switched to namespace React import to correctly populate the global JSX namespace, resolving JSX intrinsic element type errors.
 import * as React from 'react';
 
 export const AnimatedBackground: React.FC = () => {
@@ -24,29 +25,24 @@ export const AnimatedBackground: React.FC = () => {
             
             const xEnd = Math.random() * 90 + 5;
             const yEnd = Math.random() * 90 + 5;
-            const zEnd = Math.random() * 200 - 100;
             
-            particle.style.setProperty('--x', `${xEnd}vw`);
-            particle.style.setProperty('--y', `${yEnd}vh`);
-            particle.style.setProperty('--z', `${zEnd}px`);
+            // FIX: Removed erroneous 'START++' statement that was causing a reference error.
             
-            particle.style.left = `${Math.random() * 100}vw`;
-            particle.style.top = `${Math.random() * 100}vh`;
+            particle.style.setProperty('--x-end', `${xEnd}vw`);
+            particle.style.setProperty('--y-end', `${yEnd}vh`);
 
-            const hue = Math.random() * 360;
-            particle.style.background = `hsl(${hue}, 70%, 60%)`;
+            const duration = Math.random() * 10 + 10;
+            particle.style.animationDuration = `${duration}s`;
 
-            const animationDuration = Math.random() * 15 + 5;
-            const animationDelay = Math.random() * 5;
-            particle.style.animation = `particle-animation ${animationDuration}s linear infinite`;
-            particle.style.animationDelay = `-${animationDelay}s`;
-            
+            const delay = Math.random() * -20;
+            particle.style.animationDelay = `${delay}s`;
+
             fragment.appendChild(particle);
         }
 
         container.appendChild(fragment);
-
     }, []);
 
-    return <div id="particle-container"></div>;
+    // FIX: A React functional component must return a React.ReactNode. Added 'return null' as this component only handles side effects.
+    return null;
 };

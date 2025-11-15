@@ -1,4 +1,5 @@
 // FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
+// FIX: Switched to namespace React import to correctly populate the global JSX namespace, resolving JSX intrinsic element type errors.
 import * as React from 'react';
 import { CandidateProfile, ChatMessage, CVFile } from '../types';
 import { Icon } from './icons';
@@ -14,7 +15,7 @@ interface AIAssistantProps {
 }
 
 const AIAssistant: React.FC<AIAssistantProps> = ({ cvFile, isOpen, onClose }) => {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const [chat, setChat] = React.useState<Chat | null>(null);
     const [messages, setMessages] = React.useState<ChatMessage[]>([{role: 'model', text: t('ai_assistant.greeting')}]);
     const [input, setInput] = React.useState('');
@@ -33,7 +34,6 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ cvFile, isOpen, onClose }) =>
     React.useEffect(scrollToBottom, [messages]);
     
     const formatMessage = (text: string) => {
-        // Enhanced markdown to HTML converter for paragraphs, lists, and emphasis.
         return text
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
             .replace(/\*(.*?)\*/g, '<em>$1</em>')
@@ -72,9 +72,9 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ cvFile, isOpen, onClose }) =>
     return (
         <>
             <div onClick={onClose} className={`fixed inset-0 bg-black/50 z-40 transition-opacity ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} />
-            <div className={`fixed top-0 right-0 h-full w-full max-w-md bg-gray-50 dark:bg-gray-900/80 dark:backdrop-blur-sm border-l dark:border-gray-700 flex flex-col z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+            <div className={`fixed top-0 ltr:right-0 rtl:left-0 h-full w-full max-w-md bg-gray-50 dark:bg-gray-900/80 dark:backdrop-blur-sm flex flex-col z-50 transform transition-transform duration-300 ease-in-out ltr:border-l rtl:border-r dark:border-gray-700 ${isOpen ? 'translate-x-0' : 'ltr:translate-x-full rtl:-translate-x-full'}`}>
                 <div className="p-4 border-b dark:border-gray-700 flex-shrink-0 flex items-center justify-between">
-                    <h4 className="font-bold font-display text-lg flex items-center gap-2"><Icon name="sparkles" className="w-6 h-6 text-pink-500" /> {t('ai_assistant.title')}</h4>
+                    <h4 className="font-bold font-display text-lg flex items-center gap-2"><Icon name="bot" className="w-6 h-6 text-pink-500" /> {t('ai_assistant.title')}</h4>
                     <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
                         <Icon name="close" className="w-6 h-6" />
                     </button>
@@ -136,7 +136,6 @@ const getScoreEmoji = (score: number): string => {
     return '';
 };
 
-// FIX: Added a consistent, enhanced custom tooltip for charts.
 const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
         return (
@@ -152,7 +151,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate, cvFile, onBack, isFavorite, onToggleFavorite, comparisonList, onToggleCompare }) => {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const [isAiAssistantOpen, setIsAiAssistantOpen] = React.useState(false);
 
     const skillsExpertiseData = React.useMemo(() => {
@@ -178,7 +177,7 @@ export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate,
                 }
             })
             .sort((a, b) => b.expertise - a.expertise)
-            .slice(0, 15); // Show top 15
+            .slice(0, 15);
     }, [candidate]);
     
     if (!candidate || !cvFile) return <div className="p-8 text-center">{t('detail.loading')}</div>;
@@ -189,14 +188,18 @@ export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate,
     const isInCompare = comparisonList.includes(candidate.id);
     const isCompareDisabled = !isInCompare && comparisonList.length >= 2;
 
+    const truncateText = (text: string, maxLength: number) => {
+        if (text.length <= maxLength) return text;
+        return text.slice(0, maxLength) + '...';
+    };
+
     return (
         <div className="h-full flex flex-col bg-white dark:bg-gray-800 relative">
-            <div className="w-full flex flex-col">
+            <div className={`w-full flex flex-col transition-all duration-300 ease-in-out ${isAiAssistantOpen ? 'lg:ltr:mr-[28rem] lg:rtl:ml-[28rem]': ''}`}>
                 <header className="p-4 border-b dark:border-gray-700 flex flex-col sm:flex-row sm:justify-between sm:items-center flex-shrink-0 gap-4">
-                    {/* Left side: back button, name, details */}
                     <div className="flex items-center gap-3 order-2 sm:order-1 w-full sm:w-auto">
                         <button onClick={onBack} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
-                            <Icon name="chevron-left" className="w-6 h-6" />
+                            <Icon name={language === 'ar' ? 'chevron-right' : 'chevron-left'} className="w-6 h-6" />
                         </button>
                         <div>
                             <h2 className="text-2xl font-bold font-display text-gray-800 dark:text-gray-100">{candidate.name && candidate.name !== 'N/A' ? candidate.name : t('common.name_not_available')}</h2>
@@ -207,7 +210,6 @@ export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate,
                             </div>
                         </div>
                     </div>
-                    {/* Right side: favorite, score */}
                     <div className="flex items-center gap-2 order-1 sm:order-2 w-full sm:w-auto justify-end">
                          <button
                             onClick={() => onToggleCompare(candidate.id)}
@@ -295,7 +297,7 @@ export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate,
                             <div key={i}>
                                 <h4 className="font-bold text-lg">{exp.title || t('common.title_not_available')}</h4>
                                 <p className="text-gray-600 dark:text-gray-400 font-medium">{exp.company || t('common.company_not_available')} &bull; <span className="italic">{exp.dates || t('common.dates_not_available')}</span></p>
-                                <p className="text-base text-gray-700 dark:text-gray-300 mt-2 whitespace-pre-line">{exp.description || <span className="italic text-gray-500">{t('detail.no_description')}</span>}</p>
+                                <p className="text-base text-gray-700 dark:text-gray-300 mt-2 whitespace-pre-line">{truncateText(exp.description, 250) || <span className="italic text-gray-500">{t('detail.no_description')}</span>}</p>
                             </div>
                         ))}
                         </div>
@@ -318,9 +320,8 @@ export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate,
             </div>
              <button
                 onClick={() => setIsAiAssistantOpen(true)}
-                className="fixed bottom-6 right-6 md:bottom-8 md:right-8 bg-secondary-500 text-white font-semibold rounded-full px-5 py-3 shadow-lg hover:bg-secondary-600 transition-transform hover:scale-110 z-30 flex items-center gap-2"
+                className="fixed bottom-6 right-6 md:bottom-8 md:right-8 rtl:right-auto rtl:left-6 md:rtl:left-8 bg-secondary-500 text-white font-semibold rounded-full px-5 py-3 shadow-lg hover:bg-secondary-600 transition-transform hover:scale-110 z-30 flex items-center gap-2"
                 >
-                {/* FIX: Replaced icon with a more thematic 'bot' icon and made text label always visible. */}
                 <Icon name="bot" className="w-6 h-6" />
                 <span className="">{t('ai_assistant.title')}</span>
             </button>

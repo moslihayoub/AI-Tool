@@ -1,4 +1,5 @@
 // FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
+// FIX: Switched to namespace React import to correctly populate the global JSX namespace, resolving JSX intrinsic element type errors.
 import * as React from 'react';
 import { useTranslation } from '../i18n';
 import { Icon } from './icons';
@@ -296,43 +297,46 @@ export const AnalysisLoader: React.FC<AnalysisLoaderProps> = ({ total, startTime
       <div className="absolute inset-0 bg-white dark:bg-black" aria-hidden="true" />
       <div className="absolute inset-0 bg-gray-900 opacity-70" aria-hidden="true" />
       <div className="relative flex flex-col items-center justify-center h-full w-full p-4">
-        <h2 className="text-3xl font-bold font-display text-center">{t('analysis.title')}</h2>
-        <p className="text-gray-300 mt-2 text-center">{t('analysis.subtitle')}</p>
-        
-        <p className="text-center mt-4 text-xl font-semibold bg-clip-text text-transparent bg-gradient-button">
-          {t('analysis.elapsed_time', { time: elapsedTime.toFixed(1) })}
-        </p>
-        
-        <div className="mt-6 w-full max-w-sm">
-            {showGame ? (
-                <LightCycleGame onClose={() => setShowGame(false)} />
-            ) : (
-                 <div className="flex flex-col items-center justify-center h-[300px] pt-8">
-                    <div className="w-full max-w-xs mb-6">
-                        <div className="w-full bg-gray-700 rounded-full h-1.5 overflow-hidden relative">
-                            <div className="absolute top-0 left-0 h-full w-full bg-gradient-button animate-indeterminate-progress"></div>
+        <div className="flex-grow flex flex-col items-center justify-center">
+            <h2 className="text-3xl font-bold font-display text-center">{t('analysis.title')}</h2>
+            <p className="text-gray-300 mt-2 text-center">{t('analysis.subtitle')}</p>
+            
+            <p className="text-center mt-4 text-xl font-semibold bg-clip-text text-transparent bg-gradient-button">
+              {t('analysis.elapsed_time', { time: elapsedTime.toFixed(1) })}
+            </p>
+            
+            <div className="mt-6 w-full max-w-sm">
+                {showGame ? (
+                    <LightCycleGame onClose={() => setShowGame(false)} />
+                ) : (
+                     <div className="flex flex-col items-center justify-center h-[300px] pt-8">
+                        <div className="w-full max-w-xs mb-6">
+                            <div className="w-full bg-gray-700 rounded-full h-1.5 overflow-hidden relative">
+                                <div className="absolute top-0 left-0 h-full w-full bg-gradient-button animate-indeterminate-progress"></div>
+                            </div>
                         </div>
-                    </div>
-                    <dotlottie-wc 
-                        src="https://lottie.host/2963f454-9533-4e4c-9889-42b36e8b411d/QdDoxVd2p9.lottie" 
-                        autoplay 
-                        loop 
-                        style={{ width: '150px', height: '150px' }}>
-                    </dotlottie-wc>
-                 </div>
-            )}
+                        {/* FIX: Changed `autoPlay` prop to `autoplay` to align with the updated global type definition for the 'dotlottie-wc' custom element. */}
+                        <dotlottie-wc 
+                            src="https://lottie.host/2963f454-9533-4e4c-9889-42b36e8b411d/QdDoxVd2p9.lottie" 
+                            autoplay 
+                            loop 
+                            style={{ width: '150px', height: '150px' }}>
+                        </dotlottie-wc>
+                     </div>
+                )}
+            </div>
         </div>
 
         {!isAnalysisDone && (
             <button 
                 onClick={onCancel} 
-                className="mt-8 text-red-400 border border-red-400 rounded-full px-8 py-2 font-semibold hover:bg-red-400/10 transition-colors">
+                className="mt-8 mb-4 text-red-400 border border-red-400 rounded-full px-8 py-2 font-semibold hover:bg-red-400/10 transition-colors flex-shrink-0">
                 {t('common.cancel')}
             </button>
         )}
 
         {showCompletionToast && (
-            <div className="absolute top-5 right-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 p-4 rounded-lg shadow-lg border dark:border-gray-600 animate-fade-in flex flex-col items-start gap-3 w-64">
+            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 sm:top-5 sm:right-5 sm:left-auto sm:bottom-auto sm:-translate-x-0 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 p-4 rounded-lg shadow-lg border dark:border-gray-600 animate-fade-in flex flex-col items-start gap-3 w-64">
                 <div className="flex items-center gap-2">
                     <div className="bg-green-100 dark:bg-green-900 p-1.5 rounded-full">
                         <Icon name="check" className="w-5 h-5 text-green-600 dark:text-green-300"/>

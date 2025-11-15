@@ -1,7 +1,3 @@
-
-
-
-
 import { GoogleGenAI, Type, Chat, GenerateContentResponse } from '@google/genai';
 import type { CandidateProfile, CVFile } from '../types';
 
@@ -59,12 +55,22 @@ const candidateProfileSchema = {
         detectedLanguage: { type: Type.STRING, description: "The primary language detected in the CV (e.g., 'French', 'English')." },
         jobCategory: {
             type: Type.STRING,
-            // FIX: Corrected typo from 'Développeur Full Stack' to 'Développeur Full-Stack' to ensure consistency.
-            description: `Categorize the candidate into ONE of the following job categories: 'Product Design', 'Développeur Full-Stack', 'QA Automation', or 'Other'.
-- 'Product Design': For all design roles, including UX Designer, UI Designer, Product Designer, Digital Designer, Motion Designer, Graphic Designer, Brand Designer.
-- 'Développeur Full-Stack': For all development-related roles, including Développeur Full-Stack, Développeur Front-End, Développeur Back-End, Développeur Mobile, Data Scientist, Data Analyst, Ingénieur Cloud, Ingénieur IA, DevOps, Software Engineer.
-- 'QA Automation': For all QA and automation roles, including QA Automation Engineer, Testeur QA, Ingénieur Automatisation des Tests, SDET, Test Automation Specialist.
-- 'Other': If the role does not fit into the above categories.`
+            description: `Categorize the candidate into ONE of the following 14 main job sectors:
+1.  Technologie et Informatique (Includes: Development, Infrastructure, Security, Data Science, AI, IT Project Management, UX/UI Design, Technical Support)
+2.  Marketing, Communication & Création (Includes: Digital Marketing, Corporate Communication, Advertising, PR, Content/Copywriting, Graphic Design, Social Media)
+3.  Vente, Commerce & Relation Client (Includes: Field Sales, Inside Sales, Customer Support, e-Commerce, Account Management)
+4.  Finance, Comptabilité & Audit (Includes: Accounting, Audit, Management Control, Financial Advisory, Corporate Finance, Risk Management)
+5.  Ressources Humaines & Administration (Includes: Recruitment, Payroll, Training & Development, HR Administration, HR Manager)
+6.  Ingénierie & Industrie (Includes: Civil/Mechanical/Electrical Engineering, Industrial Production, Quality/Safety/Environment, Industrial Maintenance)
+7.  Santé & Social (Includes: Doctor, Surgeon, Nurse, Pharmacy, Psychologist, Social Worker, Physiotherapist)
+8.  Droit & Juridique (Includes: Lawyer, Corporate Counsel, Notary, Legal Assistant)
+9.  Éducation & Formation (Includes: Teacher, Trainer, Pedagogical Manager, School Administration)
+10. Logistique, Transport & Achat (Includes: Inventory Management, Supply Chain, Purchasing Manager, Transport & Delivery)
+11. Arts, Culture & Loisirs (Includes: Artist, Cultural Animator, Entertainment, Publishing, Audiovisual Production)
+12. BTP & Construction (Includes: Architect, Works Manager, Site Manager, Specialized Worker)
+13. Agriculture & Agroalimentaire (Includes: Farmer, Agri-food Production Manager, Agricultural Technician, Food Quality)
+14. Services (généralistes) (Includes: Hospitality, Personal Services, Cleaning, Security)
+- If the role does not fit into any of the above categories, use 'Other'.`
         },
         totalExperienceYears: { type: Type.NUMBER, description: "Total years of professional experience, calculated from the experience section." },
         performanceScore: { type: Type.NUMBER, description: "An estimated performance score from 0 to 100 based on the overall quality of the CV (experience, skills, education). A score of 0 means not enough information." },
@@ -188,6 +194,47 @@ export function createAIChat(cvFile: CVFile): Chat {
     `;
 
     // Fix: Create a chat instance with a system instruction containing the candidate's profile as context.
+    const chat: Chat = ai.chats.create({
+        model: 'gemini-2.5-flash',
+        config: {
+            systemInstruction: systemInstruction,
+        },
+    });
+
+    return chat;
+}
+
+/**
+ * Creates a new AI chat session for the entire dashboard.
+ * @param profiles An array of all candidate profiles.
+ * @returns A Chat instance from the Gemini API.
+ */
+export function createDashboardAIChat(profiles: CandidateProfile[]): Chat {
+    if (!profiles || profiles.length === 0) {
+        throw new Error("Cannot create AI chat for an empty list of profiles.");
+    }
+
+    // Create a summarized context to avoid overly long system instructions.
+    const summaryContext = {
+        totalCandidates: profiles.length,
+        candidates: profiles.map(p => ({
+            name: p.name,
+            jobCategory: p.jobCategory,
+            totalExperienceYears: p.totalExperienceYears,
+            performanceScore: p.performanceScore,
+            topSkills: p.skills.hard.slice(0, 5),
+        })),
+    };
+
+    const systemInstruction = `You are a helpful AI assistant for an HR professional. You are analyzing a pool of candidates.
+    A summary of the candidates' profiles is provided below in JSON format.
+    Use this information to answer questions about the entire group of candidates, identify trends, compare roles, or find top candidates based on criteria. Be concise and helpful.
+    When asked for summaries or lists, use markdown formatting (e.g., bullet points with '-').
+    
+    Candidate Pool Summary:
+    ${JSON.stringify(summaryContext, null, 2)}
+    `;
+
     const chat: Chat = ai.chats.create({
         model: 'gemini-2.5-flash',
         config: {

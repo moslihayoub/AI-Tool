@@ -1,4 +1,5 @@
 // FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
+// FIX: Switched to namespace React import to correctly populate the global JSX namespace, resolving JSX intrinsic element type errors.
 import * as React from 'react';
 import { CandidateProfile } from '../types';
 import { Icon } from './icons';
@@ -9,7 +10,6 @@ interface DashboardViewProps {
   candidates: CandidateProfile[];
   onSelectCandidate: (candidate: CandidateProfile) => void;
   onReset: () => void;
-  setSearchQuery: (query: string) => void;
   favorites: string[];
   onToggleFavorite: (candidateId: string) => void;
   isFavoritesView?: boolean;
@@ -81,7 +81,7 @@ const CandidateCard: React.FC<{
                         {isProfileIncomplete(candidate) && (
                             <div className="group relative flex items-center">
                                 <Icon name="alert-triangle" className="w-5 h-5 text-yellow-500" />
-                                <span className="absolute bottom-full right-0 mb-2 w-48 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 text-center">
+                                <span className="absolute bottom-full right-0 rtl:right-auto rtl:left-0 mb-2 w-48 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 text-center">
                                     {t('dashboard.incomplete_profile_tooltip')}
                                 </span>
                             </div>
@@ -102,17 +102,17 @@ const CandidateCard: React.FC<{
                     </p>
                 )}
                 <div className="text-base text-gray-500 dark:text-gray-400 flex items-center justify-between mt-1">
-                  <span className="truncate pr-2">{candidate.location && candidate.location !== 'N/A' ? candidate.location : t('common.location_not_available')}</span>
+                  <span className="truncate pr-2 rtl:pr-0 rtl:pl-2">{candidate.location && candidate.location !== 'N/A' ? candidate.location : t('common.location_not_available')}</span>
                   <span className="font-medium flex-shrink-0">{t('dashboard.experience_years', {count: candidate.totalExperienceYears || 0})}</span>
                 </div>
             </div>
             <div className="mt-4">
                 <div className="flex flex-wrap gap-2">
                     {(candidate.skills.hard || []).slice(0, 3).map(skill => (
-                        <span key={skill} className="text-sm bg-gradient-to-r from-pink-500 to-red-600 text-white px-3 py-1 rounded-full shadow-sm">{skill}</span>
+                        <span key={skill} className="text-sm bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300 px-3 py-1 rounded-full inline-block max-w-full truncate">{skill}</span>
                     ))}
                 </div>
-                {candidate.analysisDuration !== undefined && <p className="text-xs text-right text-gray-400 mt-2">{candidate.analysisDuration > 0 ? t('common.analyzed_in', {duration: (candidate.analysisDuration / 1000).toFixed(1)}) : 'From cache'}</p>}
+                {candidate.analysisDuration !== undefined && <p className="text-xs text-right rtl:text-left text-gray-400 mt-2">{candidate.analysisDuration > 0 ? t('common.analyzed_in', {duration: (candidate.analysisDuration / 1000).toFixed(1)}) : 'From cache'}</p>}
             </div>
         </div>
     );
@@ -139,7 +139,6 @@ const groupData = (data: string[], t: (key: string) => string) => {
 const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
         return (
-            // FIX: Redesigned tooltip for better readability and visual appeal, with a pink accent color for values.
             <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border dark:border-gray-600 shadow-lg">
                 <p className="font-bold text-gray-500 dark:text-gray-400 text-sm mb-1">{label || payload[0].payload.name}</p>
                 <p className="font-bold text-lg" style={{ color: '#ec4899' }}>
@@ -155,9 +154,9 @@ const EmptyChartState: React.FC = () => {
     const { t } = useTranslation();
     return (
         <div className="flex flex-col items-center justify-center h-[300px] text-gray-500">
+            {/* FIX: Changed `autoPlay` prop to `autoplay` to align with the updated global type definition for the 'dotlottie-wc' custom element. */}
             <dotlottie-wc
                 src="https://lottie.host/89c66344-281d-4450-91d3-4574a47fec47/31ogoyP4Mh.lottie"
-                // FIX: Changed autoPlay back to autoplay to align with web component standards.
                 autoplay
                 loop
                 style={{ width: '120px', height: '120px' }}
@@ -173,20 +172,44 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
     const [isFilterOpen, setIsFilterOpen] = React.useState(false);
     const [isActionsOpen, setIsActionsOpen] = React.useState(false);
     const [confirmReset, setConfirmReset] = React.useState(false);
+    const [chartFilters, setChartFilters] = React.useState<Record<string, string>>({
+        experience: 'all',
+        location: 'all',
+        skills: 'all',
+        perfByJob: 'all',
+        jobDist: 'all',
+    });
     const filterRef = React.useRef<HTMLDivElement>(null);
     const actionsRef = React.useRef<HTMLDivElement>(null);
     const importInputRef = React.useRef<HTMLInputElement>(null);
     const graphsRef = React.useRef<HTMLDivElement>(null);
     const profilesRef = React.useRef<HTMLDivElement>(null);
 
+    const [isMobile, setIsMobile] = React.useState(window.innerWidth < 768);
+    const [isFilterDrawerOpen, setFilterDrawerOpen] = React.useState(false);
+    const [isJobFilterDrawerOpen, setJobFilterDrawerOpen] = React.useState(false);
+    const [isActionsDrawerOpen, setIsActionsDrawerOpen] = React.useState(false);
+    const [activeFilterConfig, setActiveFilterConfig] = React.useState<{
+        chartKey: string;
+        options: string[];
+        value: string;
+        title: string;
+    } | null>(null);
+
+    React.useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     const handleScrollTo = (ref: React.RefObject<HTMLDivElement>) => {
         ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
-    // FIX: Hoisted function declarations to the top of the component body to prevent "used before its declaration" errors in the early return statement.
     const handleImportClick = () => {
         importInputRef.current?.click();
         setIsActionsOpen(false);
+        setIsActionsDrawerOpen(false);
     };
 
     const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -252,21 +275,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
             }
         };
         reader.readAsText(file);
-        event.target.value = ''; // Reset input
-    };
-
-    const shortenJobCategory = (category: string) => {
-        const mapping: { [key: string]: string } = {
-            'Product Design': 'Design',
-            'Développeur Full-Stack': 'Full-Stack',
-            'QA Automation': 'QA',
-        };
-        return mapping[category] || category;
+        event.target.value = '';
     };
 
     const allJobCategories = React.useMemo(() => {
         const categories = new Set(candidates.map(c => c.jobCategory).filter(c => c && c !== 'N/A'));
         return Array.from(categories).sort();
+    }, [candidates]);
+
+    const allLocations = React.useMemo(() => {
+        const locations = new Set(candidates.map(c => c.location).filter(c => c && c !== 'N/A'));
+        return Array.from(locations).sort();
     }, [candidates]);
 
     const filteredCandidates = React.useMemo(() => {
@@ -315,20 +334,52 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         );
     };
 
-    const locationDistribution = React.useMemo(() => groupData(filteredCandidates.map(c => c.location), t), [filteredCandidates, t]);
+    const handleChartFilterChange = (chartKey: string, value: string) => {
+        setChartFilters(prev => ({ ...prev, [chartKey]: value }));
+    };
+
+    const formatLocationTick = (tick: string) => {
+        if (!tick) return '';
+        const parts = tick.split(',');
+        const lastPart = parts[parts.length - 1].trim();
+        // Abbreviate common country names if needed, otherwise use the part
+        const abbreviations: {[key: string]: string} = { 'United States': 'USA', 'United Kingdom': 'UK' };
+        return abbreviations[lastPart] || lastPart;
+    };
+
+    const locationDistribution = React.useMemo(() => {
+        const categoryFilter = chartFilters.location;
+        const dataToProcess = categoryFilter === 'all'
+            ? filteredCandidates
+            : filteredCandidates.filter(c => c.jobCategory === categoryFilter);
+        return groupData(dataToProcess.map(c => c.location), t);
+    }, [filteredCandidates, t, chartFilters.location]);
+
     const jobCategoryDistribution = React.useMemo(() => {
-        const validData = filteredCandidates.map(c => c.jobCategory).filter(item => item && item.trim() && item.trim() !== 'N/A');
+        const locationFilter = chartFilters.jobDist;
+        let dataToProcess = filteredCandidates;
+
+        if (locationFilter && locationFilter !== 'all') {
+            dataToProcess = dataToProcess.filter(c => c.location === locationFilter);
+        }
+        
+        const validData = dataToProcess.map(c => c.jobCategory).filter(item => item && item.trim() && item.trim() !== 'N/A');
         const freqMap = validData.reduce((acc: Record<string, number>, item) => {
             const key = item.trim();
             acc[key] = (acc[key] || 0) + 1;
             return acc;
         }, {});
-        return Object.entries(freqMap).map(([name, value]) => ({ name: shortenJobCategory(name), value }));
-    }, [filteredCandidates]);
+        return Object.entries(freqMap).map(([name, value]) => ({ name, value }));
+    }, [filteredCandidates, chartFilters.jobDist]);
     
     const experienceDistribution = React.useMemo(() => {
+        const categoryFilter = chartFilters.experience;
+        const dataToProcess = categoryFilter === 'all'
+            ? filteredCandidates
+            : filteredCandidates.filter(c => c.jobCategory === categoryFilter);
+
         const buckets = { [t('dashboard.exp_buckets.junior')]: 0, [t('dashboard.exp_buckets.confirmed')]: 0, [t('dashboard.exp_buckets.senior')]: 0, [t('dashboard.exp_buckets.expert')]: 0, };
-        filteredCandidates.forEach(c => {
+        dataToProcess.forEach(c => {
             const years = c.totalExperienceYears || 0;
             if (years <= 2) buckets[t('dashboard.exp_buckets.junior')]++;
             else if (years <= 5) buckets[t('dashboard.exp_buckets.confirmed')]++;
@@ -336,11 +387,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
             else buckets[t('dashboard.exp_buckets.expert')]++;
         });
         return Object.entries(buckets).map(([name, count]) => ({ name, count }));
-    }, [filteredCandidates, t]);
+    }, [filteredCandidates, t, chartFilters.experience]);
     
      const performanceByJobCategory = React.useMemo(() => {
-        const validCandidates = filteredCandidates.filter(c => c.jobCategory && c.jobCategory.trim() && c.jobCategory !== 'N/A');
-        const categoryScores: Record<string, { totalScore: number, count: number }> = validCandidates.reduce((acc, candidate) => {
+        const locationFilter = chartFilters.perfByJob;
+        let dataToProcess = filteredCandidates.filter(c => c.jobCategory && c.jobCategory.trim() && c.jobCategory !== 'N/A');
+
+        if (locationFilter && locationFilter !== 'all') {
+            dataToProcess = dataToProcess.filter(c => c.location === locationFilter);
+        }
+
+        const categoryScores: Record<string, { totalScore: number, count: number }> = dataToProcess.reduce((acc, candidate) => {
             const category = candidate.jobCategory;
             if (!acc[category]) acc[category] = { totalScore: 0, count: 0 };
             acc[category].totalScore += candidate.performanceScore || 0;
@@ -349,14 +406,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         }, {} as Record<string, { totalScore: number, count: number }>);
 
         return Object.entries(categoryScores).map(([name, data]) => ({
-            name: shortenJobCategory(name), averageScore: data.count > 0 ? Math.round(data.totalScore / data.count) : 0
+            name, averageScore: data.count > 0 ? Math.round(data.totalScore / data.count) : 0
         })).sort((a, b) => b.averageScore - a.averageScore);
-    }, [filteredCandidates]);
+    }, [filteredCandidates, chartFilters.perfByJob]);
 
     const aggregatedSkillsExpertise = React.useMemo(() => {
+        const categoryFilter = chartFilters.skills;
+        const dataToProcess = categoryFilter === 'all'
+            ? filteredCandidates
+            : filteredCandidates.filter(c => c.jobCategory === categoryFilter);
         const skillMap: Record<string, number> = {};
     
-        filteredCandidates.forEach(candidate => {
+        dataToProcess.forEach(candidate => {
             if (!candidate.skills?.hard || candidate.skills.hard.length === 0) {
                 return;
             }
@@ -386,7 +447,152 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
             .map(([name, expertise]) => ({ name, expertise }))
             .sort((a, b) => b.expertise - a.expertise)
             .slice(0, 15);
-    }, [filteredCandidates]);
+    }, [filteredCandidates, chartFilters.skills]);
+    
+    const ChartFilterDropdown: React.FC<{
+        chartKey: string;
+        options: string[];
+        value: string;
+        onChange: (chartKey: string, value: string) => void;
+    }> = ({ chartKey, options, value, onChange }) => {
+        const [isOpen, setIsOpen] = React.useState(false);
+        const dropdownRef = React.useRef<HTMLDivElement>(null);
+        const { t } = useTranslation();
+
+        React.useEffect(() => {
+            const handleClickOutside = (event: MouseEvent) => {
+                if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                    setIsOpen(false);
+                }
+            };
+            document.addEventListener('mousedown', handleClickOutside);
+            return () => document.removeEventListener('mousedown', handleClickOutside);
+        }, []);
+
+        const displayValue = value === 'all' ? t('common.all') : value;
+
+        return (
+            <div className="relative text-sm" ref={dropdownRef}>
+                <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700/50 hover:bg-gray-200 dark:hover:bg-gray-700"
+                >
+                    <span className="font-medium text-gray-600 dark:text-gray-300">{t('dashboard.charts.filter_by')}:</span>
+                    <span className="font-semibold text-gray-900 dark:text-white truncate max-w-[120px]">{displayValue}</span>
+                    <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} className="w-4 h-4 flex-shrink-0" />
+                </button>
+                {isOpen && (
+                    <div className="absolute top-full right-0 rtl:right-auto rtl:left-0 mt-2 w-56 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-lg shadow-xl z-20 py-1 max-h-60 overflow-y-auto">
+                        {options.map(option => (
+                            <button
+                                key={option}
+                                onClick={() => {
+                                    onChange(chartKey, option);
+                                    setIsOpen(false);
+                                }}
+                                className={`w-full text-left rtl:text-right px-4 py-2 text-base truncate ${value === option ? 'bg-primary-100 dark:bg-primary-900 font-semibold' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                            >
+                                {option === 'all' ? t('common.all') : option}
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    const FilterDrawer: React.FC<{
+        isOpen: boolean;
+        onClose: () => void;
+        config: {
+            chartKey: string;
+            options: string[];
+            value: string;
+            title: string;
+        } | null;
+        onChange: (chartKey: string, value: string) => void;
+    }> = ({ isOpen, onClose, config, onChange }) => {
+        return (
+            <>
+                <div className={`fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
+                <div
+                    className={`fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 rounded-t-2xl shadow-lg max-h-[60vh] flex flex-col transform transition-transform duration-300 ${isOpen ? 'translate-y-0' : 'translate-y-full'}`}
+                    onClick={e => e.stopPropagation()}
+                >
+                    <div className="p-4 border-b dark:border-gray-700 flex justify-between items-center flex-shrink-0">
+                        <h3 className="font-bold text-lg">{config?.title || t('dashboard.filter_by_job')}</h3>
+                        <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+                            <Icon name="close" className="w-6 h-6"/>
+                        </button>
+                    </div>
+                    <div className="overflow-y-auto p-2">
+                        {config?.options.map(option => (
+                            <button
+                                key={option}
+                                onClick={() => {
+                                    onChange(config.chartKey, option);
+                                    onClose();
+                                }}
+                                className={`w-full text-left rtl:text-right px-4 py-3 text-base rounded-lg flex justify-between items-center ${config.value === option ? 'bg-primary-100 dark:bg-primary-900 font-semibold text-primary-700 dark:text-primary-200' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                            >
+                                <span>{option === 'all' ? t('common.all') : option}</span>
+                                {config.value === option && <Icon name="check" className="w-5 h-5 text-primary-600 dark:text-primary-300"/>}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </>
+        );
+    };
+    
+    const JobFilterDrawer: React.FC<{
+        isOpen: boolean;
+        onClose: () => void;
+        allCategories: string[];
+        selectedCategories: string[];
+        onCategoryToggle: (category: string) => void;
+        onClear: () => void;
+    }> = ({ isOpen, onClose, allCategories, selectedCategories, onCategoryToggle, onClear }) => {
+        const { t } = useTranslation();
+        return (
+            <>
+                <div className={`fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
+                <div className={`fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 rounded-t-2xl shadow-lg max-h-[75vh] flex flex-col transform transition-transform duration-300 ${isOpen ? 'translate-y-0' : 'translate-y-full'}`}>
+                    <div className="p-4 border-b dark:border-gray-700 flex justify-between items-center flex-shrink-0">
+                        <h3 className="font-bold text-lg">{t('dashboard.filter_by_job')}</h3>
+                        <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+                            <Icon name="close" className="w-6 h-6"/>
+                        </button>
+                    </div>
+                    <div className="overflow-y-auto p-2">
+                        {allCategories.map(category => (
+                            <label key={category} className="flex items-center p-3 text-base hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-lg">
+                                <input
+                                    type="checkbox"
+                                    className="h-5 w-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:bg-gray-900 dark:border-gray-600"
+                                    checked={selectedCategories.includes(category)}
+                                    onChange={() => onCategoryToggle(category)}
+                                />
+                                <span className="ml-3 rtl:ml-0 rtl:mr-3 text-gray-700 dark:text-gray-300 truncate">{category}</span>
+                            </label>
+                        ))}
+                    </div>
+                    {selectedCategories.length > 0 && (
+                        <div className="p-4 border-t dark:border-gray-700 flex-shrink-0">
+                            <button
+                                onClick={() => {
+                                    onClear();
+                                }}
+                                className="w-full text-center text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline focus:outline-none"
+                            >
+                                {t('dashboard.clear_filters')}
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </>
+        );
+    };
 
     if (candidates.length === 0 && !isFavoritesView) {
         return (
@@ -397,7 +603,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                 </header>
                 <div className="flex flex-col items-center justify-center min-h-[calc(100vh-15rem)] text-center -mt-8">
                     <input type="file" ref={importInputRef} onChange={handleFileImport} accept=".csv,.json" className="hidden" />
-                    {/* FIX: Changed autoPlay to autoplay to align with web component standards. */}
+                    {/* FIX: Changed `autoPlay` prop to `autoplay` to align with the updated global type definition for the 'dotlottie-wc' custom element. */}
                     <dotlottie-wc
                         src="https://lottie.host/89c66344-281d-4450-91d3-4574a47fec47/31ogoyP4Mh.lottie"
                         autoplay
@@ -439,6 +645,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         link.click();
         document.body.removeChild(link);
         setIsActionsOpen(false);
+        setIsActionsDrawerOpen(false);
     };
     
     const exportToJson = () => {
@@ -453,66 +660,98 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
         setIsActionsOpen(false);
+        setIsActionsDrawerOpen(false);
     };
+
+    const ActionsDrawer: React.FC<{
+        isOpen: boolean;
+        onClose: () => void;
+    }> = ({ isOpen, onClose }) => (
+        <>
+            <div className={`fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
+            <div className={`fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 rounded-t-2xl shadow-lg flex flex-col transform transition-transform duration-300 ${isOpen ? 'translate-y-0' : 'translate-y-full'}`}>
+                <div className="p-4 border-b dark:border-gray-700 flex justify-between items-center flex-shrink-0">
+                    <h3 className="font-bold text-lg">{t('common.actions')}</h3>
+                    <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+                        <Icon name="close" className="w-6 h-6"/>
+                    </button>
+                </div>
+                <div className="p-2">
+                    <button onClick={handleImportClick} className="w-full flex items-center gap-4 px-4 py-3 text-base rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <Icon name="upload" className="w-6 h-6"/> {t('common.import')}
+                    </button>
+                    <button onClick={exportToCsv} className="w-full flex items-center gap-4 px-4 py-3 text-base rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <Icon name="export" className="w-6 h-6"/> {t('dashboard.export_as_csv')}
+                    </button>
+                    <button onClick={exportToJson} className="w-full flex items-center gap-4 px-4 py-3 text-base rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <Icon name="export" className="w-6 h-6"/> {t('dashboard.export_as_json')}
+                    </button>
+                </div>
+            </div>
+        </>
+    );
 
     return (
         <div>
-            {/* FIX: Made header sticky for desktop and redesigned mobile layout for better usability. */}
             <header className="sticky top-0 z-20 bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-sm px-4 sm:px-8 py-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b dark:border-gray-800">
                 <div>
                     <h2 className="text-3xl font-bold font-display text-gray-800 dark:text-gray-100">{isFavoritesView ? t('dashboard.favorites_title') : t('dashboard.title')}</h2>
                     {!isFavoritesView && <p className="text-gray-500 dark:text-gray-400 mt-1 hidden sm:block">{t('dashboard.subtitle')}</p>}
                 </div>
                 {!isFavoritesView && (
-                 <div className="w-full sm:w-auto flex justify-between items-center gap-2">
-                    {/* Left: Filter */}
-                    <div className="relative" ref={filterRef}>
-                        {/* FIX: Added text labels to mobile header buttons for improved clarity. */}
-                        <button onClick={() => setIsFilterOpen(!isFilterOpen)} title={t('dashboard.filter_by_job')} className="flex items-center justify-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 font-semibold px-3 sm:px-4 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                 <div className="w-full sm:w-auto flex justify-between items-center gap-2 rtl:flex-row-reverse">
+                    {isMobile ? (
+                        <button onClick={() => setJobFilterDrawerOpen(true)} title={t('dashboard.filter_by_job')} className="relative flex items-center justify-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 font-semibold px-3 sm:px-4 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                             <Icon name="filter" className="w-5 h-5"/>
                             <span>{t('dashboard.filter_by_job')}</span>
-                            {selectedJobCategories.length > 0 && <span className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">{selectedJobCategories.length}</span>}
+                            {selectedJobCategories.length > 0 && <span className="absolute -top-1 -right-1 rtl:-right-auto rtl:-left-1 bg-primary-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">{selectedJobCategories.length}</span>}
                         </button>
-                        {isFilterOpen && (
-                            <div className="absolute top-full mt-2 w-56 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-lg shadow-xl z-10">
-                                <div className="max-h-60 overflow-y-auto">
-                                    {allJobCategories.map(category => (
-                                        <label key={category} className="flex items-center p-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
-                                            <input
-                                                type="checkbox"
-                                                className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:bg-gray-900 dark:border-gray-600"
-                                                checked={selectedJobCategories.includes(category)}
-                                                onChange={() => handleCategoryToggle(category)}
-                                            />
-                                            <span className="ml-3 text-gray-700 dark:text-gray-300 truncate">{category}</span>
-                                        </label>
-                                    ))}
-                                </div>
-                                {selectedJobCategories.length > 0 && (
-                                    <div className="p-2 border-t dark:border-gray-700">
-                                        <button
-                                            onClick={() => {
-                                                setSelectedJobCategories([]);
-                                                setIsFilterOpen(false);
-                                            }}
-                                            className="w-full text-center text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline focus:outline-none"
-                                        >
-                                            {t('dashboard.clear_filters')}
-                                        </button>
+                    ) : (
+                        <div className="relative" ref={filterRef}>
+                            <button onClick={() => setIsFilterOpen(!isFilterOpen)} title={t('dashboard.filter_by_job')} className="flex items-center justify-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 font-semibold px-3 sm:px-4 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                <Icon name="filter" className="w-5 h-5"/>
+                                <span>{t('dashboard.filter_by_job')}</span>
+                                {selectedJobCategories.length > 0 && <span className="absolute -top-1 -right-1 rtl:-right-auto rtl:-left-1 bg-primary-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">{selectedJobCategories.length}</span>}
+                            </button>
+                            {isFilterOpen && (
+                                <div className="absolute top-full mt-2 w-56 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-lg shadow-xl z-10">
+                                    <div className="max-h-60 overflow-y-auto">
+                                        {allJobCategories.map(category => (
+                                            <label key={category} className="flex items-center p-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:bg-gray-900 dark:border-gray-600"
+                                                    checked={selectedJobCategories.includes(category)}
+                                                    onChange={() => handleCategoryToggle(category)}
+                                                />
+                                                <span className="ml-3 rtl:ml-0 rtl:mr-3 text-gray-700 dark:text-gray-300 truncate">{category}</span>
+                                            </label>
+                                        ))}
                                     </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
+                                    {selectedJobCategories.length > 0 && (
+                                        <div className="p-2 border-t dark:border-gray-700">
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedJobCategories([]);
+                                                    setIsFilterOpen(false);
+                                                }}
+                                                className="w-full text-center text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline focus:outline-none"
+                                            >
+                                                {t('dashboard.clear_filters')}
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
 
-                    {/* Desktop Quick Nav */}
                     <div className="hidden lg:flex items-center gap-2">
-                        {/* FIX: Applied primary gradient style to quick navigation buttons for consistency. */}
-                        <button onClick={() => handleScrollTo(graphsRef)} className="bg-gradient-button text-white font-semibold py-2 px-4 rounded-full hover:opacity-90 transition-opacity items-center gap-2 flex">
+                        <button onClick={() => handleScrollTo(graphsRef)} className="bg-gray-900 text-white font-semibold py-2 px-4 rounded-full hover:bg-gray-700 transition-colors items-center gap-2 flex">
                             <Icon name="dashboard" className="w-5 h-5"/>
                             <span>{t('dashboard.quick_nav.graphs')}</span>
                         </button>
-                        <button onClick={() => handleScrollTo(profilesRef)} className="bg-gradient-button text-white font-semibold py-2 px-4 rounded-full hover:opacity-90 transition-opacity items-center gap-2 flex">
+                        <button onClick={() => handleScrollTo(profilesRef)} className="bg-gray-900 text-white font-semibold py-2 px-4 rounded-full hover:bg-gray-700 transition-colors items-center gap-2 flex">
                             <Icon name="users" className="w-5 h-5"/>
                             <span>{t('dashboard.quick_nav.profiles')}</span>
                         </button>
@@ -520,7 +759,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                     
                     <input type="file" ref={importInputRef} onChange={handleFileImport} accept=".csv,.json" className="hidden" />
                     
-                    {/* Right: Actions */}
                     <div className="flex items-center gap-2">
                         <div className="relative">
                             <button onClick={handleResetClick} title={t('common.reset')} className={`flex items-center justify-center gap-2 font-semibold px-3 sm:px-4 py-2 rounded-full transition-colors ${
@@ -532,24 +770,24 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                                 <span>{confirmReset ? t('common.reset_confirm_action') : t('common.reset')}</span>
                             </button>
                             {confirmReset && (
-                                <div className="absolute bottom-full right-0 mb-2 w-max max-w-xs bg-gray-900 text-white text-xs rounded py-2 px-3 opacity-100 transition-opacity pointer-events-none z-10 shadow-lg text-center dark:bg-gray-700">
+                                <div className="absolute bottom-full right-0 rtl:right-auto rtl:left-0 mb-2 w-max max-w-xs bg-gray-900 text-white text-xs rounded py-2 px-3 opacity-100 transition-opacity pointer-events-none z-10 shadow-lg text-center dark:bg-gray-700">
                                     {t('common.reset_confirm')}
                                 </div>
                             )}
                         </div>
                         <div className="relative" ref={actionsRef}>
-                            <button onClick={() => setIsActionsOpen(prev => !prev)} title={t('common.actions')} className="flex items-center justify-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 font-semibold p-2.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                            <button onClick={() => isMobile ? setIsActionsDrawerOpen(true) : setIsActionsOpen(prev => !prev)} title={t('common.actions')} className="flex items-center justify-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 font-semibold p-2.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                                 <Icon name="plus" className="w-5 h-5" />
                             </button>
                             {isActionsOpen && (
-                                <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-lg shadow-xl z-10 py-1">
-                                    <button onClick={handleImportClick} className="w-full text-left flex items-center gap-3 p-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <div className="absolute top-full right-0 rtl:right-auto rtl:left-0 mt-2 w-48 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-lg shadow-xl z-10 py-1">
+                                    <button onClick={handleImportClick} className="w-full text-left rtl:text-right flex items-center gap-3 p-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
                                         <Icon name="upload" className="w-5 h-5"/> {t('common.import')}
                                     </button>
-                                    <button onClick={exportToCsv} className="w-full text-left flex items-center gap-3 p-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <button onClick={exportToCsv} className="w-full text-left rtl:text-right flex items-center gap-3 p-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
                                         <Icon name="export" className="w-5 h-5"/> {t('dashboard.export_as_csv')}
                                     </button>
-                                    <button onClick={exportToJson} className="w-full text-left flex items-center gap-3 p-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <button onClick={exportToJson} className="w-full text-left rtl:text-right flex items-center gap-3 p-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
                                         <Icon name="export" className="w-5 h-5"/> {t('dashboard.export_as_json')}
                                     </button>
                                 </div>
@@ -560,13 +798,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                 )}
             </header>
             
-            <div className="p-4 sm:p-8">
+            <div className="p-2 sm:p-8">
                 {!isFavoritesView && (
                     <div className="lg:hidden fixed bottom-20 left-0 right-0 w-full flex justify-center z-30 pointer-events-none">
-                        {/* FIX: Applied primary gradient style to floating navigation buttons for visual consistency. */}
-                        <div className="flex gap-2 pointer-events-auto p-1.5 rounded-full shadow-lg">
-                            <button onClick={() => handleScrollTo(graphsRef)} className="bg-gradient-button text-white font-semibold py-2 px-5 rounded-full shadow-sm hover:opacity-90 transition-opacity">{t('dashboard.quick_nav.graphs')}</button>
-                            <button onClick={() => handleScrollTo(profilesRef)} className="bg-gradient-button text-white font-semibold py-2 px-5 rounded-full shadow-sm hover:opacity-90 transition-opacity">{t('dashboard.quick_nav.profiles')}</button>
+                        <div className="flex gap-2 pointer-events-auto">
+                            <button onClick={() => handleScrollTo(graphsRef)} className="bg-gray-900 text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-gray-700 transition-colors flex items-center gap-2">
+                                <Icon name="dashboard" className="w-5 h-5"/>
+                                <span>{t('dashboard.quick_nav.graphs')}</span>
+                            </button>
+                            <button onClick={() => handleScrollTo(profilesRef)} className="bg-gray-900 text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-gray-700 transition-colors flex items-center gap-2">
+                                <Icon name="users" className="w-5 h-5"/>
+                                <span>{t('dashboard.quick_nav.profiles')}</span>
+                            </button>
                         </div>
                     </div>
                 )}
@@ -575,7 +818,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                 {!isFavoritesView && (
                 <div ref={graphsRef} className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-lg">
-                        <h3 className="font-semibold font-display mb-4 text-lg">{t('dashboard.charts.perf_by_job')}</h3>
+                        <div className="flex flex-wrap items-center justify-between w-full mb-4 gap-2">
+                            <h3 className="font-semibold font-display text-lg">{t('dashboard.charts.perf_by_job')}</h3>
+                            {allLocations.length > 0 && (
+                                isMobile ? (
+                                    <button onClick={() => { setActiveFilterConfig({ chartKey: 'perfByJob', options: ['all', ...allLocations], value: chartFilters.perfByJob, title: t('dashboard.charts.filter_by_location') }); setFilterDrawerOpen(true); }} className="flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700/50">
+                                        <Icon name="filter" className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                                        <span className="font-semibold text-gray-900 dark:text-white truncate max-w-[120px]"> {chartFilters.perfByJob === 'all' ? t('common.all') : chartFilters.perfByJob} </span>
+                                    </button>
+                                ) : (
+                                    <ChartFilterDropdown chartKey="perfByJob" options={['all', ...allLocations]} value={chartFilters.perfByJob} onChange={handleChartFilterChange} />
+                                )
+                            )}
+                        </div>
                         {performanceByJobCategory.length > 0 ? (
                             <ResponsiveContainer width="100%" height={300}>
                                 <BarChart data={performanceByJobCategory} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
@@ -599,7 +854,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                         )}
                     </div>
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-lg">
-                        <h3 className="font-semibold font-display mb-4 text-lg">{t('dashboard.charts.job_distribution')}</h3>
+                        <div className="flex flex-wrap items-center justify-between w-full mb-4 gap-2">
+                            <h3 className="font-semibold font-display text-lg">{t('dashboard.charts.job_distribution')}</h3>
+                             {allLocations.length > 0 && (
+                                isMobile ? (
+                                    <button onClick={() => { setActiveFilterConfig({ chartKey: 'jobDist', options: ['all', ...allLocations], value: chartFilters.jobDist, title: t('dashboard.charts.filter_by_location') }); setFilterDrawerOpen(true); }} className="flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700/50">
+                                        <Icon name="filter" className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                                        <span className="font-semibold text-gray-900 dark:text-white truncate max-w-[120px]"> {chartFilters.jobDist === 'all' ? t('common.all') : chartFilters.jobDist} </span>
+                                    </button>
+                                ) : (
+                                    <ChartFilterDropdown chartKey="jobDist" options={['all', ...allLocations]} value={chartFilters.jobDist} onChange={handleChartFilterChange} />
+                                )
+                            )}
+                        </div>
                         {jobCategoryDistribution.length > 0 ? (
                             <ResponsiveContainer width="100%" height={300}>
                                 <LineChart data={jobCategoryDistribution} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
@@ -616,7 +883,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                         )}
                     </div>
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-lg">
-                        <h3 className="font-semibold font-display mb-4 text-lg">{t('dashboard.charts.exp_distribution')}</h3>
+                        <div className="flex flex-wrap items-center justify-between w-full mb-4 gap-2">
+                            <h3 className="font-semibold font-display text-lg">{t('dashboard.charts.exp_distribution')}</h3>
+                            {allJobCategories.length > 0 && (
+                                isMobile ? (
+                                    <button onClick={() => { setActiveFilterConfig({ chartKey: 'experience', options: ['all', ...allJobCategories], value: chartFilters.experience, title: t('dashboard.charts.filter_by_category') }); setFilterDrawerOpen(true); }} className="flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700/50">
+                                        <Icon name="filter" className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                                        <span className="font-semibold text-gray-900 dark:text-white truncate max-w-[120px]"> {chartFilters.experience === 'all' ? t('common.all') : chartFilters.experience} </span>
+                                    </button>
+                                ) : (
+                                    <ChartFilterDropdown chartKey="experience" options={['all', ...allJobCategories]} value={chartFilters.experience} onChange={handleChartFilterChange} />
+                                )
+                            )}
+                        </div>
                         {filteredCandidates.length > 0 ? (
                             <ResponsiveContainer width="100%" height={300}>
                                 <BarChart data={experienceDistribution} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
@@ -640,7 +919,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                         )}
                     </div>
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-lg">
-                        <h3 className="font-semibold font-display mb-4 text-lg">{t('dashboard.charts.location_distribution')}</h3>
+                        <div className="flex flex-wrap items-center justify-between w-full mb-4 gap-2">
+                           <h3 className="font-semibold font-display text-lg">{t('dashboard.charts.location_distribution')}</h3>
+                           {allJobCategories.length > 0 && (
+                                isMobile ? (
+                                    <button onClick={() => { setActiveFilterConfig({ chartKey: 'location', options: ['all', ...allJobCategories], value: chartFilters.location, title: t('dashboard.charts.filter_by_category') }); setFilterDrawerOpen(true); }} className="flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700/50">
+                                        <Icon name="filter" className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                                        <span className="font-semibold text-gray-900 dark:text-white truncate max-w-[120px]"> {chartFilters.location === 'all' ? t('common.all') : chartFilters.location} </span>
+                                    </button>
+                                ) : (
+                                    <ChartFilterDropdown chartKey="location" options={['all', ...allJobCategories]} value={chartFilters.location} onChange={handleChartFilterChange} />
+                                )
+                            )}
+                        </div>
                         {locationDistribution.length > 0 ? (
                             <ResponsiveContainer width="100%" height={300}>
                                 <BarChart data={locationDistribution} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
@@ -652,10 +943,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                                     </defs>
                                     <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                                     <XAxis type="number" allowDecimals={false} />
-                                    <YAxis type="category" dataKey="name" width={100} tick={{fontSize: 12}} interval={0} />
+                                    <YAxis type="category" dataKey="name" width={80} tick={{fontSize: 12}} interval={0} tickFormatter={formatLocationTick} />
                                     <Tooltip content={<CustomTooltip />} cursor={{fill: 'rgba(245, 158, 11, 0.1)'}}/>
                                     <Bar dataKey="value" fill="url(#colorLoc)" name={t('dashboard.charts.num_cvs')} barSize={30}>
-                                        <LabelList dataKey="value" position="right" style={{ fill: 'currentColor', fontSize: 12 }}/>
                                     </Bar>
                                 </BarChart>
                             </ResponsiveContainer>
@@ -664,7 +954,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                         )}
                     </div>
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-lg lg:col-span-2">
-                        <h3 className="font-semibold font-display mb-4 text-lg">{t('dashboard.charts.aggregated_skills_expertise')}</h3>
+                        <div className="flex flex-wrap items-center justify-between w-full mb-4 gap-2">
+                            <h3 className="font-semibold font-display text-lg">{t('dashboard.charts.aggregated_skills_expertise')}</h3>
+                             {allJobCategories.length > 0 && (
+                                isMobile ? (
+                                    <button onClick={() => { setActiveFilterConfig({ chartKey: 'skills', options: ['all', ...allJobCategories], value: chartFilters.skills, title: t('dashboard.charts.filter_by_category') }); setFilterDrawerOpen(true); }} className="flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700/50">
+                                        <Icon name="filter" className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                                        <span className="font-semibold text-gray-900 dark:text-white truncate max-w-[120px]"> {chartFilters.skills === 'all' ? t('common.all') : chartFilters.skills} </span>
+                                    </button>
+                                ) : (
+                                    <ChartFilterDropdown chartKey="skills" options={['all', ...allJobCategories]} value={chartFilters.skills} onChange={handleChartFilterChange} />
+                                )
+                            )}
+                        </div>
                         {aggregatedSkillsExpertise.length > 0 ? (
                             <ResponsiveContainer width="100%" height={400}>
                                 <BarChart data={aggregatedSkillsExpertise} layout="vertical" margin={{ top: 5, right: 40, left: 20, bottom: 5 }}>
@@ -690,7 +992,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                 </div>
                 )}
 
-                <div ref={profilesRef} className="mt-8">
+                <div ref={profilesRef} className="mt-8 pb-24 lg:pb-0">
                     <h3 className="text-lg font-semibold font-display text-gray-500 dark:text-gray-400 mb-4">{t('dashboard.candidate_profiles', {count: filteredCandidates.length})}</h3>
                     {filteredCandidates.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -713,7 +1015,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                     ) : (
                         isFavoritesView && (
                             <div className="flex flex-col items-center justify-center min-h-[50vh] p-8 text-center">
-                                {/* FIX: Changed autoPlay to autoplay to align with web component standards. */}
+                                {/* FIX: Changed `autoPlay` prop to `autoplay` to align with the updated global type definition for the 'dotlottie-wc' custom element. */}
                                 <dotlottie-wc
                                     src="https://lottie.host/89c66344-281d-4450-91d3-4574a47fec47/31ogoyP4Mh.lottie"
                                     autoplay
@@ -726,6 +1028,24 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                     )}
                 </div>
             </div>
+            <FilterDrawer
+                isOpen={isFilterDrawerOpen}
+                onClose={() => setFilterDrawerOpen(false)}
+                config={activeFilterConfig}
+                onChange={handleChartFilterChange}
+            />
+            <JobFilterDrawer
+                isOpen={isJobFilterDrawerOpen}
+                onClose={() => setJobFilterDrawerOpen(false)}
+                allCategories={allJobCategories}
+                selectedCategories={selectedJobCategories}
+                onCategoryToggle={handleCategoryToggle}
+                onClear={() => setSelectedJobCategories([])}
+            />
+            <ActionsDrawer 
+                isOpen={isActionsDrawerOpen}
+                onClose={() => setIsActionsDrawerOpen(false)}
+            />
         </div>
     )
 }

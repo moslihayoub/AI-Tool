@@ -1,4 +1,5 @@
 // FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
+// FIX: Switched to namespace React import to correctly populate the global JSX namespace, resolving JSX intrinsic element type errors.
 import * as React from 'react';
 import { Icon } from './icons';
 import { Theme } from '../types';
@@ -43,27 +44,34 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ theme, setTheme, onL
             <div className="max-w-md space-y-6">
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700">
                     <h3 className="text-lg font-semibold font-display mb-3">{t('settings.language.title')}</h3>
-                    <div className="flex space-x-2">
+                    <div className="flex space-x-2 rtl:space-x-reverse">
                         <button 
-                            onClick={() => setLanguage('fr')} 
-                            className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors ${language === 'fr' ? activeBtnClasses : inactiveBtnClasses}`}
+                            onClick={() => setLanguage('ar')} 
+                            className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors ${language === 'ar' ? activeBtnClasses : inactiveBtnClasses}`}
                         >
-                            <Icon name="fr-flag" className="w-6 h-6 rounded-full" />
-                            <span>{t('settings.language.french')}</span>
+                            <Icon name="ma-flag" className="w-6 h-6 rounded-full" />
+                            <span>{t('settings.language.arabic_short')}</span>
                         </button>
                         <button
                             onClick={() => setLanguage('en')}
                             className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors ${language === 'en' ? activeBtnClasses : inactiveBtnClasses}`}
                         >
                              <Icon name="gb-flag" className="w-6 h-6 rounded-full" />
-                            <span>{t('settings.language.english')}</span>
+                            <span>{t('settings.language.english_short')}</span>
+                        </button>
+                        <button 
+                            onClick={() => setLanguage('fr')} 
+                            className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors ${language === 'fr' ? activeBtnClasses : inactiveBtnClasses}`}
+                        >
+                            <Icon name="fr-flag" className="w-6 h-6 rounded-full" />
+                            <span>{t('settings.language.french_short')}</span>
                         </button>
                     </div>
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700">
                     <h3 className="text-lg font-semibold font-display mb-3">{t('settings.theme.title')}</h3>
-                    <div className="flex space-x-2">
+                    <div className="flex space-x-2 rtl:space-x-reverse">
                         <button 
                             onClick={() => setTheme('light')} 
                             className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors w-full justify-center ${theme === 'light' ? activeBtnClasses : inactiveBtnClasses}`}

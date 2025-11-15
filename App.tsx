@@ -1,8 +1,6 @@
 // FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
+// FIX: Switched to namespace React import to correctly populate the global JSX namespace, resolving JSX intrinsic element type errors.
 import * as React from 'react';
-
-// NOTE: The global JSX type definition for 'dotlottie-wc' has been moved to types.ts
-// to centralize all global type definitions and fix JSX intrinsic element errors.
 
 import { Sidebar } from './components/Sidebar';
 import { UploadView } from './components/UploadView';
@@ -13,6 +11,7 @@ import { AnalysisLoader } from './components/AnalysisLoader';
 import { SettingsView } from './components/SettingsView';
 import { QuotaModal } from './components/QuotaModal';
 import { MobileNavBar } from './components/MobileNavBar';
+import { AIAssistantView } from './components/AIAssistantView';
 import { CVFile, View, CandidateProfile, Theme, User } from './types';
 import { parseCvContent } from './services/geminiService';
 import { Icon } from './components/icons';
@@ -22,7 +21,7 @@ import { logoDark, logoLight } from './assets';
 const dummyProfiles: Omit<CandidateProfile, 'id' | 'fileName' | 'analysisDuration'>[] = [
   {
     name: 'Alice Dubois',
-    email: 'alice.dubois@example.com',
+    email: 'alice.dubios@example.com',
     phone: '+33 6 12 34 56 78',
     location: 'Paris, France',
     summary: 'Développeuse Full Stack passionnée avec 3 ans d\'expérience dans la création d\'applications web robustes et scalables. Adepte des méthodologies agiles et du travail en équipe.',
@@ -40,7 +39,7 @@ const dummyProfiles: Omit<CandidateProfile, 'id' | 'fileName' | 'analysisDuratio
     languages: ['Français (Natif)', 'Anglais (Courant)'],
     certifications: ['AWS Certified Developer - Associate'],
     detectedLanguage: 'French',
-    jobCategory: 'Développeur Full-Stack',
+    jobCategory: 'Technologie et Informatique',
     totalExperienceYears: 3.5,
     performanceScore: 88,
   },
@@ -64,7 +63,7 @@ const dummyProfiles: Omit<CandidateProfile, 'id' | 'fileName' | 'analysisDuratio
     languages: ['English (Native)'],
     certifications: [],
     detectedLanguage: 'English',
-    jobCategory: 'Product Design',
+    jobCategory: 'Marketing, Communication & Création',
     totalExperienceYears: 8,
     performanceScore: 95,
   },
@@ -88,7 +87,7 @@ const dummyProfiles: Omit<CandidateProfile, 'id' | 'fileName' | 'analysisDuratio
     languages: ['Spanish (Native)', 'English (Professional)'],
     certifications: ['ISTQB Certified Tester'],
     detectedLanguage: 'English',
-    jobCategory: 'QA Automation',
+    jobCategory: 'Technologie et Informatique',
     totalExperienceYears: 4,
     performanceScore: 82,
   },
@@ -111,7 +110,7 @@ const dummyProfiles: Omit<CandidateProfile, 'id' | 'fileName' | 'analysisDuratio
     languages: ['English (Native)', 'Mandarin (Conversational)'],
     certifications: [],
     detectedLanguage: 'English',
-    jobCategory: 'Développeur Full-Stack', // Grouped with developers
+    jobCategory: 'Technologie et Informatique',
     totalExperienceYears: 3,
     performanceScore: 91,
   },
@@ -130,7 +129,6 @@ const readFileAsBase64 = (file: File): Promise<{ mimeType: string; data: string 
       resolve({ mimeType: file.type || 'application/octet-stream', data: base64String });
     };
     reader.onerror = (error) => reject(error);
-    // FIX: Corrected typo from `readDataURL` to `readAsDataURL`.
     reader.readAsDataURL(file);
   });
 };
@@ -199,7 +197,6 @@ function AppContent() {
 
     const [theme, setTheme] = React.useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'system');
 
-    // Refactored theme logic
     const [systemTheme, setSystemTheme] = React.useState(() =>
         window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
     );
@@ -211,8 +208,6 @@ function AppContent() {
         }
     });
     
-    // FIX: Removed state and scroll listeners for mobile nav visibility.
-    // The nav bars will now be persistently visible on mobile.
     const mainContentRef = React.useRef<HTMLElement>(null);
 
 
@@ -249,7 +244,6 @@ function AppContent() {
         }
         localStorage.setItem('theme', theme);
     }, [isDarkMode, theme]);
-    // End of refactored theme logic
 
     const [isAnalyzing, setIsAnalyzing] = React.useState(false);
     const [isAnalysisDone, setIsAnalysisDone] = React.useState(false);
@@ -297,7 +291,7 @@ function AppContent() {
     }, []);
 
     React.useEffect(() => {
-        if (isOwner) return; // Owner usage is not tracked
+        if (isOwner) return;
 
         const today = new Date().toISOString().split('T')[0];
         try {
@@ -365,6 +359,10 @@ function AppContent() {
             console.error("Failed to save dummy data state to localStorage", error);
         }
     }, [isDummyDataActive]);
+
+    React.useEffect(() => {
+        mainContentRef.current?.scrollTo(0, 0);
+    }, [view, selectedProfileId]);
     
 
     const candidateProfiles = React.useMemo((): CandidateProfile[] => {
@@ -405,7 +403,6 @@ function AppContent() {
         const jsonFiles = filesToAdd.filter(f => f.name.endsWith('.json') || f.type === 'application/json');
         const otherFiles = filesToAdd.filter(f => !jsonFiles.includes(f));
     
-        // 1. Process JSON imports to update existing profiles or add new ones
         let wasUpdatedFromJson = false;
         if (jsonFiles.length > 0) {
             const importedProfilesByEmail = new Map<string, CandidateProfile>();
@@ -419,7 +416,6 @@ function AppContent() {
                     
                     profiles.forEach(profile => {
                         if (profile.email) {
-                            // Last one wins if duplicate emails in same import
                             importedProfilesByEmail.set(profile.email, {
                                 ...profile,
                                 fileName: profile.fileName || file.name,
@@ -441,7 +437,7 @@ function AppContent() {
             const updatedFiles = currentFiles.map(cvFile => {
                 if (cvFile.profile?.email && importedProfilesByEmail.has(cvFile.profile.email)) {
                     const newProfileData = importedProfilesByEmail.get(cvFile.profile.email)!;
-                    importedProfilesByEmail.delete(cvFile.profile.email); // Remove so it's not added again
+                    importedProfilesByEmail.delete(cvFile.profile.email);
                     wasUpdatedFromJson = true;
                     return {
                         ...cvFile,
@@ -466,7 +462,6 @@ function AppContent() {
             currentFiles = [...updatedFiles, ...newFilesFromJson, ...errorFiles];
         }
 
-        // 2. Process other file uploads (PDF, DOCX, etc.)
         const existingFileNames = new Set(currentFiles.map(f => f.file.name));
         const newOtherCvFiles: CVFile[] = otherFiles
             .filter(file => !existingFileNames.has(file.name))
@@ -476,7 +471,6 @@ function AppContent() {
                 status: 'pending',
             }));
             
-        // 3. Combine everything and set state
         setCvFiles([...currentFiles, ...newOtherCvFiles]);
         
         if (isDummyDataActive && (wasUpdatedFromJson || newOtherCvFiles.length > 0 || jsonFiles.length > 0)) {
@@ -518,7 +512,6 @@ function AppContent() {
         setIsAnalysisDone(false);
         setAnalysisStartTime(Date.now());
         
-        // Set all pending files to 'parsing' state at once for immediate UI feedback.
         setCvFiles(prevFiles =>
             prevFiles.map(file =>
                 pendingFiles.some(pf => pf.id === file.id) ? { ...file, status: 'parsing', analysisStartTime: Date.now() } : file
@@ -531,7 +524,6 @@ function AppContent() {
 
             if (processedCVsCache[hash]) {
                 const profile = processedCVsCache[hash];
-                // The profile from cache might have a different ID, so we re-assign the current file's ID.
                 const updatedProfile = { ...profile, id: cvFile.id, fileName: cvFile.file.name, analysisDuration: 0 };
                  return { ...cvFile, status: 'success' as const, profile: updatedProfile, content: '', analysisDuration: 0, hash };
             }
@@ -558,7 +550,6 @@ function AppContent() {
 
         const results = await Promise.all(analysisPromises);
         
-        // Update the main state once with all the results.
         setCvFiles(prevFiles => {
             const filesMap = new Map(prevFiles.map(f => [f.id, f]));
             results.forEach(result => {
@@ -582,7 +573,8 @@ function AppContent() {
 
     const handleCancelAnalysis = () => {
         setIsAnalyzing(false);
-        // Note: background analysis might continue, this just closes the UI.
+        setCvFiles(prev => prev.map(f => (f.status === 'parsing' ? { ...f, status: 'pending' } : f)));
+        setView('upload');
     };
 
     const handleViewResults = () => {
@@ -592,7 +584,6 @@ function AppContent() {
 
     const handleSelectCandidate = (candidate: CandidateProfile) => {
         setSelectedProfileId(candidate.id);
-        mainContentRef.current?.scrollTo(0, 0);
     };
 
     const handleBackToDashboard = () => {
@@ -601,11 +592,9 @@ function AppContent() {
 
     const handleBackFromCompare = () => {
         setView('dashboard');
-        // setComparisonList([]);
     };
 
     const handleToggleCompare = (candidateId: string) => {
-        // This is a special call from the header button to navigate
         if (candidateId === '' && comparisonList.length === 2) {
             setView('compare');
             return;
@@ -618,17 +607,15 @@ function AppContent() {
             if (prev.length < 2) {
                 const newList = [...prev, candidateId];
                 if (newList.length === 2) {
-                    // Automatically navigate to compare view when 2 are selected
                     setView('compare');
                 }
                 return newList;
             }
-            return prev; // Don't add if already 2
+            return prev;
         });
     };
 
     const handleReset = () => {
-        // Confirmation is now handled within the components.
         setCvFiles([]);
         setFavorites([]);
         setComparisonList([]);
@@ -686,7 +673,7 @@ function AppContent() {
         const existingEmails = new Set(cvFiles.map(f => f.profile?.email).filter(Boolean));
         
         const newCvFiles: CVFile[] = profiles
-            .filter(p => p.email && !existingEmails.has(p.email)) // Filter out duplicates by email
+            .filter(p => p.email && !existingEmails.has(p.email))
             .map((profile, index) => {
                 const id = `imported-${profile.name?.replace(/\s/g, '') || 'profile'}-${Date.now() + index}`;
                 const fullProfile: CandidateProfile = {
@@ -751,6 +738,8 @@ function AppContent() {
 
     const selectedCvFile = cvFiles.find(f => f.id === selectedProfileId);
     
+    const isFullScreenView = !!selectedProfileId;
+
     const renderContent = () => {
         if (selectedProfileId && selectedCvFile && selectedCvFile.profile) {
             const isFavorite = favorites.includes(selectedProfileId);
@@ -762,9 +751,11 @@ function AppContent() {
             case 'upload':
                 return <UploadView cvFiles={cvFiles} onAddFiles={handleAddFiles} onStartAnalysis={handleStartAnalysis} onClearFile={handleClearFile} onClearAllFiles={handleReset} isAnalyzing={isAnalyzing} storageError={storageError} isOwner={isOwner} analysisLimit={analysisLimit} limitError={limitError} uploadLimit={isOwner ? Infinity : UPLOAD_SELECTION_LIMIT} />;
             case 'dashboard':
-                return <DashboardView candidates={candidateProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} setSearchQuery={() => {}} comparisonList={comparisonList} onToggleCompare={handleToggleCompare} onImportProfiles={handleImportProfiles} />;
+                return <DashboardView candidates={candidateProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} comparisonList={comparisonList} onToggleCompare={handleToggleCompare} onImportProfiles={handleImportProfiles} />;
             case 'favorites':
-                return <DashboardView candidates={favoriteProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} setSearchQuery={() => {}} isFavoritesView comparisonList={comparisonList} onToggleCompare={handleToggleCompare} onImportProfiles={handleImportProfiles} />;
+                return <DashboardView candidates={favoriteProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} isFavoritesView comparisonList={comparisonList} onToggleCompare={handleToggleCompare} onImportProfiles={handleImportProfiles} />;
+            case 'ai':
+                return <AIAssistantView candidates={candidateProfiles} />;
             case 'settings':
                 return <SettingsView 
                             theme={theme} 
@@ -785,25 +776,25 @@ function AppContent() {
         }
     };
 
-    // FIX: Removed 'compare' from the full-screen view conditions to fix a bug where the mobile nav bar would disappear.
-    const isFullScreenView = view === 'settings' || !!selectedProfileId;
-
     return (
         <div className="h-screen text-gray-800 dark:text-gray-200 bg-white dark:bg-black">
             <div className="flex h-full w-full">
                 {isAnalyzing && <AnalysisLoader total={analysisTotal} startTime={analysisStartTime} isAnalysisDone={isAnalysisDone} onViewResults={handleViewResults} onCancel={handleCancelAnalysis} />}
                 {isQuotaModalOpen && <QuotaModal onClose={() => setIsQuotaModalOpen(false)} onConnect={handleConnect} />}
 
-                <Sidebar
-                    currentView={view}
-                    setCurrentView={(v) => { setView(v); setSelectedProfileId(null); }}
-                    isCollapsed={isSidebarCollapsed}
-                    setIsCollapsed={setIsSidebarCollapsed}
-                    isMobileOpen={isMobileSidebarOpen}
-                    setIsMobileOpen={setIsMobileSidebarOpen}
-                />
+                {!isFullScreenView && (
+                    <Sidebar
+                        currentView={view}
+                        setCurrentView={(v) => { setView(v); setSelectedProfileId(null); }}
+                        isCollapsed={isSidebarCollapsed}
+                        setIsCollapsed={setIsSidebarCollapsed}
+                        isMobileOpen={isMobileSidebarOpen}
+                        // FIX: Corrected typo in prop name from setIsMobileSidebarOpen to setIsMobileOpen
+                        setIsMobileOpen={setIsMobileSidebarOpen}
+                    />
+                )}
                 <div className="flex-1 flex flex-col overflow-hidden">
-                    <header className={`md:hidden flex items-center justify-between p-4 border-b dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-20`}>
+                    <header className={`md:hidden flex items-center justify-between rtl:flex-row-reverse p-4 border-b dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-20`}>
                         <>
                             <img src={logoLight} alt="ParseLIQ HR Logo" className="h-8 w-auto dark:hidden" />
                             <img src={logoDark} alt="ParseLIQ HR Logo" className="h-8 w-auto hidden dark:block" />

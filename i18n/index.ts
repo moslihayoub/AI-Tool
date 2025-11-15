@@ -1,9 +1,9 @@
 import * as React from 'react';
-import { fr, en } from './locales';
+import { fr, en, ar } from './locales';
 
-type Language = 'fr' | 'en';
+type Language = 'fr' | 'en' | 'ar';
 
-const translations = { fr, en };
+const translations = { fr, en, ar };
 
 interface LanguageContextType {
     language: Language;
@@ -19,13 +19,28 @@ const getNestedTranslation = (obj: any, key: string): string | undefined => {
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [language, setLanguageState] = React.useState<Language>(() => {
-        const savedLang = localStorage.getItem('language');
-        return (savedLang === 'en' || savedLang === 'fr') ? savedLang : 'fr';
+        try {
+            const savedLang = localStorage.getItem('language');
+            if (savedLang && ['fr', 'en', 'ar'].includes(savedLang)) {
+                return savedLang as Language;
+            }
+            const browserLang = navigator.language.split('-')[0];
+            if (browserLang === 'ar') return 'ar';
+            if (browserLang === 'fr') return 'fr';
+            return 'en'; // Default to English
+        } catch {
+            return 'en';
+        }
     });
 
     React.useEffect(() => {
-        localStorage.setItem('language', language);
-        document.documentElement.lang = language;
+        try {
+            localStorage.setItem('language', language);
+            document.documentElement.lang = language;
+            document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+        } catch (error) {
+            console.error("Failed to update language settings:", error);
+        }
     }, [language]);
 
     const setLanguage = (lang: Language) => {
@@ -53,7 +68,6 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     const value = { language, setLanguage, t };
 
-    // FIX: Replaced JSX with React.createElement to be compatible with a .ts file extension.
     return React.createElement(LanguageContext.Provider, { value }, children);
 };
 
