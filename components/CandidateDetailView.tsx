@@ -1,6 +1,6 @@
 // FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
-// FIX: Switched to namespace React import to correctly populate the global JSX namespace, resolving JSX intrinsic element type errors.
-import * as React from 'react';
+// FIX: Switched to default React import to correctly populate the global JSX namespace.
+import React from 'react';
 import { CandidateProfile, ChatMessage, CVFile } from '../types';
 import { Icon } from './icons';
 import { createAIChat } from '../services/geminiService';
@@ -72,7 +72,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ cvFile, isOpen, onClose }) =>
     return (
         <>
             <div onClick={onClose} className={`fixed inset-0 bg-black/50 z-40 transition-opacity ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} />
-            <div className={`fixed top-0 ltr:right-0 rtl:left-0 h-full w-full max-w-md bg-gray-50 dark:bg-gray-900/80 dark:backdrop-blur-sm flex flex-col z-50 transform transition-transform duration-300 ease-in-out ltr:border-l rtl:border-r dark:border-gray-700 ${isOpen ? 'translate-x-0' : 'ltr:translate-x-full rtl:-translate-x-full'}`}>
+            <div className={`fixed top-0 h-full w-full max-w-md bg-gray-50 dark:bg-gray-900/80 dark:backdrop-blur-sm flex flex-col z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'ltr:right-0 rtl:left-0 ltr:border-l rtl:border-r dark:border-gray-700 ltr:translate-x-full rtl:-translate-x-full'}`}>
                 <div className="p-4 border-b dark:border-gray-700 flex-shrink-0 flex items-center justify-between">
                     <h4 className="font-bold font-display text-lg flex items-center gap-2"><Icon name="bot" className="w-6 h-6 text-pink-500" /> {t('ai_assistant.title')}</h4>
                     <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
@@ -195,7 +195,7 @@ export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate,
 
     return (
         <div className="h-full flex flex-col bg-white dark:bg-gray-800 relative">
-            <div className={`w-full flex flex-col transition-all duration-300 ease-in-out ${isAiAssistantOpen ? 'lg:ltr:mr-[28rem] lg:rtl:ml-[28rem]': ''}`}>
+            <div className="w-full flex flex-col">
                 <header className="p-4 border-b dark:border-gray-700 flex flex-col sm:flex-row sm:justify-between sm:items-center flex-shrink-0 gap-4">
                     <div className="flex items-center gap-3 order-2 sm:order-1 w-full sm:w-auto">
                         <button onClick={onBack} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">

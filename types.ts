@@ -1,5 +1,6 @@
-// FIX: Changed `import 'react'` to `import * as React from 'react'` to resolve the 'Cannot find namespace React' error for `React.CSSProperties`. This also makes the React import style consistent across all files, which should help TypeScript correctly resolve the global JSX namespace and fix the widespread 'Property does not exist on type JSX.IntrinsicElements' errors.
-import * as React from 'react';
+// FIX: Replaced `import type { CSSProperties } from 'react'` with `import * as React from 'react'`. This ensures that React's global JSX namespace is fully loaded before this file attempts to augment it, resolving widespread "Property does not exist on type 'JSX.IntrinsicElements'" errors across the application.
+// FIX: Switched to default React import to correctly populate the global JSX namespace.
+import React from 'react';
 
 // This file contains shared type definitions for the application.
 
@@ -9,13 +10,14 @@ declare global {
   // fixing widespread JSX intrinsic element type errors.
   namespace JSX {
     interface IntrinsicElements {
-      // FIX: Simplified the 'dotlottie-wc' custom element type. The previous dependency on React.DetailedHTMLProps was causing a cascading type failure because the base JSX types were not being found during compilation. This change removes that dependency, which should allow the base React JSX types to load correctly and resolve the widespread 'Property does not exist on type 'JSX.IntrinsicElements'' errors.
-      'dotlottie-wc': {
+      // FIX: Changed the type definition to extend from `div`'s intrinsic element type.
+      // This is a more robust way to type custom elements in React with TypeScript,
+      // ensuring all standard HTML attributes (like style, className) are included,
+      // which resolves the "Property 'dotlottie-wc' does not exist on type 'JSX.IntrinsicElements'" errors.
+      'dotlottie-wc': JSX.IntrinsicElements['div'] & {
         src?: string;
         autoplay?: boolean;
         loop?: boolean;
-        style?: React.CSSProperties;
-        className?: string;
       };
     }
   }

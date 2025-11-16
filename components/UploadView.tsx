@@ -1,6 +1,6 @@
 // FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
-// FIX: Switched to namespace React import to correctly populate the global JSX namespace, resolving JSX intrinsic element type errors.
-import * as React from 'react';
+// FIX: Switched to default React import to correctly populate the global JSX namespace.
+import React from 'react';
 import { CVFile } from '../types';
 import { Icon } from './icons';
 import { useTranslation } from '../i18n';
@@ -214,7 +214,7 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
                 <input ref={inputRef} type="file" multiple onChange={handleChange} className="hidden" accept=".pdf,.txt,.json,.md,.csv,.doc,.docx,.xls,.xlsx,.ppt,.pptx" disabled={isInteractionDisabled} />
                 
                 <div className="flex flex-col items-center justify-center text-gray-500 dark:text-gray-400">
-                    {/* FIX: Changed `autoPlay` prop to `autoplay` to align with the updated global type definition for the 'dotlottie-wc' custom element. */}
+                    {/* FIX: Changed autoPlay to autoplay to align with web component standards. */}
                     <dotlottie-wc src="https://lottie.host/05f02365-02dd-4b23-8289-b8d119e5c961/9dwTt6kpl2.lottie" style={{ width: '220px', height: '220px' }} autoplay loop></dotlottie-wc>
                     <div className="text-center">
                         {isDragActive ? (

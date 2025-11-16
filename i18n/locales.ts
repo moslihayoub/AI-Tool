@@ -61,20 +61,18 @@ export const fr = {
             profiles: "Candidats"
         },
         charts: {
-            perf_by_job: "Performance par Métier",
-            job_distribution: "Répartition Métiers",
-            exp_distribution: "Répartition Expérience",
-            location_distribution: "Répartition par Ville",
-            aggregated_skills_expertise: "Expertise des Compétences",
+            perf_by_job: "Score de Performance par Métier",
+            job_distribution: "Répartition par métier",
+            exp_distribution: "Distribution par niveau d'expérience",
+            location_distribution: "Nombre de CVs par ville",
+            aggregated_skills_expertise: "Expertise Globale par Compétence",
             avg_score: "Score Moyen",
             candidates: "Candidats",
             num_cvs: "Nombre de CVs",
             other: "Autre",
             no_data: "Pas de données",
             clear_chart_filters: "Effacer les filtres du graphique",
-            filter_by: "Filtrer par",
-            filter_by_location: "Filtrer par Lieu",
-            filter_by_category: "Filtrer par Métier"
+            filter_by: "Filtrer par"
         },
         exp_buckets: {
             junior: "Junior (0-2 ans)",
@@ -301,20 +299,18 @@ export const en = {
             profiles: "Profiles"
         },
         charts: {
-            perf_by_job: "Performance by Job",
-            job_distribution: "Job Distribution",
-            exp_distribution: "Experience Distribution",
-            location_distribution: "Distribution by City",
-            aggregated_skills_expertise: "Skill Expertise",
+            perf_by_job: "Performance Score by Job Category",
+            job_distribution: "Job Category Distribution",
+            exp_distribution: "Experience Level Distribution",
+            location_distribution: "Number of CVs by City",
+            aggregated_skills_expertise: "Overall Skill Expertise",
             avg_score: "Average Score",
             candidates: "Candidates",
             num_cvs: "Number of CVs",
             other: "Other",
             no_data: "No data available",
             clear_chart_filters: "Clear chart filters",
-            filter_by: "Filter by",
-            filter_by_location: "Filter by Location",
-            filter_by_category: "Filter by Job Category"
+            filter_by: "Filter by"
         },
         exp_buckets: {
             junior: "Junior (0-2 yrs)",
@@ -541,20 +537,18 @@ export const ar = {
             profiles: "الملفات الشخصية"
         },
         charts: {
-            perf_by_job: "الأداء حسب الوظيفة",
-            job_distribution: "توزيع الوظائف",
-            exp_distribution: "توزيع الخبرة",
-            location_distribution: "التوزيع حسب المدينة",
-            aggregated_skills_expertise: "خبرة المهارات",
+            perf_by_job: "درجة الأداء حسب فئة الوظيفة",
+            job_distribution: "توزيع فئات الوظائف",
+            exp_distribution: "توزيع مستوى الخبرة",
+            location_distribution: "عدد السير الذاتية حسب المدينة",
+            aggregated_skills_expertise: "خبرة المهارات الإجمالية",
             avg_score: "متوسط الدرجة",
             candidates: "المرشحون",
             num_cvs: "عدد السير الذاتية",
             other: "أخرى",
             no_data: "لا توجد بيانات متاحة",
             clear_chart_filters: "مسح فلاتر الرسم البياني",
-            filter_by: "تصفية حسب",
-            filter_by_location: "تصفية حسب الموقع",
-            filter_by_category: "تصفية حسب فئة الوظيفة"
+            filter_by: "تصفية حسب"
         },
         exp_buckets: {
             junior: "مبتدئ (0-2 سنة)",

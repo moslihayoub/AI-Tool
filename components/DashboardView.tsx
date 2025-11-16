@@ -1,6 +1,6 @@
 // FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
-// FIX: Switched to namespace React import to correctly populate the global JSX namespace, resolving JSX intrinsic element type errors.
-import * as React from 'react';
+// FIX: Switched to default React import to correctly populate the global JSX namespace.
+import React from 'react';
 import { CandidateProfile } from '../types';
 import { Icon } from './icons';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList, LineChart, Line } from 'recharts';
@@ -154,7 +154,6 @@ const EmptyChartState: React.FC = () => {
     const { t } = useTranslation();
     return (
         <div className="flex flex-col items-center justify-center h-[300px] text-gray-500">
-            {/* FIX: Changed `autoPlay` prop to `autoplay` to align with the updated global type definition for the 'dotlottie-wc' custom element. */}
             <dotlottie-wc
                 src="https://lottie.host/89c66344-281d-4450-91d3-4574a47fec47/31ogoyP4Mh.lottie"
                 autoplay
@@ -185,23 +184,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
     const graphsRef = React.useRef<HTMLDivElement>(null);
     const profilesRef = React.useRef<HTMLDivElement>(null);
 
-    const [isMobile, setIsMobile] = React.useState(window.innerWidth < 768);
-    const [isFilterDrawerOpen, setFilterDrawerOpen] = React.useState(false);
-    const [isJobFilterDrawerOpen, setJobFilterDrawerOpen] = React.useState(false);
-    const [isActionsDrawerOpen, setIsActionsDrawerOpen] = React.useState(false);
-    const [activeFilterConfig, setActiveFilterConfig] = React.useState<{
-        chartKey: string;
-        options: string[];
-        value: string;
-        title: string;
-    } | null>(null);
-
-    React.useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 768);
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
-
     const handleScrollTo = (ref: React.RefObject<HTMLDivElement>) => {
         ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
@@ -209,7 +191,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
     const handleImportClick = () => {
         importInputRef.current?.click();
         setIsActionsOpen(false);
-        setIsActionsDrawerOpen(false);
     };
 
     const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -276,6 +257,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         };
         reader.readAsText(file);
         event.target.value = '';
+    };
+
+    const shortenJobCategory = (category: string) => {
+        const mapping: { [key: string]: string } = {
+            'Product Design': 'Design',
+            'Développeur Full-Stack': 'Full-Stack',
+            'QA Automation': 'QA',
+        };
+        return mapping[category] || category;
     };
 
     const allJobCategories = React.useMemo(() => {
@@ -369,7 +359,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
             acc[key] = (acc[key] || 0) + 1;
             return acc;
         }, {});
-        return Object.entries(freqMap).map(([name, value]) => ({ name, value }));
+        return Object.entries(freqMap).map(([name, value]) => ({ name: shortenJobCategory(name), value }));
     }, [filteredCandidates, chartFilters.jobDist]);
     
     const experienceDistribution = React.useMemo(() => {
@@ -406,7 +396,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         }, {} as Record<string, { totalScore: number, count: number }>);
 
         return Object.entries(categoryScores).map(([name, data]) => ({
-            name, averageScore: data.count > 0 ? Math.round(data.totalScore / data.count) : 0
+            name: shortenJobCategory(name), averageScore: data.count > 0 ? Math.round(data.totalScore / data.count) : 0
         })).sort((a, b) => b.averageScore - a.averageScore);
     }, [filteredCandidates, chartFilters.perfByJob]);
 
@@ -490,7 +480,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                                     onChange(chartKey, option);
                                     setIsOpen(false);
                                 }}
-                                className={`w-full text-left rtl:text-right px-4 py-2 text-base truncate ${value === option ? 'bg-primary-100 dark:bg-primary-900 font-semibold' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                                className={`w-full text-left rtl:text-right px-4 py-2 truncate ${value === option ? 'bg-primary-100 dark:bg-primary-900 font-semibold' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
                             >
                                 {option === 'all' ? t('common.all') : option}
                             </button>
@@ -498,99 +488,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                     </div>
                 )}
             </div>
-        );
-    };
-
-    const FilterDrawer: React.FC<{
-        isOpen: boolean;
-        onClose: () => void;
-        config: {
-            chartKey: string;
-            options: string[];
-            value: string;
-            title: string;
-        } | null;
-        onChange: (chartKey: string, value: string) => void;
-    }> = ({ isOpen, onClose, config, onChange }) => {
-        return (
-            <>
-                <div className={`fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
-                <div
-                    className={`fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 rounded-t-2xl shadow-lg max-h-[60vh] flex flex-col transform transition-transform duration-300 ${isOpen ? 'translate-y-0' : 'translate-y-full'}`}
-                    onClick={e => e.stopPropagation()}
-                >
-                    <div className="p-4 border-b dark:border-gray-700 flex justify-between items-center flex-shrink-0">
-                        <h3 className="font-bold text-lg">{config?.title || t('dashboard.filter_by_job')}</h3>
-                        <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-                            <Icon name="close" className="w-6 h-6"/>
-                        </button>
-                    </div>
-                    <div className="overflow-y-auto p-2">
-                        {config?.options.map(option => (
-                            <button
-                                key={option}
-                                onClick={() => {
-                                    onChange(config.chartKey, option);
-                                    onClose();
-                                }}
-                                className={`w-full text-left rtl:text-right px-4 py-3 text-base rounded-lg flex justify-between items-center ${config.value === option ? 'bg-primary-100 dark:bg-primary-900 font-semibold text-primary-700 dark:text-primary-200' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
-                            >
-                                <span>{option === 'all' ? t('common.all') : option}</span>
-                                {config.value === option && <Icon name="check" className="w-5 h-5 text-primary-600 dark:text-primary-300"/>}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </>
-        );
-    };
-    
-    const JobFilterDrawer: React.FC<{
-        isOpen: boolean;
-        onClose: () => void;
-        allCategories: string[];
-        selectedCategories: string[];
-        onCategoryToggle: (category: string) => void;
-        onClear: () => void;
-    }> = ({ isOpen, onClose, allCategories, selectedCategories, onCategoryToggle, onClear }) => {
-        const { t } = useTranslation();
-        return (
-            <>
-                <div className={`fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
-                <div className={`fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 rounded-t-2xl shadow-lg max-h-[75vh] flex flex-col transform transition-transform duration-300 ${isOpen ? 'translate-y-0' : 'translate-y-full'}`}>
-                    <div className="p-4 border-b dark:border-gray-700 flex justify-between items-center flex-shrink-0">
-                        <h3 className="font-bold text-lg">{t('dashboard.filter_by_job')}</h3>
-                        <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-                            <Icon name="close" className="w-6 h-6"/>
-                        </button>
-                    </div>
-                    <div className="overflow-y-auto p-2">
-                        {allCategories.map(category => (
-                            <label key={category} className="flex items-center p-3 text-base hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-lg">
-                                <input
-                                    type="checkbox"
-                                    className="h-5 w-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:bg-gray-900 dark:border-gray-600"
-                                    checked={selectedCategories.includes(category)}
-                                    onChange={() => onCategoryToggle(category)}
-                                />
-                                <span className="ml-3 rtl:ml-0 rtl:mr-3 text-gray-700 dark:text-gray-300 truncate">{category}</span>
-                            </label>
-                        ))}
-                    </div>
-                    {selectedCategories.length > 0 && (
-                        <div className="p-4 border-t dark:border-gray-700 flex-shrink-0">
-                            <button
-                                onClick={() => {
-                                    onClear();
-                                }}
-                                className="w-full text-center text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline focus:outline-none"
-                            >
-                                {t('dashboard.clear_filters')}
-                            </button>
-                        </div>
-                    )}
-                </div>
-            </>
         );
     };
 
@@ -603,7 +500,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                 </header>
                 <div className="flex flex-col items-center justify-center min-h-[calc(100vh-15rem)] text-center -mt-8">
                     <input type="file" ref={importInputRef} onChange={handleFileImport} accept=".csv,.json" className="hidden" />
-                    {/* FIX: Changed `autoPlay` prop to `autoplay` to align with the updated global type definition for the 'dotlottie-wc' custom element. */}
                     <dotlottie-wc
                         src="https://lottie.host/89c66344-281d-4450-91d3-4574a47fec47/31ogoyP4Mh.lottie"
                         autoplay
@@ -645,7 +541,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         link.click();
         document.body.removeChild(link);
         setIsActionsOpen(false);
-        setIsActionsDrawerOpen(false);
     };
     
     const exportToJson = () => {
@@ -660,36 +555,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
         setIsActionsOpen(false);
-        setIsActionsDrawerOpen(false);
     };
-
-    const ActionsDrawer: React.FC<{
-        isOpen: boolean;
-        onClose: () => void;
-    }> = ({ isOpen, onClose }) => (
-        <>
-            <div className={`fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
-            <div className={`fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 rounded-t-2xl shadow-lg flex flex-col transform transition-transform duration-300 ${isOpen ? 'translate-y-0' : 'translate-y-full'}`}>
-                <div className="p-4 border-b dark:border-gray-700 flex justify-between items-center flex-shrink-0">
-                    <h3 className="font-bold text-lg">{t('common.actions')}</h3>
-                    <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-                        <Icon name="close" className="w-6 h-6"/>
-                    </button>
-                </div>
-                <div className="p-2">
-                    <button onClick={handleImportClick} className="w-full flex items-center gap-4 px-4 py-3 text-base rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
-                        <Icon name="upload" className="w-6 h-6"/> {t('common.import')}
-                    </button>
-                    <button onClick={exportToCsv} className="w-full flex items-center gap-4 px-4 py-3 text-base rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
-                        <Icon name="export" className="w-6 h-6"/> {t('dashboard.export_as_csv')}
-                    </button>
-                    <button onClick={exportToJson} className="w-full flex items-center gap-4 px-4 py-3 text-base rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
-                        <Icon name="export" className="w-6 h-6"/> {t('dashboard.export_as_json')}
-                    </button>
-                </div>
-            </div>
-        </>
-    );
 
     return (
         <div>
@@ -700,51 +566,43 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                 </div>
                 {!isFavoritesView && (
                  <div className="w-full sm:w-auto flex justify-between items-center gap-2 rtl:flex-row-reverse">
-                    {isMobile ? (
-                        <button onClick={() => setJobFilterDrawerOpen(true)} title={t('dashboard.filter_by_job')} className="relative flex items-center justify-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 font-semibold px-3 sm:px-4 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <div className="relative" ref={filterRef}>
+                        <button onClick={() => setIsFilterOpen(!isFilterOpen)} title={t('dashboard.filter_by_job')} className="flex items-center justify-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 font-semibold px-3 sm:px-4 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                             <Icon name="filter" className="w-5 h-5"/>
                             <span>{t('dashboard.filter_by_job')}</span>
                             {selectedJobCategories.length > 0 && <span className="absolute -top-1 -right-1 rtl:-right-auto rtl:-left-1 bg-primary-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">{selectedJobCategories.length}</span>}
                         </button>
-                    ) : (
-                        <div className="relative" ref={filterRef}>
-                            <button onClick={() => setIsFilterOpen(!isFilterOpen)} title={t('dashboard.filter_by_job')} className="flex items-center justify-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 font-semibold px-3 sm:px-4 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                                <Icon name="filter" className="w-5 h-5"/>
-                                <span>{t('dashboard.filter_by_job')}</span>
-                                {selectedJobCategories.length > 0 && <span className="absolute -top-1 -right-1 rtl:-right-auto rtl:-left-1 bg-primary-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">{selectedJobCategories.length}</span>}
-                            </button>
-                            {isFilterOpen && (
-                                <div className="absolute top-full mt-2 w-56 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-lg shadow-xl z-10">
-                                    <div className="max-h-60 overflow-y-auto">
-                                        {allJobCategories.map(category => (
-                                            <label key={category} className="flex items-center p-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:bg-gray-900 dark:border-gray-600"
-                                                    checked={selectedJobCategories.includes(category)}
-                                                    onChange={() => handleCategoryToggle(category)}
-                                                />
-                                                <span className="ml-3 rtl:ml-0 rtl:mr-3 text-gray-700 dark:text-gray-300 truncate">{category}</span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                    {selectedJobCategories.length > 0 && (
-                                        <div className="p-2 border-t dark:border-gray-700">
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedJobCategories([]);
-                                                    setIsFilterOpen(false);
-                                                }}
-                                                className="w-full text-center text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline focus:outline-none"
-                                            >
-                                                {t('dashboard.clear_filters')}
-                                            </button>
-                                        </div>
-                                    )}
+                        {isFilterOpen && (
+                            <div className="absolute top-full mt-2 w-56 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-lg shadow-xl z-10">
+                                <div className="max-h-60 overflow-y-auto">
+                                    {allJobCategories.map(category => (
+                                        <label key={category} className="flex items-center p-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:bg-gray-900 dark:border-gray-600"
+                                                checked={selectedJobCategories.includes(category)}
+                                                onChange={() => handleCategoryToggle(category)}
+                                            />
+                                            <span className="ml-3 rtl:ml-0 rtl:mr-3 text-gray-700 dark:text-gray-300 truncate">{category}</span>
+                                        </label>
+                                    ))}
                                 </div>
-                            )}
-                        </div>
-                    )}
+                                {selectedJobCategories.length > 0 && (
+                                    <div className="p-2 border-t dark:border-gray-700">
+                                        <button
+                                            onClick={() => {
+                                                setSelectedJobCategories([]);
+                                                setIsFilterOpen(false);
+                                            }}
+                                            className="w-full text-center text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline focus:outline-none"
+                                        >
+                                            {t('dashboard.clear_filters')}
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
 
                     <div className="hidden lg:flex items-center gap-2">
                         <button onClick={() => handleScrollTo(graphsRef)} className="bg-gray-900 text-white font-semibold py-2 px-4 rounded-full hover:bg-gray-700 transition-colors items-center gap-2 flex">
@@ -776,7 +634,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                             )}
                         </div>
                         <div className="relative" ref={actionsRef}>
-                            <button onClick={() => isMobile ? setIsActionsDrawerOpen(true) : setIsActionsOpen(prev => !prev)} title={t('common.actions')} className="flex items-center justify-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 font-semibold p-2.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                            <button onClick={() => setIsActionsOpen(prev => !prev)} title={t('common.actions')} className="flex items-center justify-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 font-semibold p-2.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                                 <Icon name="plus" className="w-5 h-5" />
                             </button>
                             {isActionsOpen && (
@@ -821,14 +679,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                         <div className="flex flex-wrap items-center justify-between w-full mb-4 gap-2">
                             <h3 className="font-semibold font-display text-lg">{t('dashboard.charts.perf_by_job')}</h3>
                             {allLocations.length > 0 && (
-                                isMobile ? (
-                                    <button onClick={() => { setActiveFilterConfig({ chartKey: 'perfByJob', options: ['all', ...allLocations], value: chartFilters.perfByJob, title: t('dashboard.charts.filter_by_location') }); setFilterDrawerOpen(true); }} className="flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700/50">
-                                        <Icon name="filter" className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-                                        <span className="font-semibold text-gray-900 dark:text-white truncate max-w-[120px]"> {chartFilters.perfByJob === 'all' ? t('common.all') : chartFilters.perfByJob} </span>
-                                    </button>
-                                ) : (
-                                    <ChartFilterDropdown chartKey="perfByJob" options={['all', ...allLocations]} value={chartFilters.perfByJob} onChange={handleChartFilterChange} />
-                                )
+                                <ChartFilterDropdown 
+                                    chartKey="perfByJob" 
+                                    options={['all', ...allLocations]} 
+                                    value={chartFilters.perfByJob} 
+                                    onChange={handleChartFilterChange} 
+                                />
                             )}
                         </div>
                         {performanceByJobCategory.length > 0 ? (
@@ -857,14 +713,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                         <div className="flex flex-wrap items-center justify-between w-full mb-4 gap-2">
                             <h3 className="font-semibold font-display text-lg">{t('dashboard.charts.job_distribution')}</h3>
                              {allLocations.length > 0 && (
-                                isMobile ? (
-                                    <button onClick={() => { setActiveFilterConfig({ chartKey: 'jobDist', options: ['all', ...allLocations], value: chartFilters.jobDist, title: t('dashboard.charts.filter_by_location') }); setFilterDrawerOpen(true); }} className="flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700/50">
-                                        <Icon name="filter" className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-                                        <span className="font-semibold text-gray-900 dark:text-white truncate max-w-[120px]"> {chartFilters.jobDist === 'all' ? t('common.all') : chartFilters.jobDist} </span>
-                                    </button>
-                                ) : (
-                                    <ChartFilterDropdown chartKey="jobDist" options={['all', ...allLocations]} value={chartFilters.jobDist} onChange={handleChartFilterChange} />
-                                )
+                                <ChartFilterDropdown 
+                                    chartKey="jobDist" 
+                                    options={['all', ...allLocations]} 
+                                    value={chartFilters.jobDist} 
+                                    onChange={handleChartFilterChange} 
+                                />
                             )}
                         </div>
                         {jobCategoryDistribution.length > 0 ? (
@@ -886,14 +740,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                         <div className="flex flex-wrap items-center justify-between w-full mb-4 gap-2">
                             <h3 className="font-semibold font-display text-lg">{t('dashboard.charts.exp_distribution')}</h3>
                             {allJobCategories.length > 0 && (
-                                isMobile ? (
-                                    <button onClick={() => { setActiveFilterConfig({ chartKey: 'experience', options: ['all', ...allJobCategories], value: chartFilters.experience, title: t('dashboard.charts.filter_by_category') }); setFilterDrawerOpen(true); }} className="flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700/50">
-                                        <Icon name="filter" className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-                                        <span className="font-semibold text-gray-900 dark:text-white truncate max-w-[120px]"> {chartFilters.experience === 'all' ? t('common.all') : chartFilters.experience} </span>
-                                    </button>
-                                ) : (
-                                    <ChartFilterDropdown chartKey="experience" options={['all', ...allJobCategories]} value={chartFilters.experience} onChange={handleChartFilterChange} />
-                                )
+                                <ChartFilterDropdown 
+                                    chartKey="experience" 
+                                    options={['all', ...allJobCategories]} 
+                                    value={chartFilters.experience} 
+                                    onChange={handleChartFilterChange} 
+                                />
                             )}
                         </div>
                         {filteredCandidates.length > 0 ? (
@@ -922,14 +774,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                         <div className="flex flex-wrap items-center justify-between w-full mb-4 gap-2">
                            <h3 className="font-semibold font-display text-lg">{t('dashboard.charts.location_distribution')}</h3>
                            {allJobCategories.length > 0 && (
-                                isMobile ? (
-                                    <button onClick={() => { setActiveFilterConfig({ chartKey: 'location', options: ['all', ...allJobCategories], value: chartFilters.location, title: t('dashboard.charts.filter_by_category') }); setFilterDrawerOpen(true); }} className="flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700/50">
-                                        <Icon name="filter" className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-                                        <span className="font-semibold text-gray-900 dark:text-white truncate max-w-[120px]"> {chartFilters.location === 'all' ? t('common.all') : chartFilters.location} </span>
-                                    </button>
-                                ) : (
-                                    <ChartFilterDropdown chartKey="location" options={['all', ...allJobCategories]} value={chartFilters.location} onChange={handleChartFilterChange} />
-                                )
+                                <ChartFilterDropdown 
+                                    chartKey="location" 
+                                    options={['all', ...allJobCategories]} 
+                                    value={chartFilters.location} 
+                                    onChange={handleChartFilterChange} 
+                                />
                             )}
                         </div>
                         {locationDistribution.length > 0 ? (
@@ -957,14 +807,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                         <div className="flex flex-wrap items-center justify-between w-full mb-4 gap-2">
                             <h3 className="font-semibold font-display text-lg">{t('dashboard.charts.aggregated_skills_expertise')}</h3>
                              {allJobCategories.length > 0 && (
-                                isMobile ? (
-                                    <button onClick={() => { setActiveFilterConfig({ chartKey: 'skills', options: ['all', ...allJobCategories], value: chartFilters.skills, title: t('dashboard.charts.filter_by_category') }); setFilterDrawerOpen(true); }} className="flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700/50">
-                                        <Icon name="filter" className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-                                        <span className="font-semibold text-gray-900 dark:text-white truncate max-w-[120px]"> {chartFilters.skills === 'all' ? t('common.all') : chartFilters.skills} </span>
-                                    </button>
-                                ) : (
-                                    <ChartFilterDropdown chartKey="skills" options={['all', ...allJobCategories]} value={chartFilters.skills} onChange={handleChartFilterChange} />
-                                )
+                                <ChartFilterDropdown 
+                                    chartKey="skills" 
+                                    options={['all', ...allJobCategories]} 
+                                    value={chartFilters.skills} 
+                                    onChange={handleChartFilterChange} 
+                                />
                             )}
                         </div>
                         {aggregatedSkillsExpertise.length > 0 ? (
@@ -1015,7 +863,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                     ) : (
                         isFavoritesView && (
                             <div className="flex flex-col items-center justify-center min-h-[50vh] p-8 text-center">
-                                {/* FIX: Changed `autoPlay` prop to `autoplay` to align with the updated global type definition for the 'dotlottie-wc' custom element. */}
                                 <dotlottie-wc
                                     src="https://lottie.host/89c66344-281d-4450-91d3-4574a47fec47/31ogoyP4Mh.lottie"
                                     autoplay
@@ -1028,24 +875,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                     )}
                 </div>
             </div>
-            <FilterDrawer
-                isOpen={isFilterDrawerOpen}
-                onClose={() => setFilterDrawerOpen(false)}
-                config={activeFilterConfig}
-                onChange={handleChartFilterChange}
-            />
-            <JobFilterDrawer
-                isOpen={isJobFilterDrawerOpen}
-                onClose={() => setJobFilterDrawerOpen(false)}
-                allCategories={allJobCategories}
-                selectedCategories={selectedJobCategories}
-                onCategoryToggle={handleCategoryToggle}
-                onClear={() => setSelectedJobCategories([])}
-            />
-            <ActionsDrawer 
-                isOpen={isActionsDrawerOpen}
-                onClose={() => setIsActionsDrawerOpen(false)}
-            />
         </div>
     )
 }

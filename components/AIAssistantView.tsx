@@ -78,7 +78,6 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ candidates }) 
                     <p className="text-gray-500 dark:text-gray-400 mt-1">{t('ai_assistant.dashboard_subtitle')}</p>
                 </header>
                  <div className="flex-1 flex flex-col items-center justify-center text-center">
-                    {/* FIX: Changed `autoPlay` prop to `autoplay` to align with the updated global type definition for the 'dotlottie-wc' custom element. */}
                     <dotlottie-wc
                         src="https://lottie.host/89c66344-281d-4450-91d3-4574a47fec47/31ogoyP4Mh.lottie"
                         autoplay
@@ -92,7 +91,7 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ candidates }) 
     }
 
     return (
-        <div className="h-full flex flex-col">
+        <div className="h-full flex flex-col pb-16 md:pb-0">
             <header className="p-4 sm:p-8 border-b dark:border-gray-800 flex-shrink-0">
                 <h2 className="text-3xl font-bold font-display text-gray-800 dark:text-gray-100">{t('ai_assistant.dashboard_title')}</h2>
                 <p className="text-gray-500 dark:text-gray-400 mt-1">{t('ai_assistant.dashboard_subtitle')}</p>

@@ -1,6 +1,6 @@
 // FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
-// FIX: Switched to namespace React import to correctly populate the global JSX namespace, resolving JSX intrinsic element type errors.
-import * as React from 'react';
+// FIX: Switched to default React import to correctly populate the global JSX namespace.
+import React from 'react';
 import { useTranslation } from '../i18n';
 import { Icon } from './icons';
 
@@ -315,7 +315,6 @@ export const AnalysisLoader: React.FC<AnalysisLoaderProps> = ({ total, startTime
                                 <div className="absolute top-0 left-0 h-full w-full bg-gradient-button animate-indeterminate-progress"></div>
                             </div>
                         </div>
-                        {/* FIX: Changed `autoPlay` prop to `autoplay` to align with the updated global type definition for the 'dotlottie-wc' custom element. */}
                         <dotlottie-wc 
                             src="https://lottie.host/2963f454-9533-4e4c-9889-42b36e8b411d/QdDoxVd2p9.lottie" 
                             autoplay 

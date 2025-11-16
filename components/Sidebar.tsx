@@ -1,6 +1,6 @@
 // FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
-// FIX: Switched to namespace React import to correctly populate the global JSX namespace, resolving JSX intrinsic element type errors.
-import * as React from 'react';
+// FIX: Switched to default React import to correctly populate the global JSX namespace.
+import React from 'react';
 import { Icon } from './icons';
 import { View } from '../types';
 import { useTranslation } from '../i18n';
@@ -17,15 +17,6 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen }) => {
   const { t } = useTranslation();
-  const [isMobile, setIsMobile] = React.useState(window.innerWidth < 768);
-
-  React.useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
   
   const navItems = [
     { id: 'upload', label: t('sidebar.upload'), icon: 'upload' },
@@ -36,13 +27,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, i
     { id: 'settings', label: t('sidebar.settings'), icon: 'settings' },
   ];
 
-  // FIX: Updated sidebar classes to ensure it remains visible on desktop. The `md:translate-x-0` class now overrides any mobile-specific transform, fixing the bug where the sidebar would disappear after navigation clicks on larger screens.
   const sidebarClasses = `
-    h-full bg-gray-50 dark:bg-gray-900 ltr:border-r rtl:border-l border-gray-200 dark:border-gray-800
+    h-full bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800
     flex flex-col z-40 transition-all duration-300 ease-in-out
-    fixed md:static inset-y-0 ltr:left-0 rtl:right-0 transform
-    ${isMobileOpen ? 'translate-x-0' : 'ltr:-translate-x-full rtl:translate-x-full'}
-    md:translate-x-0
+    fixed md:static inset-y-0 left-0 transform md:transform-none
+    ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}
     ${isCollapsed ? 'w-20' : 'w-64'} flex-shrink-0
   `;
   
@@ -69,23 +58,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, i
               key={item.id}
               onClick={() => {
                 setCurrentView(item.id as View);
-                if (isMobile) {
-                  setIsMobileOpen(false);
-                }
+                setIsMobileOpen(false);
               }}
               title={isCollapsed ? item.label : undefined}
-              className={`w-full flex items-center p-3 rounded-lg rtl:flex-row-reverse transition-colors ${
-                isCollapsed 
-                  ? 'justify-center' 
-                  : 'gap-3 ltr:text-left rtl:text-right'
-              } ${
+              className={`w-full flex items-center p-3 rounded-lg ltr:text-left rtl:text-right rtl:flex-row-reverse gap-3 transition-colors ${isCollapsed ? 'justify-center' : ''} ${
                 currentView === item.id
                   ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-200'
                   : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
               }`}
             >
               <Icon name={item.icon} className="w-6 h-6" />
-              {!isCollapsed && <span className="">{item.label}</span>}
+              <span className={`transition-opacity duration-200 ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100'}`}>{item.label}</span>
             </button>
           ))}
         </nav>

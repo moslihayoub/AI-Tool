@@ -1,6 +1,6 @@
 // FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
-// FIX: Switched to namespace React import to correctly populate the global JSX namespace, resolving JSX intrinsic element type errors.
-import * as React from 'react';
+// FIX: Switched to default React import to correctly populate the global JSX namespace.
+import React from 'react';
 
 import { Sidebar } from './components/Sidebar';
 import { UploadView } from './components/UploadView';
@@ -21,7 +21,7 @@ import { logoDark, logoLight } from './assets';
 const dummyProfiles: Omit<CandidateProfile, 'id' | 'fileName' | 'analysisDuration'>[] = [
   {
     name: 'Alice Dubois',
-    email: 'alice.dubios@example.com',
+    email: 'alice.dubois@example.com',
     phone: '+33 6 12 34 56 78',
     location: 'Paris, France',
     summary: 'Développeuse Full Stack passionnée avec 3 ans d\'expérience dans la création d\'applications web robustes et scalables. Adepte des méthodologies agiles et du travail en équipe.',
@@ -39,7 +39,7 @@ const dummyProfiles: Omit<CandidateProfile, 'id' | 'fileName' | 'analysisDuratio
     languages: ['Français (Natif)', 'Anglais (Courant)'],
     certifications: ['AWS Certified Developer - Associate'],
     detectedLanguage: 'French',
-    jobCategory: 'Technologie et Informatique',
+    jobCategory: 'Développeur Full-Stack',
     totalExperienceYears: 3.5,
     performanceScore: 88,
   },
@@ -63,7 +63,7 @@ const dummyProfiles: Omit<CandidateProfile, 'id' | 'fileName' | 'analysisDuratio
     languages: ['English (Native)'],
     certifications: [],
     detectedLanguage: 'English',
-    jobCategory: 'Marketing, Communication & Création',
+    jobCategory: 'Product Design',
     totalExperienceYears: 8,
     performanceScore: 95,
   },
@@ -87,7 +87,7 @@ const dummyProfiles: Omit<CandidateProfile, 'id' | 'fileName' | 'analysisDuratio
     languages: ['Spanish (Native)', 'English (Professional)'],
     certifications: ['ISTQB Certified Tester'],
     detectedLanguage: 'English',
-    jobCategory: 'Technologie et Informatique',
+    jobCategory: 'QA Automation',
     totalExperienceYears: 4,
     performanceScore: 82,
   },
@@ -110,7 +110,7 @@ const dummyProfiles: Omit<CandidateProfile, 'id' | 'fileName' | 'analysisDuratio
     languages: ['English (Native)', 'Mandarin (Conversational)'],
     certifications: [],
     detectedLanguage: 'English',
-    jobCategory: 'Technologie et Informatique',
+    jobCategory: 'Développeur Full-Stack', // Grouped with developers
     totalExperienceYears: 3,
     performanceScore: 91,
   },
@@ -175,7 +175,7 @@ function AppContent() {
             return [];
         }
     });
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(window.innerWidth < 1024);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = React.useState(false);
     const [storageError, setStorageError] = React.useState<string | null>(null);
     const [analysisSummaryMessage, setAnalysisSummaryMessage] = React.useState<string | null>(null);
@@ -359,10 +359,6 @@ function AppContent() {
             console.error("Failed to save dummy data state to localStorage", error);
         }
     }, [isDummyDataActive]);
-
-    React.useEffect(() => {
-        mainContentRef.current?.scrollTo(0, 0);
-    }, [view, selectedProfileId]);
     
 
     const candidateProfiles = React.useMemo((): CandidateProfile[] => {
@@ -584,6 +580,7 @@ function AppContent() {
 
     const handleSelectCandidate = (candidate: CandidateProfile) => {
         setSelectedProfileId(candidate.id);
+        mainContentRef.current?.scrollTo(0, 0);
     };
 
     const handleBackToDashboard = () => {
@@ -738,8 +735,6 @@ function AppContent() {
 
     const selectedCvFile = cvFiles.find(f => f.id === selectedProfileId);
     
-    const isFullScreenView = !!selectedProfileId;
-
     const renderContent = () => {
         if (selectedProfileId && selectedCvFile && selectedCvFile.profile) {
             const isFavorite = favorites.includes(selectedProfileId);
@@ -776,23 +771,22 @@ function AppContent() {
         }
     };
 
+    const isFullScreenView = !!selectedProfileId;
+
     return (
         <div className="h-screen text-gray-800 dark:text-gray-200 bg-white dark:bg-black">
             <div className="flex h-full w-full">
                 {isAnalyzing && <AnalysisLoader total={analysisTotal} startTime={analysisStartTime} isAnalysisDone={isAnalysisDone} onViewResults={handleViewResults} onCancel={handleCancelAnalysis} />}
                 {isQuotaModalOpen && <QuotaModal onClose={() => setIsQuotaModalOpen(false)} onConnect={handleConnect} />}
 
-                {!isFullScreenView && (
-                    <Sidebar
-                        currentView={view}
-                        setCurrentView={(v) => { setView(v); setSelectedProfileId(null); }}
-                        isCollapsed={isSidebarCollapsed}
-                        setIsCollapsed={setIsSidebarCollapsed}
-                        isMobileOpen={isMobileSidebarOpen}
-                        // FIX: Corrected typo in prop name from setIsMobileSidebarOpen to setIsMobileOpen
-                        setIsMobileOpen={setIsMobileSidebarOpen}
-                    />
-                )}
+                <Sidebar
+                    currentView={view}
+                    setCurrentView={(v) => { setView(v); setSelectedProfileId(null); }}
+                    isCollapsed={isSidebarCollapsed}
+                    setIsCollapsed={setIsSidebarCollapsed}
+                    isMobileOpen={isMobileSidebarOpen}
+                    setIsMobileOpen={setIsMobileSidebarOpen}
+                />
                 <div className="flex-1 flex flex-col overflow-hidden">
                     <header className={`md:hidden flex items-center justify-between rtl:flex-row-reverse p-4 border-b dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-20`}>
                         <>
