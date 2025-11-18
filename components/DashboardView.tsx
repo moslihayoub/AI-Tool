@@ -1,6 +1,6 @@
 // FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
-// FIX: Switched to default React import to correctly populate the global JSX namespace.
-import React from 'react';
+// FIX: Switched to namespace React import to correctly populate the global JSX namespace.
+import * as React from 'react';
 import { CandidateProfile } from '../types';
 import { Icon } from './icons';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList, LineChart, Line } from 'recharts';
@@ -171,13 +171,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
     const [isFilterOpen, setIsFilterOpen] = React.useState(false);
     const [isActionsOpen, setIsActionsOpen] = React.useState(false);
     const [confirmReset, setConfirmReset] = React.useState(false);
-    const [chartFilters, setChartFilters] = React.useState<Record<string, string>>({
-        experience: 'all',
-        location: 'all',
-        skills: 'all',
-        perfByJob: 'all',
-        jobDist: 'all',
-    });
     const filterRef = React.useRef<HTMLDivElement>(null);
     const actionsRef = React.useRef<HTMLDivElement>(null);
     const importInputRef = React.useRef<HTMLInputElement>(null);
@@ -273,11 +266,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         return Array.from(categories).sort();
     }, [candidates]);
 
-    const allLocations = React.useMemo(() => {
-        const locations = new Set(candidates.map(c => c.location).filter(c => c && c !== 'N/A'));
-        return Array.from(locations).sort();
-    }, [candidates]);
-
     const filteredCandidates = React.useMemo(() => {
         const filtered = selectedJobCategories.length === 0
             ? candidates
@@ -324,10 +312,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         );
     };
 
-    const handleChartFilterChange = (chartKey: string, value: string) => {
-        setChartFilters(prev => ({ ...prev, [chartKey]: value }));
-    };
-
     const formatLocationTick = (tick: string) => {
         if (!tick) return '';
         const parts = tick.split(',');
@@ -338,38 +322,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
     };
 
     const locationDistribution = React.useMemo(() => {
-        const categoryFilter = chartFilters.location;
-        const dataToProcess = categoryFilter === 'all'
-            ? filteredCandidates
-            : filteredCandidates.filter(c => c.jobCategory === categoryFilter);
-        return groupData(dataToProcess.map(c => c.location), t);
-    }, [filteredCandidates, t, chartFilters.location]);
+        return groupData(filteredCandidates.map(c => c.location), t);
+    }, [filteredCandidates, t]);
 
     const jobCategoryDistribution = React.useMemo(() => {
-        const locationFilter = chartFilters.jobDist;
-        let dataToProcess = filteredCandidates;
-
-        if (locationFilter && locationFilter !== 'all') {
-            dataToProcess = dataToProcess.filter(c => c.location === locationFilter);
-        }
-        
-        const validData = dataToProcess.map(c => c.jobCategory).filter(item => item && item.trim() && item.trim() !== 'N/A');
+        const validData = filteredCandidates.map(c => c.jobCategory).filter(item => item && item.trim() && item.trim() !== 'N/A');
         const freqMap = validData.reduce((acc: Record<string, number>, item) => {
             const key = item.trim();
             acc[key] = (acc[key] || 0) + 1;
             return acc;
         }, {});
         return Object.entries(freqMap).map(([name, value]) => ({ name: shortenJobCategory(name), value }));
-    }, [filteredCandidates, chartFilters.jobDist]);
+    }, [filteredCandidates]);
     
     const experienceDistribution = React.useMemo(() => {
-        const categoryFilter = chartFilters.experience;
-        const dataToProcess = categoryFilter === 'all'
-            ? filteredCandidates
-            : filteredCandidates.filter(c => c.jobCategory === categoryFilter);
-
         const buckets = { [t('dashboard.exp_buckets.junior')]: 0, [t('dashboard.exp_buckets.confirmed')]: 0, [t('dashboard.exp_buckets.senior')]: 0, [t('dashboard.exp_buckets.expert')]: 0, };
-        dataToProcess.forEach(c => {
+        filteredCandidates.forEach(c => {
             const years = c.totalExperienceYears || 0;
             if (years <= 2) buckets[t('dashboard.exp_buckets.junior')]++;
             else if (years <= 5) buckets[t('dashboard.exp_buckets.confirmed')]++;
@@ -377,15 +345,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
             else buckets[t('dashboard.exp_buckets.expert')]++;
         });
         return Object.entries(buckets).map(([name, count]) => ({ name, count }));
-    }, [filteredCandidates, t, chartFilters.experience]);
+    }, [filteredCandidates, t]);
     
      const performanceByJobCategory = React.useMemo(() => {
-        const locationFilter = chartFilters.perfByJob;
-        let dataToProcess = filteredCandidates.filter(c => c.jobCategory && c.jobCategory.trim() && c.jobCategory !== 'N/A');
-
-        if (locationFilter && locationFilter !== 'all') {
-            dataToProcess = dataToProcess.filter(c => c.location === locationFilter);
-        }
+        const dataToProcess = filteredCandidates.filter(c => c.jobCategory && c.jobCategory.trim() && c.jobCategory !== 'N/A');
 
         const categoryScores: Record<string, { totalScore: number, count: number }> = dataToProcess.reduce((acc, candidate) => {
             const category = candidate.jobCategory;
@@ -398,16 +361,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         return Object.entries(categoryScores).map(([name, data]) => ({
             name: shortenJobCategory(name), averageScore: data.count > 0 ? Math.round(data.totalScore / data.count) : 0
         })).sort((a, b) => b.averageScore - a.averageScore);
-    }, [filteredCandidates, chartFilters.perfByJob]);
+    }, [filteredCandidates]);
 
     const aggregatedSkillsExpertise = React.useMemo(() => {
-        const categoryFilter = chartFilters.skills;
-        const dataToProcess = categoryFilter === 'all'
-            ? filteredCandidates
-            : filteredCandidates.filter(c => c.jobCategory === categoryFilter);
         const skillMap: Record<string, number> = {};
     
-        dataToProcess.forEach(candidate => {
+        filteredCandidates.forEach(candidate => {
             if (!candidate.skills?.hard || candidate.skills.hard.length === 0) {
                 return;
             }
@@ -437,60 +396,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
             .map(([name, expertise]) => ({ name, expertise }))
             .sort((a, b) => b.expertise - a.expertise)
             .slice(0, 15);
-    }, [filteredCandidates, chartFilters.skills]);
+    }, [filteredCandidates]);
     
-    const ChartFilterDropdown: React.FC<{
-        chartKey: string;
-        options: string[];
-        value: string;
-        onChange: (chartKey: string, value: string) => void;
-    }> = ({ chartKey, options, value, onChange }) => {
-        const [isOpen, setIsOpen] = React.useState(false);
-        const dropdownRef = React.useRef<HTMLDivElement>(null);
-        const { t } = useTranslation();
-
-        React.useEffect(() => {
-            const handleClickOutside = (event: MouseEvent) => {
-                if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-                    setIsOpen(false);
-                }
-            };
-            document.addEventListener('mousedown', handleClickOutside);
-            return () => document.removeEventListener('mousedown', handleClickOutside);
-        }, []);
-
-        const displayValue = value === 'all' ? t('common.all') : value;
-
-        return (
-            <div className="relative text-sm" ref={dropdownRef}>
-                <button
-                    onClick={() => setIsOpen(!isOpen)}
-                    className="flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700/50 hover:bg-gray-200 dark:hover:bg-gray-700"
-                >
-                    <span className="font-medium text-gray-600 dark:text-gray-300">{t('dashboard.charts.filter_by')}:</span>
-                    <span className="font-semibold text-gray-900 dark:text-white truncate max-w-[120px]">{displayValue}</span>
-                    <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} className="w-4 h-4 flex-shrink-0" />
-                </button>
-                {isOpen && (
-                    <div className="absolute top-full right-0 rtl:right-auto rtl:left-0 mt-2 w-56 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-lg shadow-xl z-20 py-1 max-h-60 overflow-y-auto">
-                        {options.map(option => (
-                            <button
-                                key={option}
-                                onClick={() => {
-                                    onChange(chartKey, option);
-                                    setIsOpen(false);
-                                }}
-                                className={`w-full text-left rtl:text-right px-4 py-2 truncate ${value === option ? 'bg-primary-100 dark:bg-primary-900 font-semibold' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
-                            >
-                                {option === 'all' ? t('common.all') : option}
-                            </button>
-                        ))}
-                    </div>
-                )}
-            </div>
-        );
-    };
-
     if (candidates.length === 0 && !isFavoritesView) {
         return (
             <div className="p-4 sm:p-8 space-y-8">
@@ -678,14 +585,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-lg">
                         <div className="flex flex-wrap items-center justify-between w-full mb-4 gap-2">
                             <h3 className="font-semibold font-display text-lg">{t('dashboard.charts.perf_by_job')}</h3>
-                            {allLocations.length > 0 && (
-                                <ChartFilterDropdown 
-                                    chartKey="perfByJob" 
-                                    options={['all', ...allLocations]} 
-                                    value={chartFilters.perfByJob} 
-                                    onChange={handleChartFilterChange} 
-                                />
-                            )}
                         </div>
                         {performanceByJobCategory.length > 0 ? (
                             <ResponsiveContainer width="100%" height={300}>
@@ -712,14 +611,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-lg">
                         <div className="flex flex-wrap items-center justify-between w-full mb-4 gap-2">
                             <h3 className="font-semibold font-display text-lg">{t('dashboard.charts.job_distribution')}</h3>
-                             {allLocations.length > 0 && (
-                                <ChartFilterDropdown 
-                                    chartKey="jobDist" 
-                                    options={['all', ...allLocations]} 
-                                    value={chartFilters.jobDist} 
-                                    onChange={handleChartFilterChange} 
-                                />
-                            )}
                         </div>
                         {jobCategoryDistribution.length > 0 ? (
                             <ResponsiveContainer width="100%" height={300}>
@@ -739,14 +630,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-lg">
                         <div className="flex flex-wrap items-center justify-between w-full mb-4 gap-2">
                             <h3 className="font-semibold font-display text-lg">{t('dashboard.charts.exp_distribution')}</h3>
-                            {allJobCategories.length > 0 && (
-                                <ChartFilterDropdown 
-                                    chartKey="experience" 
-                                    options={['all', ...allJobCategories]} 
-                                    value={chartFilters.experience} 
-                                    onChange={handleChartFilterChange} 
-                                />
-                            )}
                         </div>
                         {filteredCandidates.length > 0 ? (
                             <ResponsiveContainer width="100%" height={300}>
@@ -773,14 +656,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-lg">
                         <div className="flex flex-wrap items-center justify-between w-full mb-4 gap-2">
                            <h3 className="font-semibold font-display text-lg">{t('dashboard.charts.location_distribution')}</h3>
-                           {allJobCategories.length > 0 && (
-                                <ChartFilterDropdown 
-                                    chartKey="location" 
-                                    options={['all', ...allJobCategories]} 
-                                    value={chartFilters.location} 
-                                    onChange={handleChartFilterChange} 
-                                />
-                            )}
                         </div>
                         {locationDistribution.length > 0 ? (
                             <ResponsiveContainer width="100%" height={300}>
@@ -806,14 +681,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-lg lg:col-span-2">
                         <div className="flex flex-wrap items-center justify-between w-full mb-4 gap-2">
                             <h3 className="font-semibold font-display text-lg">{t('dashboard.charts.aggregated_skills_expertise')}</h3>
-                             {allJobCategories.length > 0 && (
-                                <ChartFilterDropdown 
-                                    chartKey="skills" 
-                                    options={['all', ...allJobCategories]} 
-                                    value={chartFilters.skills} 
-                                    onChange={handleChartFilterChange} 
-                                />
-                            )}
                         </div>
                         {aggregatedSkillsExpertise.length > 0 ? (
                             <ResponsiveContainer width="100%" height={400}>

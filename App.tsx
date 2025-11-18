@@ -1,6 +1,6 @@
 // FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
-// FIX: Switched to default React import to correctly populate the global JSX namespace.
-import React from 'react';
+// FIX: Switched to namespace React import to correctly populate the global JSX namespace.
+import * as React from 'react';
 
 import { Sidebar } from './components/Sidebar';
 import { UploadView } from './components/UploadView';

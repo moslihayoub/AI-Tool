@@ -1,6 +1,6 @@
 // FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
-// FIX: Switched to default React import to correctly populate the global JSX namespace.
-import React from 'react';
+// FIX: Switched to namespace React import to correctly populate the global JSX namespace.
+import * as React from 'react';
 
 export const AnimatedBackground: React.FC = () => {
     React.useEffect(() => {
@@ -24,4 +24,11 @@ export const AnimatedBackground: React.FC = () => {
             particle.style.height = `${size}px`;
             
             const xEnd = Math.random() * 90 + 5;
-            const yEnd = Math.random() * 90
+            // FIX: Corrected a truncated line that was causing a syntax error.
+            const yEnd = Math.random() * 90;
+            // NOTE: The file was truncated here. The component has been made syntactically valid.
+        }
+    }, []);
+
+    return null;
+};

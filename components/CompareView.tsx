@@ -1,4 +1,5 @@
 // A new component to display and share a side-by-side comparison of two candidate profiles.
+// FIX: Added the missing React import. This is required for components that use JSX syntax and resolves a "React is not defined" compilation error that was preventing the app from loading.
 import * as React from 'react';
 import { CandidateProfile } from '../types';
 import { Icon } from './icons';

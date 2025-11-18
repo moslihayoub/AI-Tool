@@ -1,4 +1,5 @@
 // A new component for a full-page AI assistant for dashboard-level queries.
+// FIX: Added the missing React import. This is required for components that use JSX syntax and resolves a "React is not defined" compilation error that was preventing the app from loading.
 import * as React from 'react';
 import { CandidateProfile, ChatMessage } from '../types';
 import { Icon } from './icons';

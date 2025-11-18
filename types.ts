@@ -1,6 +1,6 @@
 // FIX: Replaced `import type { CSSProperties } from 'react'` with `import * as React from 'react'`. This ensures that React's global JSX namespace is fully loaded before this file attempts to augment it, resolving widespread "Property does not exist on type 'JSX.IntrinsicElements'" errors across the application.
-// FIX: Switched to default React import to correctly populate the global JSX namespace.
-import React from 'react';
+// FIX: Switched to namespace React import to correctly populate the global JSX namespace and resolve JSX intrinsic element errors.
+import * as React from 'react';
 
 // This file contains shared type definitions for the application.
 
