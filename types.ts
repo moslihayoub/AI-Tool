@@ -13,8 +13,7 @@ declare global {
   }
 }
 
-// Augment the React module's JSX namespace to add the custom element 'dotlottie-wc'.
-// This ensures it merges with existing React definitions instead of overwriting the global JSX namespace.
+// FIX: Augment React's JSX namespace instead of the global one to prevent overwriting standard intrinsic elements.
 declare module 'react' {
   namespace JSX {
     interface IntrinsicElements {
@@ -81,7 +80,7 @@ export interface ChatMessage {
     text: string;
 }
 
-export type View = 'upload' | 'dashboard' | 'favorites' | 'settings' | 'compare' | 'ai' | 'recruitment' | 'history';
+export type View = 'upload' | 'dashboard' | 'favorites' | 'settings' | 'compare' | 'ai' | 'recruitment' | 'history' | 'infra';
 export type Theme = 'light' | 'dark' | 'system';
 
 export interface User {

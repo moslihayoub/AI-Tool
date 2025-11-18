@@ -15,6 +15,7 @@ import { MobileNavBar } from './components/MobileNavBar';
 import { AIAssistantView } from './components/AIAssistantView';
 import { RecruitmentView } from './components/RecruitmentView';
 import { HistoryView } from './components/HistoryView';
+import { InfraView } from './components/InfraView';
 import { CVFile, View, CandidateProfile, Theme, User, RecruitmentData, PipelineSnapshot } from './types';
 import { parseCvContent } from './services/geminiService';
 import { Icon } from './components/icons';
@@ -914,6 +915,8 @@ function AppContent() {
                 return <RecruitmentView candidates={candidateProfiles} recruitmentData={recruitmentData} onUpdateRecruitmentData={updateRecruitmentData} onSelectCandidate={handleSelectCandidate} onTogglePipeline={handleTogglePipeline} onSaveSnapshot={handleSaveSnapshot} lastSnapshotId={lastSnapshotId} />;
             case 'history':
                 return <HistoryView history={pipelineHistory} />;
+            case 'infra':
+                return <InfraView />;
             case 'settings':
                 return <SettingsView 
                             theme={theme} 
@@ -949,6 +952,7 @@ function AppContent() {
                     setIsCollapsed={setIsSidebarCollapsed}
                     isMobileOpen={isMobileSidebarOpen}
                     setIsMobileOpen={setIsMobileSidebarOpen}
+                    isOwner={isOwner}
                 />
                 <div className="flex-1 flex flex-col overflow-hidden">
                     <header className={`md:hidden flex items-center justify-between rtl:flex-row-reverse p-4 border-b dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-20`}>

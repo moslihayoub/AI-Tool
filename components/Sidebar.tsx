@@ -14,9 +14,10 @@ interface SidebarProps {
   setIsCollapsed: (isCollapsed: boolean) => void;
   isMobileOpen: boolean;
   setIsMobileOpen: (isOpen: boolean) => void;
+  isOwner: boolean;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen, isOwner }) => {
   const { t } = useTranslation();
   
   const navItems = [
@@ -29,6 +30,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, i
     { id: 'compare', label: t('sidebar.compare'), icon: 'compare' },
     { id: 'settings', label: t('sidebar.settings'), icon: 'settings' },
   ];
+  
+  // Conditionally add Infra for owners
+  if (isOwner) {
+      navItems.splice(4, 0, { id: 'infra', label: t('sidebar.infra'), icon: 'activity' });
+  }
 
   const sidebarClasses = `
     h-full bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800
@@ -55,7 +61,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, i
             <Icon name="close" className="w-6 h-6"/>
           </button>
         </div>
-        <nav className="flex-1 p-2 space-y-3">
+        <nav className="flex-1 p-2 space-y-3 overflow-y-auto">
           {navItems.map((item) => (
             <button
               key={item.id}

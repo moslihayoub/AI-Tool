@@ -1,4 +1,5 @@
 
+
 export const fr = {
     sidebar: {
         upload: "Importer CVs",
@@ -9,7 +10,8 @@ export const fr = {
         compare: "Comparateurs",
         ai_assistant: "Assistant IA",
         recruitment: "Pipeline",
-        history: "Historique"
+        history: "Historique",
+        infra: "Infra"
     },
     upload: {
         title: "Importer des CVs",
@@ -304,6 +306,31 @@ export const fr = {
         export_success: "Exportation réussie",
         analysis_complete: "Analyse terminée",
         files_added: "Fichiers ajoutés"
+    },
+    infra: {
+        title: "Infrastructure & Logs",
+        subtitle: "Technical overview and development history.",
+        tabs: {
+            log: "Change Log",
+            conception: "Conception"
+        },
+        log: {
+            feat: "Feature",
+            fix: "Fix",
+            ui: "UI/UX",
+            refactor: "Refactor"
+        },
+        conception: {
+            tech_stack: "Tech Stack",
+            architecture: "Architecture Flow",
+            data_models: "Data Models",
+            flow_desc: "Data flow mechanism from file upload to analysis results.",
+            frontend: "Frontend Framework",
+            styling: "Styling Utility",
+            ai: "Generative AI Model",
+            storage: "Local Persistence",
+            build: "Build Tool"
+        }
     }
 };
 
@@ -317,7 +344,8 @@ export const en = {
         compare: "Comparators",
         ai_assistant: "AI Assistant",
         recruitment: "Pipeline",
-        history: "History"
+        history: "History",
+        infra: "Infra"
     },
     upload: {
         title: "Import CVs",
@@ -612,6 +640,31 @@ export const en = {
         export_success: "Export successful",
         analysis_complete: "Analysis complete",
         files_added: "Files added"
+    },
+    infra: {
+        title: "Infrastructure & Logs",
+        subtitle: "Technical overview and development history.",
+        tabs: {
+            log: "Change Log",
+            conception: "Conception"
+        },
+        log: {
+            feat: "Feature",
+            fix: "Fix",
+            ui: "UI/UX",
+            refactor: "Refactor"
+        },
+        conception: {
+            tech_stack: "Tech Stack",
+            architecture: "Architecture Flow",
+            data_models: "Data Models",
+            flow_desc: "Data flow mechanism from file upload to analysis results.",
+            frontend: "Frontend Framework",
+            styling: "Styling Utility",
+            ai: "Generative AI Model",
+            storage: "Local Persistence",
+            build: "Build Tool"
+        }
     }
 };
 
@@ -625,7 +678,8 @@ export const ar = {
         compare: "مقارنة",
         ai_assistant: "المساعد الذكي",
         recruitment: "التوظيف",
-        history: "السجل"
+        history: "السجل",
+        infra: "البنية التحتية"
     },
     upload: {
         title: "تحميل السير الذاتية",
@@ -920,5 +974,30 @@ export const ar = {
         export_success: "تم التصدير بنجاح",
         analysis_complete: "اكتمل التحليل",
         files_added: "تمت إضافة الملفات"
+    },
+    infra: {
+        title: "البنية التحتية والسجلات",
+        subtitle: "نظرة عامة فنية وتاريخ التطوير.",
+        tabs: {
+            log: "سجل التغييرات",
+            conception: "التصميم"
+        },
+        log: {
+            feat: "ميزة",
+            fix: "إصلاح",
+            ui: "واجهة المستخدم",
+            refactor: "إعادة هيكلة"
+        },
+        conception: {
+            tech_stack: "مكدس التكنولوجيا",
+            architecture: "تدفق الهيكل",
+            data_models: "نماذج البيانات",
+            flow_desc: "آلية تدفق البيانات من تحميل الملف إلى نتائج التحليل.",
+            frontend: "إطار الواجهة الأمامية",
+            styling: "أداة التنسيق",
+            ai: "نموذج الذكاء الاصطناعي التوليدي",
+            storage: "التخزين المحلي",
+            build: "أداة البناء"
+        }
     }
 };

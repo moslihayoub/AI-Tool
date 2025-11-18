@@ -21,15 +21,16 @@ export const MobileNavBar: React.FC<MobileNavBarProps> = ({ currentView, setCurr
     { id: 'dashboard', label: t('sidebar.dashboard'), icon: 'dashboard' },
     { id: 'recruitment', label: t('sidebar.recruitment'), icon: 'users' },
     { id: 'history', label: t('sidebar.history'), icon: 'history' },
+    { id: 'infra', label: t('sidebar.infra'), icon: 'activity' },
     { id: 'ai', label: t('sidebar.ai_assistant'), icon: 'bot' },
     { id: 'favorites', label: t('sidebar.favorites'), icon: 'heart' },
     { id: 'compare', label: t('sidebar.compare'), icon: 'compare' },
     { id: 'settings', label: t('sidebar.settings'), icon: 'settings' },
   ];
 
-  // Filter out Pipeline, History, and Settings for mobile view as requested
+  // Filter out Pipeline, History, Settings, AND Infra for mobile view as requested
   const navItems = allNavItems.filter(item => 
-    !['recruitment', 'history', 'settings'].includes(item.id)
+    !['recruitment', 'history', 'settings', 'infra'].includes(item.id)
   );
   
   // FIX: Fixed bug where navbar would disappear on scroll by ensuring it is always visible.
