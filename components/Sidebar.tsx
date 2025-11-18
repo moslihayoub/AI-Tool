@@ -1,3 +1,4 @@
+
 // FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
 // FIX: Switched to namespace React import to correctly populate the global JSX namespace.
 import * as React from 'react';
@@ -21,6 +22,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, i
   const navItems = [
     { id: 'upload', label: t('sidebar.upload'), icon: 'upload' },
     { id: 'dashboard', label: t('sidebar.dashboard'), icon: 'dashboard' },
+    { id: 'recruitment', label: t('sidebar.recruitment'), icon: 'users' },
+    { id: 'history', label: t('sidebar.history'), icon: 'history' },
     { id: 'ai', label: t('sidebar.ai_assistant'), icon: 'bot' },
     { id: 'favorites', label: t('sidebar.favorites'), icon: 'heart' },
     { id: 'compare', label: t('sidebar.compare'), icon: 'compare' },
@@ -61,14 +64,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, i
                 setIsMobileOpen(false);
               }}
               title={isCollapsed ? item.label : undefined}
-              className={`w-full flex items-center p-3 rounded-lg ltr:text-left rtl:text-right rtl:flex-row-reverse gap-3 transition-colors ${isCollapsed ? 'justify-center' : ''} ${
+              className={`w-full flex items-center p-3 rounded-lg ltr:text-left rtl:text-right rtl:flex-row-reverse transition-colors ${
+                isCollapsed ? 'justify-center' : 'gap-3'
+              } ${
                 currentView === item.id
                   ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-200'
                   : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
               }`}
             >
-              <Icon name={item.icon} className="w-6 h-6" />
-              <span className={`transition-opacity duration-200 ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100'}`}>{item.label}</span>
+              <div className={`flex-shrink-0 flex items-center justify-center ${isCollapsed ? 'w-10 h-10 rounded-md' : 'w-8'}`}>
+                <Icon name={item.icon} className="w-6 h-6" />
+              </div>
+              <span className={`transition-opacity duration-200 ${isCollapsed ? 'opacity-0 w-0 hidden' : 'opacity-100'}`}>{item.label}</span>
             </button>
           ))}
         </nav>

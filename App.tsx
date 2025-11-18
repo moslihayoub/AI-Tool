@@ -1,3 +1,4 @@
+
 // FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
 // FIX: Switched to namespace React import to correctly populate the global JSX namespace.
 import * as React from 'react';
@@ -12,10 +13,13 @@ import { SettingsView } from './components/SettingsView';
 import { QuotaModal } from './components/QuotaModal';
 import { MobileNavBar } from './components/MobileNavBar';
 import { AIAssistantView } from './components/AIAssistantView';
-import { CVFile, View, CandidateProfile, Theme, User } from './types';
+import { RecruitmentView } from './components/RecruitmentView';
+import { HistoryView } from './components/HistoryView';
+import { CVFile, View, CandidateProfile, Theme, User, RecruitmentData, PipelineSnapshot } from './types';
 import { parseCvContent } from './services/geminiService';
 import { Icon } from './components/icons';
 import { LanguageProvider, useTranslation } from './i18n';
+import { ToastProvider, useToast } from './components/Toast';
 import { logoDark, logoLight } from './assets';
 
 const dummyProfiles: Omit<CandidateProfile, 'id' | 'fileName' | 'analysisDuration'>[] = [
@@ -144,6 +148,7 @@ const UPLOAD_SELECTION_LIMIT = 5;
 
 function AppContent() {
     const { t } = useTranslation();
+    const { showToast } = useToast();
     const [cvFiles, setCvFiles] = React.useState<CVFile[]>(() => {
         try {
             const savedFiles = localStorage.getItem('cvFiles');
@@ -195,6 +200,26 @@ function AppContent() {
         }
     });
 
+    const [recruitmentData, setRecruitmentData] = React.useState<RecruitmentData[]>(() => {
+        try {
+            const saved = localStorage.getItem('recruitmentData');
+            return saved ? JSON.parse(saved) : [];
+        } catch {
+            return [];
+        }
+    });
+    
+    const [pipelineHistory, setPipelineHistory] = React.useState<PipelineSnapshot[]>(() => {
+        try {
+            const saved = localStorage.getItem('pipelineHistory');
+            return saved ? JSON.parse(saved) : [];
+        } catch {
+            return [];
+        }
+    });
+    
+    const [lastSnapshotId, setLastSnapshotId] = React.useState<string | null>(null);
+
     const [theme, setTheme] = React.useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'system');
 
     const [systemTheme, setSystemTheme] = React.useState(() =>
@@ -218,6 +243,22 @@ function AppContent() {
             console.error("Failed to save CV cache to localStorage", error);
         }
     }, [processedCVsCache]);
+
+    React.useEffect(() => {
+        try {
+            localStorage.setItem('recruitmentData', JSON.stringify(recruitmentData));
+        } catch (error) {
+            console.error("Failed to save recruitment data to localStorage", error);
+        }
+    }, [recruitmentData]);
+    
+    React.useEffect(() => {
+        try {
+            localStorage.setItem('pipelineHistory', JSON.stringify(pipelineHistory));
+        } catch (error) {
+            console.error("Failed to save pipeline history to localStorage", error);
+        }
+    }, [pipelineHistory]);
 
     React.useEffect(() => {
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -466,13 +507,17 @@ function AppContent() {
                 file,
                 status: 'pending',
             }));
-            
+        
+        if (newOtherCvFiles.length > 0 || jsonFiles.length > 0) {
+             showToast(t('toast.files_added'), 'success');
+        }
+
         setCvFiles([...currentFiles, ...newOtherCvFiles]);
         
         if (isDummyDataActive && (wasUpdatedFromJson || newOtherCvFiles.length > 0 || jsonFiles.length > 0)) {
             setIsDummyDataActive(false);
         }
-    }, [cvFiles, isDummyDataActive, t, isOwner]);
+    }, [cvFiles, isDummyDataActive, t, isOwner, showToast]);
 
 
     const handleClearFile = (fileId: string) => {
@@ -546,6 +591,31 @@ function AppContent() {
 
         const results = await Promise.all(analysisPromises);
         
+        // Auto-add candidates with > 70 score to pipeline
+        const highPerformers = results
+            .filter(r => r.status === 'success' && r.profile && r.profile.performanceScore > 70)
+            .map(r => r.profile as CandidateProfile);
+            
+        if (highPerformers.length > 0) {
+             setRecruitmentData(prev => {
+                 const existingIds = new Set(prev.map(p => p.candidateId));
+                 const newEntries = highPerformers
+                     .filter(p => !existingIds.has(p.id))
+                     .map(p => ({
+                        candidateId: p.id,
+                        applicationDate: new Date().toISOString().split('T')[0],
+                        interview1Date: '',
+                        interview1Result: '' as const,
+                        challengeSentDate: '',
+                        challengeDoneDate: '',
+                        interview2Date: '',
+                        interview2Result: '' as const,
+                        startDate: '',
+                     }));
+                 return [...prev, ...newEntries];
+             });
+        }
+
         setCvFiles(prevFiles => {
             const filesMap = new Map(prevFiles.map(f => [f.id, f]));
             results.forEach(result => {
@@ -563,6 +633,8 @@ function AppContent() {
         if (incompleteCount > 0) {
             setAnalysisSummaryMessage(t('analysis.summary_incomplete', {count: incompleteCount}));
         }
+        
+        showToast(t('toast.analysis_complete'), 'success');
 
         setIsAnalysisDone(true);
     };
@@ -627,11 +699,16 @@ function AppContent() {
         localStorage.removeItem('comparisonList');
         localStorage.removeItem('processedCVsCache');
         localStorage.removeItem('lightCycleHighScore');
+        localStorage.removeItem('recruitmentData');
+        localStorage.removeItem('pipelineHistory');
         setProcessedCVsCache({});
+        setRecruitmentData([]);
+        setPipelineHistory([]);
         setAnalysisLimit(prev => ({...prev, count: 0}));
         setStorageError(null);
         setAnalysisSummaryMessage(null);
         setUploadError(null);
+        setLastSnapshotId(null);
     };
 
      const handleLoadDummyData = () => {
@@ -659,11 +736,90 @@ function AppContent() {
     };
     
     const toggleFavorite = (candidateId: string) => {
+        const isAdding = !favorites.includes(candidateId);
         setFavorites(prev => 
             prev.includes(candidateId) 
                 ? prev.filter(id => id !== candidateId) 
                 : [...prev, candidateId]
         );
+        showToast(isAdding ? t('toast.added_favorite') : t('toast.removed_favorite'), 'info');
+    };
+    
+    const updateRecruitmentData = (updatedData: RecruitmentData) => {
+        setRecruitmentData(prev => {
+            const existingIndex = prev.findIndex(d => d.candidateId === updatedData.candidateId);
+            if (existingIndex >= 0) {
+                const newPrev = [...prev];
+                newPrev[existingIndex] = updatedData;
+                return newPrev;
+            }
+            return [...prev, updatedData];
+        });
+    };
+    
+    const handleTogglePipeline = (candidateId: string) => {
+        let isAdding = false;
+        setRecruitmentData(prev => {
+            const exists = prev.find(d => d.candidateId === candidateId);
+            if (exists) {
+                isAdding = false;
+                return prev.filter(d => d.candidateId !== candidateId);
+            } else {
+                isAdding = true;
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const candidate = candidateProfiles.find(c => c.id === candidateId);
+                return [...prev, {
+                    candidateId,
+                    applicationDate: new Date().toISOString().split('T')[0],
+                    interview1Date: '',
+                    interview1Result: '' as const,
+                    challengeSentDate: '',
+                    challengeDoneDate: '',
+                    interview2Date: '',
+                    interview2Result: '' as const,
+                    startDate: '',
+                }];
+            }
+        });
+        setTimeout(() => showToast(isAdding ? t('toast.added_pipeline') : t('toast.removed_pipeline'), isAdding ? 'success' : 'info'), 0);
+    };
+    
+    const handleSaveSnapshot = () => {
+        if (recruitmentData.length === 0) return;
+        
+        const snapshotData = recruitmentData.map(data => {
+            const profile = candidateProfiles.find(c => c.id === data.candidateId);
+            if (!profile) return null;
+            return { ...data, profile };
+        }).filter(Boolean) as (RecruitmentData & { profile: CandidateProfile })[];
+
+        if (lastSnapshotId) {
+            // Update existing snapshot
+            setPipelineHistory(prev => prev.map(snapshot => {
+                if (snapshot.id === lastSnapshotId) {
+                    return {
+                        ...snapshot,
+                        date: new Date().toISOString(),
+                        data: snapshotData,
+                        count: snapshotData.length
+                    };
+                }
+                return snapshot;
+            }));
+            showToast(t('toast.updated_history'), 'success');
+        } else {
+            // Create new snapshot
+            const newId = Date.now().toString();
+            const snapshot: PipelineSnapshot = {
+                id: newId,
+                date: new Date().toISOString(),
+                data: snapshotData,
+                count: snapshotData.length
+            };
+            setPipelineHistory(prev => [snapshot, ...prev]);
+            setLastSnapshotId(newId);
+            showToast(t('toast.saved_history'), 'success');
+        }
     };
 
     const handleImportProfiles = (profiles: Partial<CandidateProfile>[]) => {
@@ -700,8 +856,11 @@ function AppContent() {
                 };
             });
         
-        setCvFiles(prev => [...prev, ...newCvFiles]);
-        setView('dashboard');
+        if (newCvFiles.length > 0) {
+             showToast(t('toast.files_added'), 'success');
+             setCvFiles(prev => [...prev, ...newCvFiles]);
+             setView('dashboard');
+        }
     };
     
     const handleConnect = (credentials: { userId: string; email: string; rememberMe: boolean }): boolean => {
@@ -746,11 +905,15 @@ function AppContent() {
             case 'upload':
                 return <UploadView cvFiles={cvFiles} onAddFiles={handleAddFiles} onStartAnalysis={handleStartAnalysis} onClearFile={handleClearFile} onClearAllFiles={handleReset} isAnalyzing={isAnalyzing} storageError={storageError} isOwner={isOwner} analysisLimit={analysisLimit} limitError={limitError} uploadLimit={isOwner ? Infinity : UPLOAD_SELECTION_LIMIT} />;
             case 'dashboard':
-                return <DashboardView candidates={candidateProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} comparisonList={comparisonList} onToggleCompare={handleToggleCompare} onImportProfiles={handleImportProfiles} />;
+                return <DashboardView candidates={candidateProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} comparisonList={comparisonList} onToggleCompare={handleToggleCompare} onImportProfiles={handleImportProfiles} pipelineCandidateIds={recruitmentData.map(d => d.candidateId)} onTogglePipeline={handleTogglePipeline}/>;
             case 'favorites':
-                return <DashboardView candidates={favoriteProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} isFavoritesView comparisonList={comparisonList} onToggleCompare={handleToggleCompare} onImportProfiles={handleImportProfiles} />;
+                return <DashboardView candidates={favoriteProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} isFavoritesView comparisonList={comparisonList} onToggleCompare={handleToggleCompare} onImportProfiles={handleImportProfiles} pipelineCandidateIds={recruitmentData.map(d => d.candidateId)} onTogglePipeline={handleTogglePipeline} />;
             case 'ai':
                 return <AIAssistantView candidates={candidateProfiles} />;
+            case 'recruitment':
+                return <RecruitmentView candidates={candidateProfiles} recruitmentData={recruitmentData} onUpdateRecruitmentData={updateRecruitmentData} onSelectCandidate={handleSelectCandidate} onTogglePipeline={handleTogglePipeline} onSaveSnapshot={handleSaveSnapshot} lastSnapshotId={lastSnapshotId} />;
+            case 'history':
+                return <HistoryView history={pipelineHistory} />;
             case 'settings':
                 return <SettingsView 
                             theme={theme} 
@@ -836,7 +999,9 @@ function AppContent() {
 function App() {
     return (
         <LanguageProvider>
-            <AppContent />
+            <ToastProvider>
+                <AppContent />
+            </ToastProvider>
         </LanguageProvider>
     );
 }

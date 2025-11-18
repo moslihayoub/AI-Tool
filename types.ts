@@ -1,33 +1,29 @@
-// FIX: Replaced `import type { CSSProperties } from 'react'` with `import * as React from 'react'`. This ensures that React's global JSX namespace is fully loaded before this file attempts to augment it, resolving widespread "Property does not exist on type 'JSX.IntrinsicElements'" errors across the application.
-// FIX: Switched to namespace React import to correctly populate the global JSX namespace and resolve JSX intrinsic element errors.
+
 import * as React from 'react';
 
 // This file contains shared type definitions for the application.
 
 declare global {
-  // FIX: Moved the JSX namespace augmentation for the 'dotlottie-wc' web component here from index.tsx.
-  // Declaring it in this central types file ensures it's applied globally before other modules are loaded,
-  // fixing widespread JSX intrinsic element type errors.
-  namespace JSX {
-    interface IntrinsicElements {
-      // FIX: Changed the type definition to extend from `div`'s intrinsic element type.
-      // This is a more robust way to type custom elements in React with TypeScript,
-      // ensuring all standard HTML attributes (like style, className) are included,
-      // which resolves the "Property 'dotlottie-wc' does not exist on type 'JSX.IntrinsicElements'" errors.
-      'dotlottie-wc': JSX.IntrinsicElements['div'] & {
-        src?: string;
-        autoplay?: boolean;
-        loop?: boolean;
-      };
-    }
-  }
-
   interface AIStudio {
     getAuthenticatedUser: () => Promise<User>;
   }
 
   interface Window {
     aistudio?: AIStudio;
+  }
+}
+
+// Augment the React module's JSX namespace to add the custom element 'dotlottie-wc'.
+// This ensures it merges with existing React definitions instead of overwriting the global JSX namespace.
+declare module 'react' {
+  namespace JSX {
+    interface IntrinsicElements {
+      'dotlottie-wc': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
+        src?: string;
+        autoplay?: boolean;
+        loop?: boolean;
+      };
+    }
   }
 }
 
@@ -85,10 +81,36 @@ export interface ChatMessage {
     text: string;
 }
 
-export type View = 'upload' | 'dashboard' | 'favorites' | 'settings' | 'compare' | 'ai';
+export type View = 'upload' | 'dashboard' | 'favorites' | 'settings' | 'compare' | 'ai' | 'recruitment' | 'history';
 export type Theme = 'light' | 'dark' | 'system';
 
 export interface User {
   id: string;
   email: string;
+}
+
+export interface FilterCriteria {
+  jobCategories: string[];
+  locations: string[];
+  experienceLevels: string[];
+  skills: string[];
+}
+
+export interface RecruitmentData {
+  candidateId: string;
+  applicationDate: string;
+  interview1Date: string;
+  interview1Result: 'Excellent' | 'Good' | 'Fair' | 'Medium' | '';
+  challengeSentDate: string;
+  challengeDoneDate: string; // Can be empty if not done
+  interview2Date: string;
+  interview2Result: 'Excellent' | 'Good' | 'Fair' | 'Medium' | '';
+  startDate: string;
+}
+
+export interface PipelineSnapshot {
+  id: string;
+  date: string;
+  data: (RecruitmentData & { profile: CandidateProfile })[];
+  count: number;
 }

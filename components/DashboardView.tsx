@@ -1,8 +1,10 @@
+
 // FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
 // FIX: Switched to namespace React import to correctly populate the global JSX namespace.
 import * as React from 'react';
-import { CandidateProfile } from '../types';
+import { CandidateProfile, FilterCriteria } from '../types';
 import { Icon } from './icons';
+import { FilterView } from './FilterView';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList, LineChart, Line } from 'recharts';
 import { useTranslation } from '../i18n';
 
@@ -16,6 +18,8 @@ interface DashboardViewProps {
   comparisonList: string[];
   onToggleCompare: (candidateId: string) => void;
   onImportProfiles: (profiles: Partial<CandidateProfile>[]) => void;
+  pipelineCandidateIds: string[];
+  onTogglePipeline: (candidateId: string) => void;
 }
 
 const COLORS = ['#3b82f6', '#ec4899', '#f59e0b', '#10b981', '#8b5cf6', '#ef4444'];
@@ -42,7 +46,9 @@ const CandidateCard: React.FC<{
     isInCompare: boolean;
     isCompareDisabled: boolean;
     onToggleCompare: (e: React.MouseEvent) => void;
-}> = ({ candidate, onSelect, isFavorite, onToggleFavorite, isInCompare, isCompareDisabled, onToggleCompare }) => {
+    isInPipeline: boolean;
+    onTogglePipeline: (e: React.MouseEvent) => void;
+}> = ({ candidate, onSelect, isFavorite, onToggleFavorite, isInCompare, isCompareDisabled, onToggleCompare, isInPipeline, onTogglePipeline }) => {
     const { t } = useTranslation();
     
     return (
@@ -107,11 +113,21 @@ const CandidateCard: React.FC<{
                 </div>
             </div>
             <div className="mt-4">
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 mb-3">
                     {(candidate.skills.hard || []).slice(0, 3).map(skill => (
                         <span key={skill} className="text-sm bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300 px-3 py-1 rounded-full inline-block max-w-full truncate">{skill}</span>
                     ))}
                 </div>
+                 <button 
+                    onClick={onTogglePipeline}
+                    className={`w-full font-bold py-2 px-4 rounded-lg transition-colors z-10 ${
+                        isInPipeline 
+                        ? 'bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40' 
+                        : 'bg-green-50 text-green-600 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/40'
+                    }`}
+                >
+                    {isInPipeline ? t('dashboard.card.remove_pipeline') : t('dashboard.card.add_pipeline')}
+                </button>
                 {candidate.analysisDuration !== undefined && <p className="text-xs text-right rtl:text-left text-gray-400 mt-2">{candidate.analysisDuration > 0 ? t('common.analyzed_in', {duration: (candidate.analysisDuration / 1000).toFixed(1)}) : 'From cache'}</p>}
             </div>
         </div>
@@ -165,13 +181,12 @@ const EmptyChartState: React.FC = () => {
     );
 };
 
-export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSelectCandidate, onReset, favorites, onToggleFavorite, isFavoritesView = false, comparisonList, onToggleCompare, onImportProfiles }) => {
+export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSelectCandidate, onReset, favorites, onToggleFavorite, isFavoritesView = false, comparisonList, onToggleCompare, onImportProfiles, pipelineCandidateIds, onTogglePipeline }) => {
     const { t } = useTranslation();
-    const [selectedJobCategories, setSelectedJobCategories] = React.useState<string[]>([]);
-    const [isFilterOpen, setIsFilterOpen] = React.useState(false);
+    const [filters, setFilters] = React.useState<FilterCriteria>({ jobCategories: [], locations: [], experienceLevels: [], skills: [] });
+    const [isFilterViewOpen, setIsFilterViewOpen] = React.useState(false);
     const [isActionsOpen, setIsActionsOpen] = React.useState(false);
     const [confirmReset, setConfirmReset] = React.useState(false);
-    const filterRef = React.useRef<HTMLDivElement>(null);
     const actionsRef = React.useRef<HTMLDivElement>(null);
     const importInputRef = React.useRef<HTMLInputElement>(null);
     const graphsRef = React.useRef<HTMLDivElement>(null);
@@ -261,15 +276,32 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         return mapping[category] || category;
     };
 
-    const allJobCategories = React.useMemo(() => {
-        const categories = new Set(candidates.map(c => c.jobCategory).filter(c => c && c !== 'N/A'));
-        return Array.from(categories).sort();
-    }, [candidates]);
-
     const filteredCandidates = React.useMemo(() => {
-        const filtered = selectedJobCategories.length === 0
-            ? candidates
-            : candidates.filter(c => c.jobCategory && selectedJobCategories.includes(c.jobCategory));
+        const { jobCategories, locations, experienceLevels, skills } = filters;
+        
+        const experienceLevelToYears = (level: string): [number, number] => {
+            if (level === t('dashboard.exp_buckets.junior')) return [0, 2];
+            if (level === t('dashboard.exp_buckets.confirmed')) return [3, 5];
+            if (level === t('dashboard.exp_buckets.senior')) return [6, 10];
+            if (level === t('dashboard.exp_buckets.expert')) return [11, Infinity];
+            return [-1, -1];
+        };
+
+        const selectedRanges = experienceLevels.map(experienceLevelToYears).filter(r => r[0] !== -1);
+
+        const filtered = candidates.filter(c => {
+            if (jobCategories.length > 0 && !jobCategories.includes(c.jobCategory)) return false;
+            if (locations.length > 0 && !locations.includes(c.location)) return false;
+            if (skills.length > 0 && !skills.every(skill => c.skills.hard.some(hardSkill => hardSkill.toLowerCase().includes(skill.toLowerCase())))) return false;
+            
+            if (selectedRanges.length > 0) {
+                const years = c.totalExperienceYears || 0;
+                const isInRange = selectedRanges.some(([min, max]) => years >= min && years <= max);
+                if (!isInRange) return false;
+            }
+
+            return true;
+        });
 
         return filtered.sort((a, b) => {
             if (b.performanceScore !== a.performanceScore) {
@@ -277,13 +309,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
             }
             return (a.jobCategory || '').localeCompare(b.jobCategory || '');
         });
-    }, [candidates, selectedJobCategories]);
+    }, [candidates, filters, t]);
 
     React.useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
-                setIsFilterOpen(false);
-            }
             if (actionsRef.current && !actionsRef.current.contains(event.target as Node)) {
                 setIsActionsOpen(false);
             }
@@ -304,19 +333,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         }
     };
     
-    const handleCategoryToggle = (category: string) => {
-        setSelectedJobCategories(prev =>
-            prev.includes(category)
-                ? prev.filter(c => c !== category)
-                : [...prev, category]
-        );
-    };
-
     const formatLocationTick = (tick: string) => {
         if (!tick) return '';
         const parts = tick.split(',');
         const lastPart = parts[parts.length - 1].trim();
-        // Abbreviate common country names if needed, otherwise use the part
         const abbreviations: {[key: string]: string} = { 'United States': 'USA', 'United Kingdom': 'UK' };
         return abbreviations[lastPart] || lastPart;
     };
@@ -464,8 +484,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
         setIsActionsOpen(false);
     };
 
+    const activeFilterCount = filters.jobCategories.length + filters.locations.length + filters.experienceLevels.length + filters.skills.length;
+
     return (
         <div>
+            <FilterView
+                isOpen={isFilterViewOpen}
+                onClose={() => setIsFilterViewOpen(false)}
+                onApply={setFilters}
+                candidates={candidates}
+                currentFilters={filters}
+            />
             <header className="sticky top-0 z-20 bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-sm px-4 sm:px-8 py-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b dark:border-gray-800">
                 <div>
                     <h2 className="text-3xl font-bold font-display text-gray-800 dark:text-gray-100">{isFavoritesView ? t('dashboard.favorites_title') : t('dashboard.title')}</h2>
@@ -473,42 +502,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                 </div>
                 {!isFavoritesView && (
                  <div className="w-full sm:w-auto flex justify-between items-center gap-2 rtl:flex-row-reverse">
-                    <div className="relative" ref={filterRef}>
-                        <button onClick={() => setIsFilterOpen(!isFilterOpen)} title={t('dashboard.filter_by_job')} className="flex items-center justify-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 font-semibold px-3 sm:px-4 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <div className="relative">
+                        <button onClick={() => setIsFilterViewOpen(true)} title={t('dashboard.filter_by_job')} className="relative flex items-center justify-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 font-semibold px-3 sm:px-4 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                             <Icon name="filter" className="w-5 h-5"/>
                             <span>{t('dashboard.filter_by_job')}</span>
-                            {selectedJobCategories.length > 0 && <span className="absolute -top-1 -right-1 rtl:-right-auto rtl:-left-1 bg-primary-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">{selectedJobCategories.length}</span>}
+                            {activeFilterCount > 0 && <span className="absolute -top-1 -right-1 rtl:-right-auto rtl:-left-1 bg-primary-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">{activeFilterCount}</span>}
                         </button>
-                        {isFilterOpen && (
-                            <div className="absolute top-full mt-2 w-56 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-lg shadow-xl z-10">
-                                <div className="max-h-60 overflow-y-auto">
-                                    {allJobCategories.map(category => (
-                                        <label key={category} className="flex items-center p-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
-                                            <input
-                                                type="checkbox"
-                                                className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:bg-gray-900 dark:border-gray-600"
-                                                checked={selectedJobCategories.includes(category)}
-                                                onChange={() => handleCategoryToggle(category)}
-                                            />
-                                            <span className="ml-3 rtl:ml-0 rtl:mr-3 text-gray-700 dark:text-gray-300 truncate">{category}</span>
-                                        </label>
-                                    ))}
-                                </div>
-                                {selectedJobCategories.length > 0 && (
-                                    <div className="p-2 border-t dark:border-gray-700">
-                                        <button
-                                            onClick={() => {
-                                                setSelectedJobCategories([]);
-                                                setIsFilterOpen(false);
-                                            }}
-                                            className="w-full text-center text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline focus:outline-none"
-                                        >
-                                            {t('dashboard.clear_filters')}
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        )}
                     </div>
 
                     <div className="hidden lg:flex items-center gap-2">
@@ -532,7 +531,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                                 : 'bg-red-600 text-white hover:bg-red-700'
                             }`}>
                                 <Icon name="refresh-cw" className="w-5 h-5" />
-                                <span>{confirmReset ? t('common.reset_confirm_action') : t('common.reset')}</span>
+                                <span className="hidden sm:inline">{confirmReset ? t('common.reset_confirm_action') : t('common.reset')}</span>
                             </button>
                             {confirmReset && (
                                 <div className="absolute bottom-full right-0 rtl:right-auto rtl:left-0 mb-2 w-max max-w-xs bg-gray-900 text-white text-xs rounded py-2 px-3 opacity-100 transition-opacity pointer-events-none z-10 shadow-lg text-center dark:bg-gray-700">
@@ -713,6 +712,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             {filteredCandidates.map(candidate => {
                                 const isInCompare = comparisonList.includes(candidate.id);
+                                const isInPipeline = pipelineCandidateIds.includes(candidate.id);
                                 return (
                                     <CandidateCard 
                                         key={candidate.id} 
@@ -723,6 +723,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                                         isInCompare={isInCompare}
                                         isCompareDisabled={!isInCompare && comparisonList.length >= 2}
                                         onToggleCompare={(e) => { e.stopPropagation(); onToggleCompare(candidate.id); }}
+                                        isInPipeline={isInPipeline}
+                                        onTogglePipeline={(e) => { e.stopPropagation(); onTogglePipeline(candidate.id); }}
                                     />
                                 );
                             })}

@@ -1,3 +1,4 @@
+
 export const fr = {
     sidebar: {
         upload: "Importer CVs",
@@ -6,7 +7,9 @@ export const fr = {
         settings: "Paramètres",
         footer: "Created by Moslih84",
         compare: "Comparateurs",
-        ai_assistant: "Assistant IA"
+        ai_assistant: "Assistant IA",
+        recruitment: "Pipeline",
+        history: "Historique"
     },
     upload: {
         title: "Importer des CVs",
@@ -88,8 +91,65 @@ export const fr = {
         },
         card: {
             favorite: "Favoris",
-            compare: "Comparer"
+            compare: "Comparer",
+            add_pipeline: "Ajouter au pipeline",
+            remove_pipeline: "Retirer du pipeline"
         }
+    },
+    filter: {
+        add_skill_placeholder: "Ajouter des compétences",
+        apply_filters: "Appliquer"
+    },
+    recruitment: {
+        title: "Pipeline de Recrutement",
+        subtitle: "Suivi du processus de recrutement des candidats.",
+        filter_jobs: "Filtrer",
+        all_jobs: "Tous les métiers",
+        save_pipeline: "Enregistrer",
+        update_pipeline: "Mettre à jour",
+        table: {
+            app_date: "Date Candidature",
+            name: "Nom",
+            job: "Métier",
+            score: "Score",
+            experience: "Exp.",
+            location: "Ville",
+            status: "Statut",
+            interview1: "Entretien 1",
+            result: "Résultat",
+            challenge: "Challenge Tech",
+            sent: "Envoyé",
+            done: "Fait",
+            interview2: "Entretien 2",
+            start_date: "Date Début",
+            actions: "Actions"
+        },
+        results: {
+            excellent: "Excellent",
+            good: "Bon",
+            fair: "Passable",
+            medium: "Moyen",
+            none: "-"
+        },
+        status: {
+            application: "Candidature",
+            interview1: "Entretien 1",
+            challenge: "Challenge",
+            interview2: "Entretien 2",
+            hired: "Hired",
+            approved: "Approved",
+            selected: "Selected"
+        },
+        empty: "Aucun candidat dans le pipeline.",
+        date_error: "Erreur de date : L'ordre chronologique doit être respecté."
+    },
+    history: {
+        title: "Historique",
+        subtitle: "Consultez les états précédents de votre pipeline de recrutement.",
+        empty: "Aucun historique enregistré.",
+        snapshot_title: "Pipeline du {{date}}",
+        candidate_count: "{{count}} candidat{{plural:count}}",
+        view_details: "Voir détails"
     },
     detail: {
         loading: "Chargement du profil du candidat...",
@@ -233,6 +293,17 @@ export const fr = {
         close: "Fermer",
         contact_support: "Contacter le support via WhatsApp",
         error: "ID utilisateur ou email incorrect."
+    },
+    toast: {
+        added_favorite: "Ajouté aux favoris",
+        removed_favorite: "Retiré des favoris",
+        added_pipeline: "Ajouté au pipeline",
+        removed_pipeline: "Retiré du pipeline",
+        saved_history: "Pipeline enregistré dans l'historique",
+        updated_history: "Pipeline mis à jour dans l'historique",
+        export_success: "Exportation réussie",
+        analysis_complete: "Analyse terminée",
+        files_added: "Fichiers ajoutés"
     }
 };
 
@@ -244,7 +315,9 @@ export const en = {
         settings: "Settings",
         footer: "Created by Moslih84",
         compare: "Comparators",
-        ai_assistant: "AI Assistant"
+        ai_assistant: "AI Assistant",
+        recruitment: "Pipeline",
+        history: "History"
     },
     upload: {
         title: "Import CVs",
@@ -326,8 +399,65 @@ export const en = {
         },
         card: {
             favorite: "Favorite",
-            compare: "Compare"
+            compare: "Compare",
+            add_pipeline: "Add to pipeline",
+            remove_pipeline: "Remove from pipeline"
         }
+    },
+    filter: {
+        add_skill_placeholder: "Add skills",
+        apply_filters: "Apply"
+    },
+    recruitment: {
+        title: "Recruitment Pipeline",
+        subtitle: "Track candidate progress through the hiring process.",
+        filter_jobs: "Filter",
+        all_jobs: "All Jobs",
+        save_pipeline: "Save",
+        update_pipeline: "Update",
+        table: {
+            app_date: "App Date",
+            name: "Name",
+            job: "Job",
+            score: "Score",
+            experience: "Exp.",
+            location: "City",
+            status: "Status",
+            interview1: "Interview 1",
+            result: "Result",
+            challenge: "Tech Challenge",
+            sent: "Sent",
+            done: "Done",
+            interview2: "Interview 2",
+            start_date: "Start Date",
+            actions: "Actions"
+        },
+        results: {
+            excellent: "Excellent",
+            good: "Good",
+            fair: "Fair",
+            medium: "Medium",
+            none: "-"
+        },
+        status: {
+            application: "Application",
+            interview1: "Interview 1",
+            challenge: "Challenge",
+            interview2: "Interview 2",
+            hired: "Hired",
+            approved: "Approved",
+            selected: "Selected"
+        },
+        empty: "No candidates in the pipeline.",
+        date_error: "Date Error: Chronological order must be respected."
+    },
+    history: {
+        title: "History",
+        subtitle: "View previous states of your recruitment pipeline.",
+        empty: "No history saved.",
+        snapshot_title: "Pipeline from {{date}}",
+        candidate_count: "{{count}} candidate{{plural:count}}",
+        view_details: "View Details"
     },
     detail: {
         loading: "Loading candidate profile...",
@@ -377,7 +507,7 @@ export const en = {
     },
     settings: {
         title: "Settings",
-        subtitle: "Manage the application's preferences.",
+        subtitle: "Manage application preferences.",
         language: {
             title: "Language",
             french: "Français",
@@ -396,30 +526,30 @@ export const en = {
         data: {
             title: "Data Management",
             load_dummy: "Load Dummy Data",
-            dummy_description: "Populate the app with sample profiles to explore all features."
+            dummy_description: "Populate the app with sample profiles to explore features."
         },
         connection: {
-            title: "Connect with ID",
-            description: "Connect with your ID to unlock features or bypass limits.",
+            title: "ID Connection",
+            description: "Connect with your ID to unlock features or override limits.",
             button: "Connect with ID",
             title_connected: "Connected",
-            description_connected: "You are connected as the owner. You have unlimited access.",
+            description_connected: "You are connected as owner. You have unlimited access.",
             button_disconnect: "Disconnect",
             disconnect_confirm: "Are you sure you want to disconnect?"
         }
     },
     analysis: {
-        title: "Analysis in progress...",
+        title: "Analyzing...",
         subtitle: "Your patience is appreciated while we process the CVs.",
         progress_cvs: "{{progress}} / {{total}} CVs",
-        elapsed_time: "Elapsed time: {{time}}s",
-        summary_incomplete: "Analysis complete. {{count}} CV{{plural:count}} have missing key information and may require review.",
+        elapsed_time: "Time elapsed: {{time}}s",
+        summary_incomplete: "Analysis complete. {{count}} CV{{plural:count}} ha{{plural:count}} key information missing and might need review.",
         game_title: "Light Cycle",
         game_instructions: "Use arrow keys or buttons to steer.",
         score: "Score",
         high_score: "High Score",
         game_over: "Game Over",
-        restart_game: "Press Enter to restart",
+        restart_game: "Press Enter to Replay",
         fullscreen: "Fullscreen",
         exit_fullscreen: "Exit Fullscreen",
         analyse_terminee: "Analysis Complete!",
@@ -451,17 +581,17 @@ export const en = {
         all: "All"
     },
     errors: {
-        storageFull: "Storage space is full. Please reset data to free up space.",
+        storageFull: "Storage is full. Please reset data to free up space.",
         saveError: "Save Error",
         unknownSaveError: "An unknown error occurred while saving.",
-        limit_exceeded: "Daily analysis operation limit reached. You can only perform {{limit}} analysis operations per day.",
+        limit_exceeded: "Daily analysis limit reached. You can only perform {{limit}} analysis operations per day.",
         upload_limit_reached: "You have reached the 5-file limit. Please analyze or reset to add more.",
         upload_selection_ignored: "The 5-file limit was reached. Only the first {{count}} files were added.",
         invalid_json: "Invalid JSON format."
     },
     quota_modal: {
         title: "Quota Limit Reached",
-        description: "Please connect with your user ID to continue, or contact support.",
+        description: "Please connect with your user ID to continue or contact support.",
         user_id: "User ID",
         user_id_placeholder: "your id",
         email: "Email",
@@ -469,32 +599,45 @@ export const en = {
         remember_me: "Remember me",
         connect: "Connect",
         close: "Close",
-        contact_support: "Contact Support via WhatsApp",
+        contact_support: "Contact support via WhatsApp",
         error: "Incorrect User ID or Email."
+    },
+    toast: {
+        added_favorite: "Added to favorites",
+        removed_favorite: "Removed from favorites",
+        added_pipeline: "Added to pipeline",
+        removed_pipeline: "Removed from pipeline",
+        saved_history: "Pipeline saved to history",
+        updated_history: "Pipeline updated in history",
+        export_success: "Export successful",
+        analysis_complete: "Analysis complete",
+        files_added: "Files added"
     }
 };
 
 export const ar = {
     sidebar: {
-        upload: "استيراد السير الذاتية",
-        dashboard: "لوحة التحكم",
+        upload: "تحميل سير ذاتية",
+        dashboard: "لوحة القيادة",
         favorites: "المفضلة",
         settings: "الإعدادات",
-        footer: "أنشأه Moslih84",
-        compare: "المقارنات",
-        ai_assistant: "مساعد الذكاء الاصطناعي"
+        footer: "Created by Moslih84",
+        compare: "مقارنة",
+        ai_assistant: "المساعد الذكي",
+        recruitment: "التوظيف",
+        history: "السجل"
     },
     upload: {
-        title: "استيراد السير الذاتية",
-        subtitle: "اسحب وأفلت الملفات أو انقر لاختيارها.",
+        title: "تحميل السير الذاتية",
+        subtitle: "سحب وإفلات الملفات أو انقر لتحديدها.",
         results: {
             title: "منطقة الاستيراد",
-            subtitle: "راجع الملفات أدناه قبل بدء التحليل."
+            subtitle: "مراجعة الملفات أدناه قبل بدء التحليل."
         },
         dropzone: {
             release: "أفلت الملفات هنا",
-            prompt: "اسحب وأفلت الملفات هنا، أو انقر للاختيار",
-            supported_files: "الملفات المدعومة: PDF, TXT, JSON, MD, CSV, ملفات Office",
+            prompt: "سحب وإفلات الملفات هنا، أو انقر للتحديد",
+            supported_files: "الملفات المدعومة: PDF, TXT, JSON, MD, CSV, ملفات أوفيس",
             limit_reached_prompt: "تم الوصول إلى حد 5 ملفات"
         },
         google_drive_import: "استيراد من Google Drive",
@@ -508,87 +651,144 @@ export const ar = {
             success: "نجاح",
             error: "خطأ"
         },
-        owner_info: "لديك وصول غير محدود إلى جميع الميزات.",
+        owner_info: "لديك وصول غير محدود لجميع الميزات.",
         limit_rules: {
-            title: "قواعد التقييد",
+            title: "قواعد الحد",
             title_owner: "وضع المالك",
-            description_with_count: "تبقى لديك <strong>{{count}}/{{limit}}</strong> عملية تحليل لهذا اليوم. كل عملية يمكنها معالجة ما يصل إلى {{uploadLimit}} سيرة ذاتية.",
-            limit_reached_title: "تم الوصول إلى الحد اليومي",
-            limit_reached_description: "لقد وصلت إلى حصتك من التحليلات لهذا اليوم. عد غدًا أو اتصل للحصول على وصول غير محدود."
+            description_with_count: "لديك <strong>{{count}}/{{limit}}</strong> عمليات تحليل متبقية لهذا اليوم. يمكن لكل عملية معالجة ما يصل إلى {{uploadLimit}} سير ذاتية.",
+            limit_reached_title: "تم الوصول للحد اليومي",
+            limit_reached_description: "لقد وصلت إلى حصة التحليل الخاصة بك لهذا اليوم. عد غدًا أو اتصل للحصول على وصول غير محدود."
         }
     },
     dashboard: {
-        title: "لوحة التحكم",
+        title: "لوحة القيادة",
         subtitle: "تصور البيانات والملفات الشخصية المستخرجة من السير الذاتية.",
         favorites_title: "الملفات الشخصية المفضلة",
-        no_favorites: "لم تقم بإضافة أي ملفات شخصية إلى مفضلتك بعد.",
+        no_favorites: "لم تقم بإضافة أي ملفات شخصية إلى المفضلة بعد.",
         filter_by_job: "تصفية",
-        jobs_selected: "تم تحديد {{count}} وظيفة",
-        clear_filters: "مسح الفلاتر",
+        jobs_selected: "{{count}} وظيفة محددة",
+        clear_filters: "مسح التصفية",
         import_csv: "استيراد",
         export_as_csv: "تصدير كـ CSV",
         export_as_json: "تصدير كـ JSON",
-        no_cv_analyzed: "لم يتم تحليل أي سيرة ذاتية بعد. يرجى استيراد البعض من علامة التبويب \"استيراد السير الذاتية\".",
-        incomplete_profile_tooltip: "معلومات أساسية (الاسم، الوظيفة) مفقودة.",
+        no_cv_analyzed: "لم يتم تحليل أي سير ذاتية بعد. يرجى استيراد بعضها من علامة التبويب \"تحميل سير ذاتية\".",
+        incomplete_profile_tooltip: "معلومات رئيسية (الاسم، الوظيفة) مفقودة.",
         experience_years: "{{count}} سنوات خبرة",
         candidate_profiles: "ملفات المرشحين ({{count}})",
         quick_nav: {
             graphs: "الرسوم البيانية",
-            profiles: "الملفات الشخصية"
+            profiles: "المرشحين"
         },
         charts: {
-            perf_by_job: "درجة الأداء حسب فئة الوظيفة",
-            job_distribution: "توزيع فئات الوظائف",
+            perf_by_job: "درجة الأداء حسب الفئة الوظيفية",
+            job_distribution: "توزيع الوظائف",
             exp_distribution: "توزيع مستوى الخبرة",
             location_distribution: "عدد السير الذاتية حسب المدينة",
-            aggregated_skills_expertise: "خبرة المهارات الإجمالية",
+            aggregated_skills_expertise: "الخبرة المهارية الشاملة",
             avg_score: "متوسط الدرجة",
-            candidates: "المرشحون",
+            candidates: "المرشحين",
             num_cvs: "عدد السير الذاتية",
             other: "أخرى",
             no_data: "لا توجد بيانات متاحة",
-            clear_chart_filters: "مسح فلاتر الرسم البياني",
+            clear_chart_filters: "مسح تصفيات الرسم البياني",
             filter_by: "تصفية حسب"
         },
         exp_buckets: {
-            junior: "مبتدئ (0-2 سنة)",
-            confirmed: "متوسط (3-5 سنوات)",
+            junior: "مبتدئ (0-2 سنوات)",
+            confirmed: "مؤكد (3-5 سنوات)",
             senior: "خبير (6-10 سنوات)",
-            expert: "خبير أول (10+ سنوات)"
+            expert: "خبير (10+ سنوات)"
         },
         compare: {
             add: "مقارنة",
             remove: "محدد",
             cta: "مقارنة ({{count}}/2)",
-            limit_reached: "ملفان شخصيان كحد أقصى"
+            limit_reached: "حد أقصى 2 ملفات"
         },
         card: {
-            favorite: "المفضلة",
-            compare: "مقارنة"
+            favorite: "مفضل",
+            compare: "مقارنة",
+            add_pipeline: "إضافة إلى التوظيف",
+            remove_pipeline: "إزالة من التوظيف"
         }
     },
+    filter: {
+        add_skill_placeholder: "إضافة مهارات",
+        apply_filters: "تطبيق"
+    },
+    recruitment: {
+        title: "خط أنابيب التوظيف",
+        subtitle: "تتبع تقدم المرشح خلال عملية التوظيف.",
+        filter_jobs: "تصفية",
+        all_jobs: "جميع الوظائف",
+        save_pipeline: "حفظ",
+        update_pipeline: "تحديث",
+        table: {
+            app_date: "تاريخ التقديم",
+            name: "الاسم",
+            job: "الوظيفة",
+            score: "الدرجة",
+            experience: "الخبرة",
+            location: "المدينة",
+            status: "الحالة",
+            interview1: "مقابلة 1",
+            result: "النتيجة",
+            challenge: "التحدي التقني",
+            sent: "أرسلت",
+            done: "تم",
+            interview2: "مقابلة 2",
+            start_date: "تاريخ البدء",
+            actions: "إجراءات"
+        },
+        results: {
+            excellent: "ممتاز",
+            good: "جيد",
+            fair: "مقبول",
+            medium: "متوسط",
+            none: "-"
+        },
+        status: {
+            application: "طلب تقديم",
+            interview1: "مقابلة 1",
+            challenge: "تحدي",
+            interview2: "مقابلة 2",
+            hired: "تم التوظيف",
+            approved: "موافق عليه",
+            selected: "تم الاختيار"
+        },
+        empty: "لا يوجد مرشحين في خط الأنابيب.",
+        date_error: "خطأ في التاريخ: يجب احترام الترتيب الزمني."
+    },
+    history: {
+        title: "السجل",
+        subtitle: "عرض الحالات السابقة لخط أنابيب التوظيف الخاص بك.",
+        empty: "لا يوجد سجل محفوظ.",
+        snapshot_title: "خط أنابيب من {{date}}",
+        candidate_count: "{{count}} مرشح",
+        view_details: "عرض التفاصيل"
+    },
     detail: {
-        loading: "جاري تحميل ملف المرشح...",
+        loading: "جاري تحميل الملف الشخصي للمرشح...",
         score: "الدرجة",
         add_to_favorites: "إضافة إلى المفضلة",
         remove_from_favorites: "إزالة من المفضلة",
         profile_summary: "ملخص الملف الشخصي",
         no_summary: "لا يوجد ملخص متاح.",
         skills: "المهارات",
-        skills_chart: "مستوى خبرة المهارات",
+        skills_chart: "مستوى خبرة المهارة",
         expertise_score: "درجة الخبرة",
         not_enough_skills_for_chart: "لا توجد مهارات تقنية كافية لإنشاء رسم بياني (مطلوب 3 كحد أدنى).",
-        hard_skills: "المهارات التقنية",
-        soft_skills: "المهارات الشخصية",
+        hard_skills: "المهارات الصعبة",
+        soft_skills: "المهارات الناعمة",
         work_experience: "الخبرة العملية",
-        no_description: "لم يتم تقديم وصف.",
+        no_description: "لا يوجد وصف مقدم.",
         education: "التعليم"
     },
     compare: {
         title: "مقارنة الملفات الشخصية",
-        back_to_dashboard: "العودة إلى لوحة التحكم",
+        back_to_dashboard: "العودة إلى لوحة القيادة",
         share_title: "مشاركة",
-        share_whatsapp: "WhatsApp",
+        share_whatsapp: "واتساب",
         share_email: "البريد الإلكتروني",
         copy_summary: "نسخ",
         copied: "تم النسخ!",
@@ -597,20 +797,20 @@ export const ar = {
         education_title: "التعليم",
         common_skills: "المهارات المشتركة",
         empty_state_title: "مقارنة الملفات الشخصية",
-        empty_state_description: "اختر مرشحين من لوحة التحكم لرؤيتهما جنبًا إلى جنب هنا."
+        empty_state_description: "حدد مرشحين اثنين من لوحة القيادة لرؤيتهما جنبًا إلى جنب هنا."
     },
     ai_assistant: {
-        title: "مساعد الذكاء الاصطناعي",
-        greeting: "مرحبًا! 👋 كيف يمكنني مساعدتك في تحليل هذا الملف الشخصي؟",
-        dashboard_greeting: "مرحبًا! 👋 اسألني أي شيء عن مجموعة المرشحين. على سبيل المثال: 'من هم أفضل 3 مرشحين لوظيفة مطور React؟'",
-        dashboard_title: "مساعد الذكاء الاصطناعي العالمي",
+        title: "المساعد الذكي",
+        greeting: "مرحباً! 👋 كيف يمكنني مساعدتك في تحليل هذا الملف الشخصي؟",
+        dashboard_greeting: "مرحباً! 👋 اسألني أي شيء عن مجموعة المرشحين. على سبيل المثال: 'من هم أفضل 3 مرشحين لوظيفة مطور React؟'",
+        dashboard_title: "المساعد الذكي الشامل",
         dashboard_subtitle: "احصل على رؤى عبر جميع ملفات المرشحين المحملة.",
-        error: "عذرًا، حدث خطأ. يرجى المحاولة مرة أخرى. 😥",
+        error: "عذراً، حدث خطأ. يرجى المحاولة مرة أخرى. 😥",
         input_placeholder: "اطرح سؤالاً...",
         quick_questions: {
             summary: "لخص هذا الملف الشخصي في 3 نقاط.",
-            strengths: "ما هي نقاط قوته الرئيسية الثلاث؟",
-            fit_for_role: "هل يناسب هذا الملف الشخصي وظيفة مطور أول؟"
+            strengths: "ما هي نقاط قوتهم الثلاث الرئيسية؟",
+            fit_for_role: "هل يناسب هذا الملف الشخصي دور مطور أول؟"
         }
     },
     settings: {
@@ -626,40 +826,40 @@ export const ar = {
             arabic_short: "Ar"
         },
         theme: {
-            title: "المظهر",
+            title: "السمة",
             light: "فاتح",
             dark: "داكن",
-            system: "النظام"
+            system: "نظام"
         },
         data: {
             title: "إدارة البيانات",
-            load_dummy: "تحميل بيانات وهمية",
-            dummy_description: "املأ التطبيق بملفات شخصية نموذجية لاستكشاف جميع الميزات."
+            load_dummy: "تحميل بيانات تجريبية",
+            dummy_description: "املأ التطبيق بملفات تعريف نموذجية لاستكشاف الميزات."
         },
         connection: {
-            title: "الاتصال بالمعرف",
+            title: "اتصال المعرف",
             description: "اتصل بمعرفك لفتح الميزات أو تجاوز الحدود.",
             button: "الاتصال بالمعرف",
             title_connected: "متصل",
-            description_connected: "أنت متصل بصفتك المالك. لديك وصول غير محدود.",
+            description_connected: "أنت متصل كمالك. لديك وصول غير محدود.",
             button_disconnect: "قطع الاتصال",
-            disconnect_confirm: "هل أنت متأكد من أنك تريد قطع الاتصال؟"
+            disconnect_confirm: "هل أنت متأكد أنك تريد قطع الاتصال؟"
         }
     },
     analysis: {
         title: "جاري التحليل...",
-        subtitle: "نقدر صبركم أثناء معالجة السير الذاتية.",
-        progress_cvs: "{{progress}} / {{total}} سيرة ذاتية",
-        elapsed_time: "الوقت المنقضي: {{time}} ثانية",
-        summary_incomplete: "اكتمل التحليل. {{count}} سيرة ذاتية تفتقد إلى معلومات أساسية وقد تتطلب المراجعة.",
-        game_title: "Light Cycle",
+        subtitle: "نقدر صبرك بينما نقوم بمعالجة السير الذاتية.",
+        progress_cvs: "{{progress}} / {{total}} سير ذاتية",
+        elapsed_time: "الزمن المنقضي: {{time}} ثانية",
+        summary_incomplete: "اكتمل التحليل. {{count}} سيرة ذاتية تفتقد معلومات رئيسية وقد تحتاج إلى مراجعة.",
+        game_title: "دورة الضوء",
         game_instructions: "استخدم مفاتيح الأسهم أو الأزرار للتوجيه.",
         score: "النتيجة",
         high_score: "أعلى نتيجة",
         game_over: "انتهت اللعبة",
-        restart_game: "اضغط على Enter لإعادة اللعب",
+        restart_game: "اضغط أدخل لإعادة اللعب",
         fullscreen: "ملء الشاشة",
-        exit_fullscreen: "الخروج من ملء الشاشة",
+        exit_fullscreen: "خروج من ملء الشاشة",
         analyse_terminee: "اكتمل التحليل!",
         voir_resultats: "عرض النتائج",
         close_game: "إغلاق",
@@ -667,21 +867,21 @@ export const ar = {
     },
     common: {
         reset: "إعادة تعيين",
-        reset_confirm: "هل أنت متأكد من أنك تريد حذف جميع البيانات؟ هذا الإجراء لا يمكن التراجع عنه.",
+        reset_confirm: "هل أنت متأكد أنك تريد حذف جميع البيانات؟ هذا الإجراء لا يمكن التراجع عنه.",
         reset_confirm_action: "تأكيد؟",
         export: "تصدير",
         storageError: "خطأ في التخزين",
         info: "معلومات",
-        analyzed_in: "تم التحليل في {{duration}} ثانية",
-        name_not_available: "الاسم غير متوفر",
-        category_not_available: "الفئة غير متوفرة",
-        location_not_available: "الموقع غير متوفر",
-        email_not_available: "البريد الإلكتروني غير متوفر",
-        title_not_available: "العنوان غير متوفر",
-        company_not_available: "الشركة غير متوفرة",
-        dates_not_available: "التواريخ غير متوفرة",
-        degree_not_available: "الشهادة غير متوفرة",
-        school_not_available: "المدرسة غير متوفرة",
+        analyzed_in: "تم تحليله في {{duration}} ثانية",
+        name_not_available: "الاسم غير متاح",
+        category_not_available: "الفئة غير مقدمة",
+        location_not_available: "الموقع غير مقدم",
+        email_not_available: "البريد الإلكتروني غير مقدم",
+        title_not_available: "المسمى الوظيفي غير مقدم",
+        company_not_available: "الشركة غير مقدمة",
+        dates_not_available: "التواريخ غير مقدمة",
+        degree_not_available: "الدرجة العلمية غير مقدمة",
+        school_not_available: "المدرسة غير مقدمة",
         name: "الاسم",
         import: "استيراد",
         actions: "إجراءات",
@@ -689,25 +889,36 @@ export const ar = {
         all: "الكل"
     },
     errors: {
-        storageFull: "مساحة التخزين ممتلئة. يرجى إعادة تعيين البيانات لتفريغ المساحة.",
+        storageFull: "التخزين ممتلئ. يرجى إعادة تعيين البيانات لتوفير مساحة.",
         saveError: "خطأ في الحفظ",
         unknownSaveError: "حدث خطأ غير معروف أثناء الحفظ.",
-        limit_exceeded: "تم الوصول إلى الحد اليومي لعمليات التحليل. يمكنك فقط إجراء {{limit}} عملية تحليل في اليوم.",
+        limit_exceeded: "تم الوصول إلى حد التحليل اليومي. يمكنك إجراء {{limit}} عمليات تحليل فقط في اليوم.",
         upload_limit_reached: "لقد وصلت إلى حد 5 ملفات. يرجى التحليل أو إعادة التعيين لإضافة المزيد.",
         upload_selection_ignored: "تم الوصول إلى حد 5 ملفات. تمت إضافة أول {{count}} ملفات فقط.",
         invalid_json: "تنسيق JSON غير صالح."
     },
     quota_modal: {
         title: "تم الوصول إلى حد الحصة",
-        description: "يرجى الاتصال بمعرف المستخدم الخاص بك للمتابعة، أو الاتصال بالدعم.",
+        description: "يرجى تسجيل الدخول بمعرف المستخدم الخاص بك للمتابعة أو الاتصال بالدعم.",
         user_id: "معرف المستخدم",
-        user_id_placeholder: "المعرف الخاص بك",
+        user_id_placeholder: "معرفك",
         email: "البريد الإلكتروني",
         email_placeholder: "بريدك الإلكتروني",
         remember_me: "تذكرني",
         connect: "اتصال",
         close: "إغلاق",
-        contact_support: "الاتصال بالدعم عبر WhatsApp",
+        contact_support: "الاتصال بالدعم عبر واتساب",
         error: "معرف المستخدم أو البريد الإلكتروني غير صحيح."
+    },
+    toast: {
+        added_favorite: "تمت الإضافة إلى المفضلة",
+        removed_favorite: "تمت الإزالة من المفضلة",
+        added_pipeline: "تمت الإضافة إلى خط الأنابيب",
+        removed_pipeline: "تمت الإزالة من خط الأنابيب",
+        saved_history: "تم حفظ خط الأنابيب في السجل",
+        updated_history: "تم تحديث خط الأنابيب في السجل",
+        export_success: "تم التصدير بنجاح",
+        analysis_complete: "اكتمل التحليل",
+        files_added: "تمت إضافة الملفات"
     }
 };

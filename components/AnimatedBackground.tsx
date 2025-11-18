@@ -2,33 +2,13 @@
 // FIX: Switched to namespace React import to correctly populate the global JSX namespace.
 import * as React from 'react';
 
+/**
+ * Placeholder component for AnimatedBackground.
+ * The logic in this unused component was incomplete and syntactically complex, 
+ * which can sometimes cause issues with build tools. 
+ * To eliminate it as a potential source of the "Failed to load" error, 
+ * it has been simplified to a minimal, valid React component that does nothing.
+ */
 export const AnimatedBackground: React.FC = () => {
-    React.useEffect(() => {
-        const container = document.getElementById('particle-container');
-        if (!container) return;
-
-        // Clean up any existing particles before adding new ones
-        while (container.firstChild) {
-            container.removeChild(container.firstChild);
-        }
-
-        const particleCount = 40;
-        const fragment = document.createDocumentFragment();
-
-        for (let i = 0; i < particleCount; i++) {
-            const particle = document.createElement('div');
-            particle.classList.add('particle');
-            
-            const size = Math.random() * 8 + 2;
-            particle.style.width = `${size}px`;
-            particle.style.height = `${size}px`;
-            
-            const xEnd = Math.random() * 90 + 5;
-            // FIX: Corrected a truncated line that was causing a syntax error.
-            const yEnd = Math.random() * 90;
-            // NOTE: The file was truncated here. The component has been made syntactically valid.
-        }
-    }, []);
-
     return null;
 };

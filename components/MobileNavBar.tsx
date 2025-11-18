@@ -1,5 +1,6 @@
+
 // A new component for a fixed bottom navigation bar on mobile devices.
-// FIX: Added the missing React import. This is required for components that use JSX syntax and resolves a "React is not defined" compilation error that was preventing the app from loading.
+// FIX: Added 'import * as React from "react";'. This is required for components that use JSX syntax and resolves "React is not defined" compilation errors and subsequent JSX intrinsic element type errors.
 import * as React from 'react';
 import { Icon } from './icons';
 import { View } from '../types';
@@ -14,14 +15,22 @@ interface MobileNavBarProps {
 export const MobileNavBar: React.FC<MobileNavBarProps> = ({ currentView, setCurrentView, isVisible }) => {
   const { t } = useTranslation();
 
-  const navItems = [
+  // Define all items
+  const allNavItems = [
     { id: 'upload', label: t('sidebar.upload'), icon: 'upload' },
     { id: 'dashboard', label: t('sidebar.dashboard'), icon: 'dashboard' },
+    { id: 'recruitment', label: t('sidebar.recruitment'), icon: 'users' },
+    { id: 'history', label: t('sidebar.history'), icon: 'history' },
     { id: 'ai', label: t('sidebar.ai_assistant'), icon: 'bot' },
     { id: 'favorites', label: t('sidebar.favorites'), icon: 'heart' },
     { id: 'compare', label: t('sidebar.compare'), icon: 'compare' },
     { id: 'settings', label: t('sidebar.settings'), icon: 'settings' },
   ];
+
+  // Filter out Pipeline, History, and Settings for mobile view as requested
+  const navItems = allNavItems.filter(item => 
+    !['recruitment', 'history', 'settings'].includes(item.id)
+  );
   
   // FIX: Fixed bug where navbar would disappear on scroll by ensuring it is always visible.
   return (
