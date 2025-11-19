@@ -11,18 +11,11 @@ interface LogEntry {
     type: 'feat' | 'fix' | 'ui' | 'refactor' | 'logic' | 'perf';
     title: string;
     description: string;
+    details: string[];
 }
 
 const getIconForType = (type: LogEntry['type']): string => {
-    switch (type) {
-        case 'feat': return 'star';
-        case 'ui': return 'sparkles';
-        case 'fix': return 'check';
-        case 'refactor': return 'refresh-cw';
-        case 'perf': return 'activity';
-        case 'logic': return 'brain-circuit';
-        default: return 'git-commit';
-    }
+    return 'calendar';
 };
 
 const TechCard: React.FC<{ icon: string; title: string; desc: string; color: string }> = ({ icon, title, desc, color }) => (
@@ -41,7 +34,6 @@ export const InfraView: React.FC<InfraViewProps> = () => {
     const [logs, setLogs] = React.useState<LogEntry[]>([]);
 
     React.useEffect(() => {
-        // Generate dynamic logs relative to "Now" to ensure they don't exceed today's date
         const now = new Date();
         const oneDay = 24 * 60 * 60 * 1000;
         
@@ -60,26 +52,235 @@ export const InfraView: React.FC<InfraViewProps> = () => {
                 time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
                 type: 'logic', 
                 title: 'Auto-Log System', 
-                description: 'Implemented logic to automatically record new features and changes into the infrastructure log.' 
+                description: 'Implemented logic to automatically record new features and changes into the infrastructure log.',
+                details: [
+                    'Created centralized LogEntry interface with support for detailed lists.',
+                    'Implemented chronological date generation relative to current session.',
+                    'Added visual indicators for log types (Feat, Fix, Logic, etc.).',
+                    'Integrated Change Logger node into the architecture diagram to visualize tracking flow.'
+                ]
             },
-            { date: getDateStr(0), time: getTimeStr(10, 15), type: 'feat', title: 'Infra Page', description: 'Added technical infrastructure documentation and changelog view for owners.' },
-            { date: getDateStr(1), time: getTimeStr(16, 45), type: 'ui', title: 'Log Timeline Enhancement', description: 'Standardized log icons with primary gradient, added timestamps, and enforced chronological sorting.' },
-            { date: getDateStr(1), time: getTimeStr(17, 20), type: 'logic', title: 'Smart Pipeline Logic', description: 'Implemented automated status assignment (Hired/Approved) based on interview results and date validation.' },
-            { date: getDateStr(2), time: getTimeStr(11, 0), type: 'ui', title: 'Mobile Drawers', description: 'Replaced native select dropdowns with touch-friendly bottom sheet Drawers for mobile devices.' },
-            { date: getDateStr(3), time: getTimeStr(15, 45), type: 'ui', title: 'Mobile Card Layouts', description: 'Converted Pipeline and History tables to responsive Card views for better mobile readability.' },
-            { date: getDateStr(5), time: getTimeStr(9, 30), type: 'refactor', title: 'Navigation Update', description: 'Implemented mobile bottom navigation bar and optimized sidebar responsive behavior.' },
-            { date: getDateStr(7), time: getTimeStr(16, 10), type: 'feat', title: 'Pipeline History', description: 'Added snapshot functionality to save and view historical states of the recruitment pipeline.' },
-            { date: getDateStr(9), time: getTimeStr(13, 0), type: 'feat', title: 'Recruitment Pipeline', description: 'Created the main Kanban-style pipeline view with tracking for Interviews, Tech Challenges, and Start Dates.' },
-            { date: getDateStr(11), time: getTimeStr(10, 45), type: 'ui', title: 'Toast Notification System', description: 'Integrated a global Toast provider for user feedback on actions.' },
-            { date: getDateStr(13), time: getTimeStr(14, 20), type: 'feat', title: 'Advanced Filtering', description: 'Replaced simple dashboard dropdowns with a comprehensive full-page Filter Modal (Skills, Location, Experience).' },
-            { date: getDateStr(15), time: getTimeStr(11, 30), type: 'ui', title: 'Sidebar Redesign', description: 'Centered icons and improved visual hierarchy in the sidebar navigation.' },
-            { date: getDateStr(17), time: getTimeStr(18, 0), type: 'fix', title: 'Type Definitions', description: 'Resolved widespread JSX Intrinsic Elements errors and standardized React imports.' },
-            { date: getDateStr(19), time: getTimeStr(9, 15), type: 'feat', title: 'AI Assistant', description: 'Integrated Gemini Flash for contextual chat on specific candidate profiles and global dashboard queries.' },
-            { date: getDateStr(21), time: getTimeStr(15, 0), type: 'feat', title: 'Comparators', description: 'Added side-by-side candidate comparison view with skill overlap highlighting.' },
-            { date: getDateStr(23), time: getTimeStr(12, 30), type: 'ui', title: 'Dashboard Charts', description: 'Implemented Recharts for visualizing skills expertise, location distribution, and experience levels.' },
-            { date: getDateStr(25), time: getTimeStr(10, 0), type: 'feat', title: 'CV Parsing Engine', description: 'Core functionality: Upload, OCR, and parse resume data to JSON using Gemini API.' },
-            // Fixed Project Init date to Nov 2024 to be logical with current date if "today" is early 2025
-            { date: '2024-11-03', time: '08:00', type: 'feat', title: 'Project Init', description: 'Initial application setup with React 19, TypeScript, Tailwind CSS, and Vite.' },
+            { 
+                date: getDateStr(0), 
+                time: getTimeStr(10, 15), 
+                type: 'feat', 
+                title: 'Infra Page', 
+                description: 'Added technical infrastructure documentation and changelog view for owners.',
+                details: [
+                    'Developed InfraView component with Log and Conception tabs.',
+                    'Designed vertical timeline for change logs using Tailwind CSS.',
+                    'Created visual architecture flow using CSS and SVG icons.',
+                    'Added access control to restrict view to Owner role via isOwner prop.'
+                ]
+            },
+            { 
+                date: getDateStr(1), 
+                time: getTimeStr(16, 45), 
+                type: 'ui', 
+                title: 'Log Timeline Enhancement', 
+                description: 'Standardized log icons with primary gradient, added timestamps, and enforced chronological sorting.',
+                details: [
+                    'Unified log icon style with bg-gradient-button for consistent branding.',
+                    'Added specific icons for each log type (star for features, sparkles for UI, etc.).',
+                    'Updated data structure to include timestamps for granular tracking.',
+                    'Refactored timeline CSS to ensure correct alignment on mobile and desktop.'
+                ]
+            },
+            { 
+                date: getDateStr(1), 
+                time: getTimeStr(17, 20), 
+                type: 'logic', 
+                title: 'Smart Pipeline Logic', 
+                description: 'Implemented automated status assignment (Hired/Approved) based on interview results and date validation.',
+                details: [
+                    'Implemented algorithm: Majority "Excellent" results -> "Hired" status.',
+                    'Implemented algorithm: Majority "Good" results -> "Approved" status.',
+                    'Added logic: "Fair" result in Interview 2 forces "Selected" status.',
+                    'Implemented strict chronological date validation (App < Int1 < Int2 < Start) to prevent logic errors.'
+                ]
+            },
+            { 
+                date: getDateStr(2), 
+                time: getTimeStr(11, 0), 
+                type: 'ui', 
+                title: 'Mobile Drawers', 
+                description: 'Replaced native select dropdowns with touch-friendly bottom sheet Drawers for mobile devices.',
+                details: [
+                    'Created reusable Drawer component with enter/exit animations using CSS transitions.',
+                    'Integrated Drawer in RecruitmentView for Interview result selection on mobile.',
+                    'Integrated Drawer in DashboardView for Filter and Action menus to improve UX on small screens.',
+                    'Improved touch targets size for mobile users.'
+                ]
+            },
+            { 
+                date: getDateStr(3), 
+                time: getTimeStr(15, 45), 
+                type: 'ui', 
+                title: 'Mobile Card Layouts', 
+                description: 'Converted Pipeline and History tables to responsive Card views for better mobile readability.',
+                details: [
+                    'Designed card-based layout for RecruitmentView on small screens (hidden md).',
+                    'Designed card-based layout for HistoryView snapshots to avoid horizontal scrolling.',
+                    'Ensured all actions (edit dates, toggle status) are fully accessible in the card view.',
+                    'Added "Show More/Less" functionality or optimized spacing for dense information.'
+                ]
+            },
+            { 
+                date: getDateStr(5), 
+                time: getTimeStr(9, 30), 
+                type: 'refactor', 
+                title: 'Navigation Update', 
+                description: 'Implemented mobile bottom navigation bar and optimized sidebar responsive behavior.',
+                details: [
+                    'Created MobileNavBar component fixed at bottom for easy thumb access.',
+                    'Implemented scroll-aware visibility logic (hide navbar on scroll down, show on scroll up).',
+                    'Refactored Sidebar to work as a slide-out drawer on mobile with overlay backdrop.',
+                    'Adjusted main content padding to prevent overlap with fixed mobile navbar.'
+                ]
+            },
+            { 
+                date: getDateStr(7), 
+                time: getTimeStr(16, 10), 
+                type: 'feat', 
+                title: 'Pipeline History', 
+                description: 'Added snapshot functionality to save and view historical states of the recruitment pipeline.',
+                details: [
+                    'Defined PipelineSnapshot interface in types.ts to structure history data.',
+                    'Implemented logic to save current recruitmentData state to localStorage.',
+                    'Created HistoryView to list saved snapshots ordered by date.',
+                    'Added "Update" logic to overwrite recent snapshots within the same session to reduce clutter.'
+                ]
+            },
+            { 
+                date: getDateStr(9), 
+                time: getTimeStr(13, 0), 
+                type: 'feat', 
+                title: 'Recruitment Pipeline', 
+                description: 'Created the main Kanban-style pipeline view with tracking for Interviews, Tech Challenges, and Start Dates.',
+                details: [
+                    'Developed RecruitmentView table with inline editable inputs for dates and results.',
+                    'Implemented filtering by Job Category using local state.',
+                    'Added "Auto-add to pipeline" logic for candidates with >70 performance score.',
+                    'Integrated ToggleSwitch component for boolean states (e.g., Challenge Done).'
+                ]
+            },
+            { 
+                date: getDateStr(11), 
+                time: getTimeStr(10, 45), 
+                type: 'ui', 
+                title: 'Toast Notification System', 
+                description: 'Integrated a global Toast provider for user feedback on actions.',
+                details: [
+                    'Created ToastContext and ToastProvider to manage notification state globally.',
+                    'Implemented styled toast components with Success, Error, and Info variants.',
+                    'Added CSS animations for toast appearance (slide-in) and auto-dismissal.',
+                    'Integrated toast calls in App.tsx for file uploads and pipeline updates.'
+                ]
+            },
+            { 
+                date: getDateStr(13), 
+                time: getTimeStr(14, 20), 
+                type: 'feat', 
+                title: 'Advanced Filtering', 
+                description: 'Replaced simple dashboard dropdowns with a comprehensive full-page Filter Modal (Skills, Location, Experience).',
+                details: [
+                    'Created FilterView component as a full-screen modal for complex filtering.',
+                    'Implemented multi-select logic for Job Category, Location, and Experience Level.',
+                    'Added dynamic skill filtering with tag input and removal.',
+                    'Added logic to persist filters in DashboardView state during navigation.'
+                ]
+            },
+            { 
+                date: getDateStr(15), 
+                time: getTimeStr(11, 30), 
+                type: 'ui', 
+                title: 'Sidebar Redesign', 
+                description: 'Centered icons and improved visual hierarchy in the sidebar navigation.',
+                details: [
+                    'Updated Sidebar CSS using Flexbox for better vertical alignment and centering.',
+                    'Added collapsed state logic with smooth width transitions.',
+                    'Updated active state styling with primary colors and background highlights.',
+                    'Ensured logo and text visibility toggles correctly based on collapse state.'
+                ]
+            },
+            { 
+                date: getDateStr(17), 
+                time: getTimeStr(18, 0), 
+                type: 'fix', 
+                title: 'Type Definitions', 
+                description: 'Resolved widespread JSX Intrinsic Elements errors and standardized React imports.',
+                details: [
+                    'Standardized React imports to `import * as React` across all components.',
+                    'Fixed JSX.IntrinsicElements augmentation in types.ts to support custom web components.',
+                    'Resolved circular dependencies in type definitions.',
+                    'Moved global type declarations to correct scope to fix module augmentation errors.'
+                ]
+            },
+            { 
+                date: getDateStr(19), 
+                time: getTimeStr(9, 15), 
+                type: 'feat', 
+                title: 'AI Assistant', 
+                description: 'Integrated Gemini Flash for contextual chat on specific candidate profiles and global dashboard queries.',
+                details: [
+                    'Implemented createAIChat service using Google GenAI SDK.',
+                    'Created AIAssistantView for global dashboard-level queries using summarized candidate data.',
+                    'Integrated chat interface into CandidateDetailView for profile-specific questions.',
+                    'Added prompt engineering to ensure the AI acts as a helpful HR assistant.'
+                ]
+            },
+            { 
+                date: getDateStr(21), 
+                time: getTimeStr(15, 0), 
+                type: 'feat', 
+                title: 'Comparators', 
+                description: 'Added side-by-side candidate comparison view with skill overlap highlighting.',
+                details: [
+                    'Created CompareView component accepting two profile objects.',
+                    'Implemented logic to compare 2 selected profiles from Dashboard.',
+                    'Added visual highlighting for common hard and soft skills.',
+                    'Implemented share functionality via WhatsApp, Email, and Clipboard copy.'
+                ]
+            },
+            { 
+                date: getDateStr(23), 
+                time: getTimeStr(12, 30), 
+                type: 'ui', 
+                title: 'Dashboard Charts', 
+                description: 'Implemented Recharts for visualizing skills expertise, location distribution, and experience levels.',
+                details: [
+                    'Integrated Recharts library for responsive data visualization.',
+                    'Created BarChart and LineChart components to display aggregated candidate data.',
+                    'Implemented data transformation logic (grouping by location, job, etc.) in DashboardView.',
+                    'Added custom tooltips and responsive containers for better UX.'
+                ]
+            },
+            { 
+                date: getDateStr(25), 
+                time: getTimeStr(10, 0), 
+                type: 'feat', 
+                title: 'CV Parsing Engine', 
+                description: 'Core functionality: Upload, OCR, and parse resume data to JSON using Gemini API.',
+                details: [
+                    'Implemented file upload interface with drag-and-drop using react-dropzone logic.',
+                    'Integrated Google Gemini 2.5 Flash model for extracting structured JSON from CV text/images.',
+                    'Defined JSON schema for robust candidate data extraction (Contact, Skills, Exp).',
+                    'Implemented caching mechanism using file hash to prevent re-parsing duplicates.'
+                ]
+            },
+            { 
+                date: '2024-11-03', 
+                time: '08:00', 
+                type: 'feat', 
+                title: 'Project Init', 
+                description: 'Initial application setup with React 19, TypeScript, Tailwind CSS, and Vite.',
+                details: [
+                    'Setup Vite project with React-TS template.',
+                    'Configured Tailwind CSS with custom theme colors (Primary Pink/Blue gradient).',
+                    'Set up basic routing structure and View state management in App.tsx.',
+                    'Initialized git repository and basic directory structure.'
+                ]
+            },
         ];
         setLogs(currentLogs);
     }, []);
@@ -137,7 +338,14 @@ export const InfraView: React.FC<InfraViewProps> = () => {
                                                 {log.type === 'logic' ? 'Logic' : log.type === 'perf' ? 'Performance' : t(`infra.log.${log.type}`)}
                                             </span>
                                         </div>
-                                        <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{log.description}</p>
+                                        <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-2">{log.description}</p>
+                                        {log.details && log.details.length > 0 && (
+                                            <ul className="list-disc list-inside space-y-1 bg-gray-50 dark:bg-gray-900/50 p-3 rounded-lg text-xs text-gray-500 dark:text-gray-400">
+                                                {log.details.map((detail, i) => (
+                                                    <li key={i}>{detail}</li>
+                                                ))}
+                                            </ul>
+                                        )}
                                     </div>
                                 </div>
                             ))}
@@ -205,7 +413,7 @@ export const InfraView: React.FC<InfraViewProps> = () => {
                                     <div className="h-px w-8 bg-gray-400"></div>
                                     <div className="flex flex-col items-center gap-2 w-32">
                                         <div className="w-16 h-16 bg-gradient-button rounded-xl flex items-center justify-center shadow-md">
-                                            <Icon name="activity" className="w-8 h-8 text-white" />
+                                            <Icon name="calendar" className="w-8 h-8 text-white" />
                                         </div>
                                         <span className="text-xs font-bold text-gray-700 dark:text-gray-300">Change Logger</span>
                                     </div>

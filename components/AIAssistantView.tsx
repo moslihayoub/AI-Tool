@@ -1,3 +1,4 @@
+
 // A new component for a full-page AI assistant for dashboard-level queries.
 // FIX: Added 'import * as React from "react";'. This is required for components that use JSX syntax and resolves "React is not defined" compilation errors and subsequent JSX intrinsic element type errors.
 import * as React from 'react';
@@ -92,7 +93,7 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ candidates }) 
     }
 
     return (
-        <div className="h-full flex flex-col pb-16 md:pb-0">
+        <div className="h-full flex flex-col">
             <header className="p-4 sm:p-8 border-b dark:border-gray-800 flex-shrink-0">
                 <h2 className="text-3xl font-bold font-display text-gray-800 dark:text-gray-100">{t('ai_assistant.dashboard_title')}</h2>
                 <p className="text-gray-500 dark:text-gray-400 mt-1">{t('ai_assistant.dashboard_subtitle')}</p>

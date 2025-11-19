@@ -1,4 +1,3 @@
-
 import * as React from 'react';
 
 // This file contains shared type definitions for the application.
@@ -11,10 +10,7 @@ declare global {
   interface Window {
     aistudio?: AIStudio;
   }
-}
 
-// Extend React's JSX namespace to include the custom element
-declare module 'react' {
   namespace JSX {
     interface IntrinsicElements {
       'dotlottie-wc': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
@@ -23,6 +19,7 @@ declare module 'react' {
         loop?: boolean;
         style?: React.CSSProperties;
       };
+      [elemName: string]: any;
     }
   }
 }

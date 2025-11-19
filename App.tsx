@@ -1,5 +1,6 @@
 
 
+
 // FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
 // FIX: Switched to namespace React import to correctly populate the global JSX namespace.
 import * as React from 'react';
@@ -236,6 +237,10 @@ function AppContent() {
     });
     
     const mainContentRef = React.useRef<HTMLElement>(null);
+    const [showBars, setShowBars] = React.useState(true);
+    const lastScrollY = React.useRef(0);
+    // Fix: Use ReturnType<typeof setTimeout> instead of NodeJS.Timeout to avoid missing types/node dependency
+    const scrollTimeout = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
 
     React.useEffect(() => {
@@ -923,9 +928,9 @@ function AppContent() {
             case 'upload':
                 return <UploadView cvFiles={cvFiles} onAddFiles={handleAddFiles} onStartAnalysis={handleStartAnalysis} onClearFile={handleClearFile} onClearAllFiles={handleReset} isAnalyzing={isAnalyzing} storageError={storageError} isOwner={isOwner} analysisLimit={analysisLimit} limitError={limitError} uploadLimit={isOwner ? Infinity : UPLOAD_SELECTION_LIMIT} />;
             case 'dashboard':
-                return <DashboardView candidates={candidateProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} comparisonList={comparisonList} onToggleCompare={handleToggleCompare} onImportProfiles={handleImportProfiles} pipelineCandidateIds={recruitmentData.map(d => d.candidateId)} onTogglePipeline={handleTogglePipeline}/>;
+                return <DashboardView candidates={candidateProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} comparisonList={comparisonList} onToggleCompare={handleToggleCompare} onImportProfiles={handleImportProfiles} pipelineCandidateIds={recruitmentData.map(d => d.candidateId)} onTogglePipeline={handleTogglePipeline} showBars={showBars} />;
             case 'favorites':
-                return <DashboardView candidates={favoriteProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} isFavoritesView comparisonList={comparisonList} onToggleCompare={handleToggleCompare} onImportProfiles={handleImportProfiles} pipelineCandidateIds={recruitmentData.map(d => d.candidateId)} onTogglePipeline={handleTogglePipeline} />;
+                return <DashboardView candidates={favoriteProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} isFavoritesView comparisonList={comparisonList} onToggleCompare={handleToggleCompare} onImportProfiles={handleImportProfiles} pipelineCandidateIds={recruitmentData.map(d => d.candidateId)} onTogglePipeline={handleTogglePipeline} showBars={showBars} />;
             case 'ai':
                 return <AIAssistantView candidates={candidateProfiles} />;
             case 'recruitment':
@@ -956,6 +961,31 @@ function AppContent() {
 
     const isFullScreenView = !!selectedProfileId;
 
+    const handleScroll = () => {
+        const currentScrollY = mainContentRef.current?.scrollTop || 0;
+        
+        // Detect scroll direction
+        if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
+            setShowBars(false);
+        } else if (currentScrollY < lastScrollY.current) {
+            // Optionally show immediately on scroll up, or wait for stop
+            // For now, keeping logic simple: hide on scroll down.
+            // If we want to show on "stop", the timeout below handles it.
+            // If we want to show on scroll up immediately:
+            // setShowBars(true);
+        }
+        lastScrollY.current = currentScrollY;
+
+        // Detect scroll stop
+        if (scrollTimeout.current) {
+            clearTimeout(scrollTimeout.current);
+        }
+        
+        scrollTimeout.current = setTimeout(() => {
+            setShowBars(true);
+        }, 200); // Show bars after 200ms of inactivity
+    };
+
     return (
         <div className="h-screen text-gray-800 dark:text-gray-200 bg-white dark:bg-black">
             <div className="flex h-full w-full">
@@ -972,7 +1002,7 @@ function AppContent() {
                     isOwner={isOwner}
                 />
                 <div className="flex-1 flex flex-col overflow-hidden">
-                    <header className={`md:hidden flex items-center justify-between rtl:flex-row-reverse p-4 border-b dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-20`}>
+                    <header className={`md:hidden flex items-center justify-between rtl:flex-row-reverse p-4 border-b dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm fixed top-0 left-0 right-0 z-20 transition-transform duration-300 ${showBars ? 'translate-y-0' : '-translate-y-full'}`}>
                         <>
                             <img src={logoLight} alt="ParseLIQ HR Logo" className="h-8 w-auto dark:hidden" />
                             <img src={logoDark} alt="ParseLIQ HR Logo" className="h-8 w-auto hidden dark:block" />
@@ -1003,13 +1033,17 @@ function AppContent() {
                             </button>
                         </div>
                     ) : null}
-                    <main ref={mainContentRef} className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 pb-16 md:pb-0">
+                    <main 
+                        ref={mainContentRef} 
+                        onScroll={handleScroll}
+                        className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 pb-16 md:pb-0 pt-16 md:pt-0"
+                    >
                         {renderContent()}
                     </main>
                      <MobileNavBar 
                         currentView={view}
                         setCurrentView={(v) => { setView(v); setSelectedProfileId(null); }}
-                        isVisible={!isMobileSidebarOpen && !isFullScreenView}
+                        isVisible={!isMobileSidebarOpen && !isFullScreenView && showBars}
                     />
                 </div>
             </div>

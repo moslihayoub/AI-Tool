@@ -109,6 +109,7 @@ export const RecruitmentView: React.FC<RecruitmentViewProps> = ({ candidates, re
     const { showToast } = useToast();
     const [jobFilter, setJobFilter] = React.useState<string>('all');
     const [isExportOpen, setIsExportOpen] = React.useState(false);
+    const [isFilterDrawerOpen, setIsFilterDrawerOpen] = React.useState(false);
     const exportRef = React.useRef<HTMLDivElement>(null);
 
     // Mobile Drawer State
@@ -246,7 +247,7 @@ export const RecruitmentView: React.FC<RecruitmentViewProps> = ({ candidates, re
         { value: 'Excellent', label: t('recruitment.results.excellent'), color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' },
         { value: 'Good', label: t('recruitment.results.good'), color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' },
         { value: 'Fair', label: t('recruitment.results.fair'), color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' },
-        { value: 'Medium', label: t('recruitment.results.medium'), color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300' },
+        { value: 'Medium', label: t('recruitment.results.medium'), color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-700' },
     ];
 
     if (pipelineData.length === 0) {
@@ -270,32 +271,42 @@ export const RecruitmentView: React.FC<RecruitmentViewProps> = ({ candidates, re
                     <h2 className="text-3xl font-bold font-display text-gray-800 dark:text-gray-100">{t('recruitment.title')}</h2>
                     <p className="text-gray-500 dark:text-gray-400 mt-1">{t('recruitment.subtitle')}</p>
                 </div>
-                <div className="flex flex-wrap items-center gap-3">
-                    <div className="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2">
+                <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                    <div className="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 w-full sm:w-auto">
                         <span className="text-sm font-semibold text-gray-600 dark:text-gray-300 whitespace-nowrap">{t('recruitment.filter_jobs')}:</span>
+                        {/* Desktop Select */}
                         <select 
                             value={jobFilter} 
                             onChange={(e) => setJobFilter(e.target.value)}
-                            className="bg-transparent text-gray-900 dark:text-gray-100 text-sm focus:outline-none max-w-[150px]"
+                            className="hidden md:block bg-transparent text-gray-900 dark:text-gray-100 text-sm focus:outline-none max-w-[150px]"
                         >
                             <option value="all">{t('recruitment.all_jobs')}</option>
                             {allJobCategories.map(job => (
                                 <option key={job} value={job}>{job}</option>
                             ))}
                         </select>
+                        {/* Mobile Button for Drawer */}
+                        <button 
+                            onClick={() => setIsFilterDrawerOpen(true)}
+                            className="md:hidden flex items-center justify-between gap-2 bg-transparent text-gray-900 dark:text-gray-100 text-sm font-medium w-full"
+                        >
+                            <span className="truncate max-w-[120px]">{jobFilter === 'all' ? t('recruitment.all_jobs') : jobFilter}</span>
+                            <Icon name="chevron-down" className="w-4 h-4 text-gray-500" />
+                        </button>
                     </div>
                     
-                    <div className="relative" ref={exportRef}>
+                    <div className="relative w-full sm:w-auto" ref={exportRef}>
                         <button 
                             onClick={() => setIsExportOpen(!isExportOpen)} 
-                            className="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                         >
                             <Icon name="download" className="w-5 h-5"/>
                             <span>{t('common.export')}</span>
                             <Icon name="chevron-down" className="w-4 h-4 ml-1"/>
                         </button>
+                        {/* Desktop Dropdown */}
                         {isExportOpen && (
-                            <div className="absolute top-full right-0 mt-2 w-40 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-lg shadow-xl z-20 py-1">
+                            <div className="hidden md:block absolute top-full right-0 mt-2 w-40 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-lg shadow-xl z-20 py-1">
                                 <button onClick={exportToCsv} className="w-full text-left flex items-center gap-3 p-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <Icon name="export" className="w-4 h-4"/> CSV
                                 </button>
@@ -308,7 +319,7 @@ export const RecruitmentView: React.FC<RecruitmentViewProps> = ({ candidates, re
 
                     <button 
                         onClick={onSaveSnapshot}
-                        className={`flex items-center gap-2 text-white font-bold px-4 py-2 rounded-lg hover:opacity-90 transition-opacity ${lastSnapshotId ? 'bg-green-600 hover:bg-green-700' : 'bg-gradient-button'}`}
+                        className={`w-full sm:w-auto flex items-center justify-center gap-2 text-white font-bold px-4 py-2 rounded-lg hover:opacity-90 transition-opacity ${lastSnapshotId ? 'bg-green-600 hover:bg-green-700' : 'bg-gradient-button'}`}
                     >
                         <Icon name="save" className="w-5 h-5"/>
                         <span>{lastSnapshotId ? t('recruitment.update_pipeline') : t('recruitment.save_pipeline')}</span>
@@ -631,7 +642,7 @@ export const RecruitmentView: React.FC<RecruitmentViewProps> = ({ candidates, re
                 ))}
             </div>
             
-            {/* Mobile Selection Drawer */}
+            {/* Mobile Selection Drawer for Result */}
             <Drawer 
                 isOpen={!!activeDrawer} 
                 onClose={() => setActiveDrawer(null)} 
@@ -653,6 +664,47 @@ export const RecruitmentView: React.FC<RecruitmentViewProps> = ({ candidates, re
                             {opt.label}
                         </button>
                     ))}
+                </div>
+            </Drawer>
+
+            {/* Mobile Filter Drawer */}
+             <Drawer 
+                isOpen={isFilterDrawerOpen} 
+                onClose={() => setIsFilterDrawerOpen(false)} 
+                title={t('recruitment.filter_jobs')}
+            >
+                <div className="flex flex-col gap-2">
+                    <button
+                        onClick={() => { setJobFilter('all'); setIsFilterDrawerOpen(false); }}
+                        className={`p-3 rounded-lg text-left font-medium transition-colors ${jobFilter === 'all' ? 'bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-200'}`}
+                    >
+                        {t('recruitment.all_jobs')}
+                    </button>
+                    {allJobCategories.map(job => (
+                        <button
+                            key={job}
+                            onClick={() => { setJobFilter(job); setIsFilterDrawerOpen(false); }}
+                            className={`p-3 rounded-lg text-left font-medium transition-colors ${jobFilter === job ? 'bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300' : 'bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-200'}`}
+                        >
+                            {job}
+                        </button>
+                    ))}
+                </div>
+            </Drawer>
+
+            {/* Mobile Export Drawer */}
+             <Drawer 
+                isOpen={isExportOpen && window.innerWidth < 768} 
+                onClose={() => setIsExportOpen(false)} 
+                title={t('common.export')}
+            >
+                <div className="flex flex-col gap-2">
+                    <button onClick={exportToCsv} className="w-full text-left flex items-center gap-3 p-4 text-base bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <Icon name="export" className="w-5 h-5"/> CSV
+                    </button>
+                    <button onClick={exportToJson} className="w-full text-left flex items-center gap-3 p-4 text-base bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <Icon name="export" className="w-5 h-5"/> JSON
+                    </button>
                 </div>
             </Drawer>
         </div>

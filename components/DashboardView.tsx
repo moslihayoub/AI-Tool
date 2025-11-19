@@ -1,4 +1,6 @@
 
+
+
 // FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
 // FIX: Switched to namespace React import to correctly populate the global JSX namespace.
 import * as React from 'react';
@@ -7,6 +9,7 @@ import { Icon } from './icons';
 import { FilterView } from './FilterView';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList, LineChart, Line } from 'recharts';
 import { useTranslation } from '../i18n';
+import { Drawer } from './Drawer';
 
 interface DashboardViewProps {
   candidates: CandidateProfile[];
@@ -20,6 +23,7 @@ interface DashboardViewProps {
   onImportProfiles: (profiles: Partial<CandidateProfile>[]) => void;
   pipelineCandidateIds: string[];
   onTogglePipeline: (candidateId: string) => void;
+  showBars?: boolean;
 }
 
 const COLORS = ['#3b82f6', '#ec4899', '#f59e0b', '#10b981', '#8b5cf6', '#ef4444'];
@@ -181,7 +185,7 @@ const EmptyChartState: React.FC = () => {
     );
 };
 
-export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSelectCandidate, onReset, favorites, onToggleFavorite, isFavoritesView = false, comparisonList, onToggleCompare, onImportProfiles, pipelineCandidateIds, onTogglePipeline }) => {
+export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSelectCandidate, onReset, favorites, onToggleFavorite, isFavoritesView = false, comparisonList, onToggleCompare, onImportProfiles, pipelineCandidateIds, onTogglePipeline, showBars = true }) => {
     const { t } = useTranslation();
     const [filters, setFilters] = React.useState<FilterCriteria>({ jobCategories: [], locations: [], experienceLevels: [], skills: [] });
     const [isFilterViewOpen, setIsFilterViewOpen] = React.useState(false);
@@ -495,7 +499,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                 candidates={candidates}
                 currentFilters={filters}
             />
-            <header className="sticky top-0 z-20 bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-sm px-4 sm:px-8 py-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b dark:border-gray-800">
+            <header className={`sticky top-0 z-20 bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-sm px-4 sm:px-8 py-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b dark:border-gray-800 transition-transform duration-300 ${showBars ? 'translate-y-0' : '-translate-y-full sm:translate-y-0'}`}>
                 <div>
                     <h2 className="text-3xl font-bold font-display text-gray-800 dark:text-gray-100">{isFavoritesView ? t('dashboard.favorites_title') : t('dashboard.title')}</h2>
                     {!isFavoritesView && <p className="text-gray-500 dark:text-gray-400 mt-1 hidden sm:block">{t('dashboard.subtitle')}</p>}
@@ -543,8 +547,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                             <button onClick={() => setIsActionsOpen(prev => !prev)} title={t('common.actions')} className="flex items-center justify-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 font-semibold p-2.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                                 <Icon name="plus" className="w-5 h-5" />
                             </button>
+                            {/* Desktop Dropdown */}
                             {isActionsOpen && (
-                                <div className="absolute top-full right-0 rtl:right-auto rtl:left-0 mt-2 w-48 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-lg shadow-xl z-10 py-1">
+                                <div className="hidden md:block absolute top-full right-0 rtl:right-auto rtl:left-0 mt-2 w-48 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-lg shadow-xl z-10 py-1">
                                     <button onClick={handleImportClick} className="w-full text-left rtl:text-right flex items-center gap-3 p-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
                                         <Icon name="upload" className="w-5 h-5"/> {t('common.import')}
                                     </button>
@@ -564,7 +569,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
             
             <div className="p-2 sm:p-8">
                 {!isFavoritesView && (
-                    <div className="lg:hidden fixed bottom-20 left-0 right-0 w-full flex justify-center z-30 pointer-events-none">
+                    <div className={`lg:hidden fixed bottom-20 left-0 right-0 w-full flex justify-center z-30 pointer-events-none transition-opacity duration-300 ${showBars ? 'opacity-100' : 'opacity-0'}`}>
                         <div className="flex gap-2 pointer-events-auto">
                             <button onClick={() => handleScrollTo(graphsRef)} className="bg-gray-900 text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-gray-700 transition-colors flex items-center gap-2">
                                 <Icon name="dashboard" className="w-5 h-5"/>
@@ -743,6 +748,27 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                         )
                     )}
                 </div>
+            </div>
+
+             {/* Mobile Actions Drawer */}
+             <div className="md:hidden">
+                <Drawer 
+                    isOpen={isActionsOpen} 
+                    onClose={() => setIsActionsOpen(false)} 
+                    title={t('common.actions')}
+                >
+                    <div className="flex flex-col gap-2">
+                        <button onClick={handleImportClick} className="w-full text-left flex items-center gap-3 p-4 text-base bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <Icon name="upload" className="w-5 h-5"/> {t('common.import')}
+                        </button>
+                        <button onClick={exportToCsv} className="w-full text-left flex items-center gap-3 p-4 text-base bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <Icon name="export" className="w-5 h-5"/> {t('dashboard.export_as_csv')}
+                        </button>
+                        <button onClick={exportToJson} className="w-full text-left flex items-center gap-3 p-4 text-base bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <Icon name="export" className="w-5 h-5"/> {t('dashboard.export_as_json')}
+                        </button>
+                    </div>
+                </Drawer>
             </div>
         </div>
     )
