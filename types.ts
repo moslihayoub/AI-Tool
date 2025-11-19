@@ -13,7 +13,7 @@ declare global {
   }
 }
 
-// FIX: Augment React's JSX namespace instead of the global one to prevent overwriting standard intrinsic elements.
+// Extend React's JSX namespace to include the custom element
 declare module 'react' {
   namespace JSX {
     interface IntrinsicElements {
@@ -21,6 +21,7 @@ declare module 'react' {
         src?: string;
         autoplay?: boolean;
         loop?: boolean;
+        style?: React.CSSProperties;
       };
     }
   }

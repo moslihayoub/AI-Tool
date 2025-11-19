@@ -1,4 +1,5 @@
 
+
 // FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
 // FIX: Switched to namespace React import to correctly populate the global JSX namespace.
 import * as React from 'react';
@@ -420,6 +421,34 @@ function AppContent() {
         ];
     }, [candidateProfiles, comparisonList]);
 
+    const addHighPerformersToPipeline = React.useCallback((profiles: CandidateProfile[]) => {
+         const highPerformers = profiles.filter(p => p.performanceScore > 70);
+         if (highPerformers.length > 0) {
+             setRecruitmentData(prev => {
+                 const existingIds = new Set(prev.map(p => p.candidateId));
+                 const newEntries = highPerformers
+                     .filter(p => !existingIds.has(p.id))
+                     .map(p => ({
+                        candidateId: p.id,
+                        applicationDate: new Date().toISOString().split('T')[0],
+                        interview1Date: '',
+                        interview1Result: '' as const,
+                        challengeSentDate: '',
+                        challengeDoneDate: '',
+                        interview2Date: '',
+                        interview2Result: '' as const,
+                        startDate: '',
+                     }));
+                 
+                 if (newEntries.length > 0) {
+                     setTimeout(() => showToast(t('toast.auto_added_pipeline', { count: newEntries.length }), 'success'), 500);
+                     return [...prev, ...newEntries];
+                 }
+                 return prev;
+             });
+         }
+    }, [showToast, t]);
+
 
     const handleAddFiles = React.useCallback(async (files: File[]) => {
         setUploadError(null);
@@ -497,6 +526,10 @@ function AppContent() {
                 };
             });
             
+            if (newFilesFromJson.length > 0) {
+                 addHighPerformersToPipeline(newFilesFromJson.map(f => f.profile!));
+            }
+
             currentFiles = [...updatedFiles, ...newFilesFromJson, ...errorFiles];
         }
 
@@ -518,7 +551,7 @@ function AppContent() {
         if (isDummyDataActive && (wasUpdatedFromJson || newOtherCvFiles.length > 0 || jsonFiles.length > 0)) {
             setIsDummyDataActive(false);
         }
-    }, [cvFiles, isDummyDataActive, t, isOwner, showToast]);
+    }, [cvFiles, isDummyDataActive, t, isOwner, showToast, addHighPerformersToPipeline]);
 
 
     const handleClearFile = (fileId: string) => {
@@ -592,30 +625,12 @@ function AppContent() {
 
         const results = await Promise.all(analysisPromises);
         
-        // Auto-add candidates with > 70 score to pipeline
-        const highPerformers = results
-            .filter(r => r.status === 'success' && r.profile && r.profile.performanceScore > 70)
+        // Auto-add candidates with > 70 score to pipeline using helper
+        const successProfiles = results
+            .filter(r => r.status === 'success' && r.profile)
             .map(r => r.profile as CandidateProfile);
             
-        if (highPerformers.length > 0) {
-             setRecruitmentData(prev => {
-                 const existingIds = new Set(prev.map(p => p.candidateId));
-                 const newEntries = highPerformers
-                     .filter(p => !existingIds.has(p.id))
-                     .map(p => ({
-                        candidateId: p.id,
-                        applicationDate: new Date().toISOString().split('T')[0],
-                        interview1Date: '',
-                        interview1Result: '' as const,
-                        challengeSentDate: '',
-                        challengeDoneDate: '',
-                        interview2Date: '',
-                        interview2Result: '' as const,
-                        startDate: '',
-                     }));
-                 return [...prev, ...newEntries];
-             });
-        }
+        addHighPerformersToPipeline(successProfiles);
 
         setCvFiles(prevFiles => {
             const filesMap = new Map(prevFiles.map(f => [f.id, f]));
@@ -732,6 +747,7 @@ function AppContent() {
         });
         
         setCvFiles(dummyCvFiles);
+        addHighPerformersToPipeline(dummyCvFiles.map(f => f.profile!));
         setIsDummyDataActive(true);
         setView('dashboard');
     };
@@ -860,6 +876,7 @@ function AppContent() {
         if (newCvFiles.length > 0) {
              showToast(t('toast.files_added'), 'success');
              setCvFiles(prev => [...prev, ...newCvFiles]);
+             addHighPerformersToPipeline(newCvFiles.map(f => f.profile!));
              setView('dashboard');
         }
     };
