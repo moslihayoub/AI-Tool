@@ -62,6 +62,7 @@ export const CompareView: React.FC<CompareViewProps> = ({ profile1, profile2, on
                     </div>
                 </header>
                 <div className="flex-1 flex flex-col items-center justify-center text-center">
+                    {/* @ts-ignore */}
                     <dotlottie-wc
                         src="https://lottie.host/89c66344-281d-4450-91d3-4574a47fec47/31ogoyP4Mh.lottie"
                         autoplay

@@ -18,8 +18,13 @@ export const MobileNavBar: React.FC<MobileNavBarProps> = ({ currentView, setCurr
   // Define all items
   const allNavItems = [
     { id: 'upload', label: t('sidebar.upload'), icon: 'upload' },
+    { id: 'create-cv', label: 'Créer un CV', icon: 'file-pen' },
     { id: 'dashboard', label: t('sidebar.dashboard'), icon: 'dashboard' },
     { id: 'recruitment', label: t('sidebar.recruitment'), icon: 'users' },
+    { id: 'missions', label: t('sidebar.missions') || 'Missions', icon: 'briefcase' },
+    { id: 'timesheets', label: t('sidebar.timesheets') || 'Feuilles', icon: 'clock' },
+    { id: 'leaves', label: 'Congés', icon: 'calendar-heart' },
+    { id: 'purchase-orders', label: 'Bons de commande', icon: 'receipt' },
     { id: 'history', label: t('sidebar.history'), icon: 'history' },
     { id: 'infra', label: t('sidebar.infra'), icon: 'activity' },
     { id: 'ai', label: t('sidebar.ai_assistant'), icon: 'bot' },
@@ -28,10 +33,10 @@ export const MobileNavBar: React.FC<MobileNavBarProps> = ({ currentView, setCurr
     { id: 'settings', label: t('sidebar.settings'), icon: 'settings' },
   ];
 
-  // Filter out Pipeline, History, Settings, AND Infra for mobile view as requested
+  // Filter out less important ones on mobile to avoid overcrowding
   const navItems = allNavItems.filter(item => 
-    !['recruitment', 'history', 'settings', 'infra'].includes(item.id)
-  );
+    ['upload', 'dashboard', 'missions', 'timesheets', 'ai', 'create-cv'].includes(item.id)
+  ).slice(0, 5);
   
   // FIX: Fixed bug where navbar would disappear on scroll by ensuring it is always visible.
   return (

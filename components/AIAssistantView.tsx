@@ -2,7 +2,7 @@
 // A new component for a full-page AI assistant for dashboard-level queries.
 // FIX: Added 'import * as React from "react";'. This is required for components that use JSX syntax and resolves "React is not defined" compilation errors and subsequent JSX intrinsic element type errors.
 import * as React from 'react';
-import { CandidateProfile, ChatMessage } from '../types';
+import { CandidateProfile, ChatMessage, AIAction } from '../types';
 import { Icon } from './icons';
 import { createDashboardAIChat } from '../services/geminiService';
 import { Chat, GenerateContentResponse } from '@google/genai';
@@ -10,9 +10,10 @@ import { useTranslation } from '../i18n';
 
 interface AIAssistantViewProps {
     candidates: CandidateProfile[];
+    onActionClick?: (action: AIAction) => void;
 }
 
-export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ candidates }) => {
+export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ candidates, onActionClick }) => {
     const { t } = useTranslation();
     const [chat, setChat] = React.useState<Chat | null>(null);
     const [messages, setMessages] = React.useState<ChatMessage[]>([]);
@@ -42,14 +43,30 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ candidates }) 
 
     React.useEffect(scrollToBottom, [messages]);
 
-    const formatMessage = (text: string) => {
-        return text
+    const parseMessage = (text: string): { displayHtml: string, action?: AIAction } => {
+        const actionRegex = /ACTION_JSON:(\{.*?\})/;
+        const match = text.match(actionRegex);
+        let action: AIAction | undefined;
+        let cleanText = text;
+
+        if (match) {
+            try {
+                action = JSON.parse(match[1]);
+                cleanText = text.replace(match[0], '');
+            } catch (e) {
+                console.error("Failed to parse AI Action", e);
+            }
+        }
+
+        const displayHtml = cleanText
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
             .replace(/\*(.*?)\*/g, '<em>$1</em>')
             .split('\n')
             .filter(line => line.trim() !== '')
             .map(line => `<p>${line.replace(/^\s*[\*\-]\s*/, '&bull; ')}</p>`)
             .join('');
+            
+        return { displayHtml, action };
     };
 
     const sendMessage = async () => {
@@ -61,7 +78,13 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ candidates }) 
 
         try {
             const response: GenerateContentResponse = await chat.sendMessage({ message: input });
-            const modelMessage: ChatMessage = { role: 'model', text: response.text };
+            // Parse for actions
+            const parsed = parseMessage(response.text);
+            const modelMessage: ChatMessage = { 
+                role: 'model', 
+                text: response.text, // Keep original
+                action: parsed.action
+            };
             setMessages(prev => [...prev, modelMessage]);
         } catch (error) {
             console.error("Error sending chat message:", error);
@@ -80,6 +103,7 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ candidates }) 
                     <p className="text-gray-500 dark:text-gray-400 mt-1">{t('ai_assistant.dashboard_subtitle')}</p>
                 </header>
                  <div className="flex-1 flex flex-col items-center justify-center text-center">
+                    {/* @ts-ignore */}
                     <dotlottie-wc
                         src="https://lottie.host/89c66344-281d-4450-91d3-4574a47fec47/31ogoyP4Mh.lottie"
                         autoplay
@@ -99,18 +123,33 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ candidates }) 
                 <p className="text-gray-500 dark:text-gray-400 mt-1">{t('ai_assistant.dashboard_subtitle')}</p>
             </header>
             <div className="flex-1 p-4 overflow-y-auto space-y-4">
-                 {messages.map((msg, index) => (
-                    <div key={index} className={`flex items-start gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        {msg.role === 'model' && <div className="flex-shrink-0 w-8 h-8 rounded-full bg-pink-200 dark:bg-pink-900 flex items-center justify-center"><Icon name="bot" className="w-5 h-5 text-pink-600 dark:text-pink-300"/></div>}
-                        <div className={`max-w-xl p-4 rounded-xl shadow-sm ${
-                            msg.role === 'user' 
-                            ? 'bg-gradient-button text-white' 
-                            : 'bg-white dark:bg-gray-800 prose prose-sm dark:prose-invert max-w-none'
-                        }`}
-                        dangerouslySetInnerHTML={{__html: formatMessage(msg.text)}}>
+                 {messages.map((msg, index) => {
+                    const parsed = parseMessage(msg.text);
+                    return (
+                        <div key={index} className={`flex items-start gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                            {msg.role === 'model' && <div className="flex-shrink-0 w-8 h-8 rounded-full bg-pink-200 dark:bg-pink-900 flex items-center justify-center"><Icon name="bot" className="w-5 h-5 text-pink-600 dark:text-pink-300"/></div>}
+                            <div className="flex flex-col gap-2 max-w-xl">
+                                <div className={`p-4 rounded-xl shadow-sm ${
+                                    msg.role === 'user' 
+                                    ? 'bg-gradient-button text-white' 
+                                    : 'bg-white dark:bg-gray-800 prose prose-sm dark:prose-invert max-w-none'
+                                }`}
+                                dangerouslySetInnerHTML={{__html: parsed.displayHtml}}>
+                                </div>
+                                {parsed.action && onActionClick && (
+                                    <button 
+                                        onClick={() => onActionClick(parsed.action!)}
+                                        className="self-start flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors shadow-md animate-fade-in"
+                                    >
+                                        <Icon name="sparkles" className="w-4 h-4" />
+                                        <span>{parsed.action.label}</span>
+                                        <Icon name="arrow-right" className="w-4 h-4 ml-1" />
+                                    </button>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                 })}
                 {isLoading && <div className="flex justify-start"><div className="p-3 rounded-lg bg-white dark:bg-gray-800"><Icon name="spinner" className="w-5 h-5"/></div></div>}
                 <div ref={messagesEndRef} />
             </div>

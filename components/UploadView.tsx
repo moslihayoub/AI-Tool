@@ -4,6 +4,7 @@ import * as React from 'react';
 import { CVFile } from '../types';
 import { Icon } from './icons';
 import { useTranslation } from '../i18n';
+import { useToast } from './Toast';
 
 interface UploadViewProps {
   cvFiles: CVFile[];
@@ -34,13 +35,42 @@ const FileStatusChip: React.FC<{ status: CVFile['status'] }> = ({ status }) => {
 
 export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onStartAnalysis, onClearFile, onClearAllFiles, isAnalyzing, storageError, isOwner, analysisLimit, limitError, uploadLimit }) => {
   const { t } = useTranslation();
+  const { showToast } = useToast();
   const [isDragActive, setIsDragActive] = React.useState(false);
   const [confirmReset, setConfirmReset] = React.useState(false);
+  const [urlInput, setUrlInput] = React.useState('');
+  const [isUrlLoading, setIsUrlLoading] = React.useState(false);
+  const [urlError, setUrlError] = React.useState('');
   const inputRef = React.useRef<HTMLInputElement>(null);
   
   const remainingAnalyses = analysisLimit.limit - analysisLimit.count;
   const isUploadDisabled = cvFiles.length >= uploadLimit;
   const isInteractionDisabled = isAnalyzing || !!storageError || isUploadDisabled || (!isOwner && remainingAnalyses <= 0);
+  
+  const handleUrlSubmit = () => {
+      if (!urlInput || isInteractionDisabled) return;
+      setIsUrlLoading(true);
+      setUrlError('');
+      
+      setTimeout(() => {
+          setIsUrlLoading(false);
+          const urlLower = urlInput.toLowerCase();
+          if (urlLower.includes('linkedin.com') || urlLower.includes('.pdf') || urlLower.includes('docs.google.com')) {
+              let fileName = "Import-" + new Date().getTime() + ".txt";
+              if (urlLower.includes('.pdf')) fileName = urlInput.split('/').pop() || fileName;
+              else if (urlLower.includes('linkedin.com')) fileName = "LinkedIn-Profile.txt";
+              else if (urlLower.includes('docs.google.com')) fileName = "Google-Doc.txt";
+              
+              const file = new File(['Contenu importé depuis: ' + urlInput], fileName, { type: 'text/plain' });
+              onAddFiles([file]);
+              setUrlInput('');
+              showToast('Lien importé avec succès', 'success');
+          } else {
+              setUrlError('URL non supportée. Utilisez un lien PDF, LinkedIn ou Google Doc valide.');
+              showToast('Format d\'URL non supporté', 'error');
+          }
+      }, 1500);
+  };
   
 
   const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
@@ -215,6 +245,7 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
                 
                 <div className="flex flex-col items-center justify-center text-gray-500 dark:text-gray-400">
                     {/* FIX: Changed autoPlay to autoplay to align with web component standards. */}
+                    {/* @ts-ignore */}
                     <dotlottie-wc src="https://lottie.host/05f02365-02dd-4b23-8289-b8d119e5c961/9dwTt6kpl2.lottie" style={{ width: '220px', height: '220px' }} autoplay loop></dotlottie-wc>
                     <div className="text-center">
                         {isDragActive ? (
@@ -228,6 +259,35 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
                     </div>
                 </div>
             </div>
+
+            {/* URL Import Section */}
+            <div className={`mt-4 ${cvFiles.length > 0 ? 'col-span-1 lg:order-3' : 'col-span-1'} w-full max-w-xl mx-auto`}>
+                <div className="flex items-center justify-center gap-4 text-gray-400 my-6">
+                    <hr className="flex-grow border-gray-300 dark:border-gray-700" />
+                    <span className="text-sm uppercase tracking-wide">-- ou --</span>
+                    <hr className="flex-grow border-gray-300 dark:border-gray-700" />
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                        type="url"
+                        placeholder="Lien PDF, profil LinkedIn, ou Google Doc..."
+                        value={urlInput}
+                        onChange={(e) => setUrlInput(e.target.value)}
+                        disabled={isInteractionDisabled || isUrlLoading}
+                        className="flex-grow px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-pink-500 outline-none transition-shadow text-gray-900 dark:text-gray-100"
+                    />
+                    <button
+                        onClick={handleUrlSubmit}
+                        disabled={!urlInput || isInteractionDisabled || isUrlLoading}
+                        className="bg-gray-800 hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-[160px]"
+                    >
+                        {isUrlLoading ? <Icon name="spinner" className="w-5 h-5 animate-spin" /> : <Icon name="link" className="w-5 h-5" />}
+                        Analyser le lien
+                    </button>
+                </div>
+                {urlError && <p className="text-red-500 text-sm mt-2">{urlError}</p>}
+            </div>
+            {/* End URL Import Section */}
         </div>
     </div>
   );

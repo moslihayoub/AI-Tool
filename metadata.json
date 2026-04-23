@@ -1,5 +1,6 @@
 {
   "name": "ParseLIQ HR",
   "description": "Semantic parsing, reliable matching.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [],
+  "majorCapabilities": []
 }

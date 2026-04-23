@@ -153,7 +153,6 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate, cvFile, onBack, isFavorite, onToggleFavorite, comparisonList, onToggleCompare }) => {
     const { t, language } = useTranslation();
-    const [isAiAssistantOpen, setIsAiAssistantOpen] = React.useState(false);
 
     const skillsExpertiseData = React.useMemo(() => {
         if (!candidate || !candidate.skills?.hard) {
@@ -319,14 +318,6 @@ export const CandidateDetailView: React.FC<CandidateDetailProps> = ({ candidate,
                     )}
                 </main>
             </div>
-             <button
-                onClick={() => setIsAiAssistantOpen(true)}
-                className="fixed bottom-6 right-6 md:bottom-8 md:right-8 rtl:right-auto rtl:left-6 md:rtl:left-8 bg-secondary-500 text-white font-semibold rounded-full px-5 py-3 shadow-lg hover:bg-secondary-600 transition-transform hover:scale-110 z-30 flex items-center gap-2"
-                >
-                <Icon name="bot" className="w-6 h-6" />
-                <span className="">{t('ai_assistant.title')}</span>
-            </button>
-            <AIAssistant cvFile={cvFile} isOpen={isAiAssistantOpen} onClose={() => setIsAiAssistantOpen(false)} />
         </div>
     );
 };

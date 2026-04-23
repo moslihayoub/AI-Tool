@@ -195,10 +195,28 @@ export function createAIChat(cvFile: CVFile): Chat {
 }
 
 /**
- * Creates a new AI chat session for the entire dashboard.
- * @param profiles An array of all candidate profiles.
+ * Creates a general AI chat session with context about the current view.
+ * @param viewContext The current view the user is on.
  * @returns A Chat instance from the Gemini API.
  */
+export function createGeneralAIChat(viewContext: string): Chat {
+    const systemInstruction = `You are a helpful AI assistant for the ParseLIQ HR platform. 
+    The user is currently on the "${viewContext}" page. 
+    Help them navigate, understand features, or answer general HR/platform questions.
+    Be concise, friendly, and use markdown.
+    If the view is "create-cv", you can suggest they write about their skills or summary.
+    If the view is "leaves", you can explain leave policies.
+    If the view is "purchase-orders", you can explain what a PO is.`;
+
+    const chat: Chat = ai.chats.create({
+        model: 'gemini-2.5-flash',
+        config: {
+            systemInstruction: systemInstruction,
+        },
+    });
+
+    return chat;
+}
 export function createDashboardAIChat(profiles: CandidateProfile[]): Chat {
     if (!profiles || profiles.length === 0) {
         throw new Error("Cannot create AI chat for an empty list of profiles.");
@@ -208,6 +226,7 @@ export function createDashboardAIChat(profiles: CandidateProfile[]): Chat {
     const summaryContext = {
         totalCandidates: profiles.length,
         candidates: profiles.map(p => ({
+            id: p.id,
             name: p.name,
             jobCategory: p.jobCategory,
             totalExperienceYears: p.totalExperienceYears,
@@ -218,8 +237,14 @@ export function createDashboardAIChat(profiles: CandidateProfile[]): Chat {
 
     const systemInstruction = `You are a helpful AI assistant for an HR professional. You are analyzing a pool of candidates.
     A summary of the candidates' profiles is provided below in JSON format.
-    Use this information to answer questions about the entire group of candidates, identify trends, compare roles, or find top candidates based on criteria. Be concise and helpful.
-    When asked for summaries or lists, use markdown formatting (e.g., bullet points with '-').
+    Use this information to answer questions about the entire group of candidates, identify trends, compare roles, or find top candidates based on criteria.
+    
+    IMPORTANT: You can suggest ACTIONS to the user.
+    If you recommend creating a mission, validating a timesheet, or going to a specific view, append a JSON block at the end of your response like this:
+    ACTION_JSON:{"type": "CREATE_MISSION", "label": "Créer Mission pour [Name]", "payload": {"candidateId": "id", "candidateName": "name"}}
+    ACTION_JSON:{"type": "GO_TO_TIMESHEETS", "label": "Voir les Temps", "payload": {}}
+
+    Be concise and helpful. When asked for summaries or lists, use markdown formatting (e.g., bullet points with '-').
     
     Candidate Pool Summary:
     ${JSON.stringify(summaryContext, null, 2)}

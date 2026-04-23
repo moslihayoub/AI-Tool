@@ -20,20 +20,30 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen, isOwner }) => {
   const { t } = useTranslation();
   
-  const navItems = [
+  const recruitmentItems = [
     { id: 'upload', label: t('sidebar.upload'), icon: 'upload' },
+    { id: 'create-cv', label: 'Créer un CV', icon: 'file-pen' },
     { id: 'dashboard', label: t('sidebar.dashboard'), icon: 'dashboard' },
     { id: 'recruitment', label: t('sidebar.recruitment'), icon: 'users' },
+    { id: 'compare', label: t('sidebar.compare'), icon: 'compare' },
+  ];
+
+  const managementItems = [
+    { id: 'missions', label: t('sidebar.missions'), icon: 'briefcase' },
+    { id: 'timesheets', label: t('sidebar.timesheets'), icon: 'clock' },
+    { id: 'leaves', label: 'Congés', icon: 'calendar-heart' },
+    { id: 'purchase-orders', label: 'Bons de commande', icon: 'receipt' },
+  ];
+
+  const toolItems = [
     { id: 'history', label: t('sidebar.history'), icon: 'history' },
     { id: 'ai', label: t('sidebar.ai_assistant'), icon: 'bot' },
     { id: 'favorites', label: t('sidebar.favorites'), icon: 'heart' },
-    { id: 'compare', label: t('sidebar.compare'), icon: 'compare' },
     { id: 'settings', label: t('sidebar.settings'), icon: 'settings' },
   ];
   
-  // Conditionally add Infra for owners
   if (isOwner) {
-      navItems.splice(4, 0, { id: 'infra', label: t('sidebar.infra'), icon: 'activity' });
+      toolItems.push({ id: 'infra', label: t('sidebar.infra'), icon: 'activity' });
   }
 
   const sidebarClasses = `
@@ -43,6 +53,36 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, i
     ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}
     ${isCollapsed ? 'w-20' : 'w-64'} flex-shrink-0
   `;
+
+  const NavGroup = ({ title, items }: { title: string, items: typeof recruitmentItems }) => (
+      <div className="mb-4">
+          <div className={`px-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider ${isCollapsed ? 'hidden' : 'block'}`}>
+              {title}
+          </div>
+          {items.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => {
+                setCurrentView(item.id as View);
+                setIsMobileOpen(false);
+              }}
+              title={isCollapsed ? item.label : undefined}
+              className={`w-full flex items-center p-3 rounded-lg ltr:text-left rtl:text-right rtl:flex-row-reverse transition-colors mb-1 ${
+                isCollapsed ? 'justify-center' : 'gap-3'
+              } ${
+                currentView === item.id
+                  ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-200'
+                  : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
+              }`}
+            >
+              <div className={`flex-shrink-0 flex items-center justify-center ${isCollapsed ? 'w-10 h-10 rounded-md' : 'w-8'}`}>
+                <Icon name={item.icon} className="w-5 h-5" />
+              </div>
+              <span className={`transition-opacity duration-200 ${isCollapsed ? 'opacity-0 w-0 hidden' : 'opacity-100 text-sm font-medium'}`}>{item.label}</span>
+            </button>
+          ))}
+      </div>
+  );
   
   return (
     <>
@@ -50,8 +90,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, i
       <aside className={sidebarClasses}>
         <div className={`p-4 h-16 border-b border-gray-200 dark:border-gray-800 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
           <div className={`flex items-center gap-2 overflow-hidden transition-all duration-300 ${isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'}`}>
-            <img src={logoLight} alt="ParseLIQ HR" className="h-9 dark:hidden" />
-            <img src={logoDark} alt="ParseLIQ HR" className="h-9 hidden dark:block" />
+            <img src={logoLight} alt="ParseLIQ HR" className="h-8 dark:hidden" />
+            <img src={logoDark} alt="ParseLIQ HR" className="h-8 hidden dark:block" />
           </div>
           
           <button onClick={() => setIsCollapsed(!isCollapsed)} className="hidden md:block p-1 text-gray-500 hover:text-gray-200">
@@ -61,30 +101,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, i
             <Icon name="close" className="w-6 h-6"/>
           </button>
         </div>
-        <nav className="flex-1 p-2 space-y-3 overflow-y-auto">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => {
-                setCurrentView(item.id as View);
-                setIsMobileOpen(false);
-              }}
-              title={isCollapsed ? item.label : undefined}
-              className={`w-full flex items-center p-3 rounded-lg ltr:text-left rtl:text-right rtl:flex-row-reverse transition-colors ${
-                isCollapsed ? 'justify-center' : 'gap-3'
-              } ${
-                currentView === item.id
-                  ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-200'
-                  : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
-              }`}
-            >
-              <div className={`flex-shrink-0 flex items-center justify-center ${isCollapsed ? 'w-10 h-10 rounded-md' : 'w-8'}`}>
-                <Icon name={item.icon} className="w-6 h-6" />
-              </div>
-              <span className={`transition-opacity duration-200 ${isCollapsed ? 'opacity-0 w-0 hidden' : 'opacity-100'}`}>{item.label}</span>
-            </button>
-          ))}
+        
+        <nav className="flex-1 p-2 overflow-y-auto">
+          <NavGroup title="Recrutement" items={recruitmentItems} />
+          <NavGroup title="Gestion" items={managementItems} />
+          <NavGroup title="Outils" items={toolItems} />
         </nav>
+
         <footer className={`p-4 border-t border-gray-200 dark:border-gray-800 flex items-center gap-2 ${isCollapsed ? 'justify-center' : ''}`}>
            <img src={logoIcon} alt="ParseLIQ HR Icon" className="w-6 h-6"/>
            <a href="https://bento.me/moslih84" target="_blank" rel="noopener noreferrer" className={`text-sm text-gray-500 dark:text-gray-400 hover:underline transition-opacity duration-200 ${isCollapsed ? 'opacity-0 w-0 h-0' : 'opacity-100'}`}>

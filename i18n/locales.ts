@@ -11,7 +11,9 @@ export const fr = {
         ai_assistant: "Assistant IA",
         recruitment: "Pipeline",
         history: "Historique",
-        infra: "Infra"
+        infra: "Infra",
+        missions: "Missions",
+        timesheets: "Feuilles de temps"
     },
     upload: {
         title: "Importer des CVs",
@@ -188,9 +190,9 @@ export const fr = {
     ai_assistant: {
         title: "Assistant IA",
         greeting: "Bonjour ! 👋 Comment puis-je vous aider à analyser ce profil ?",
-        dashboard_greeting: "Bonjour ! 👋 Posez-moi des questions sur l'ensemble des candidats. Par exemple: 'Qui sont les 3 meilleurs candidats pour un poste de développeur React?'",
+        dashboard_greeting: "Bonjour ! 👋 Je peux analyser vos candidats et vous suggérer des actions.",
         dashboard_title: "Assistant IA Global",
-        dashboard_subtitle: "Obtenez des informations sur tous les profils de candidats chargés.",
+        dashboard_subtitle: "Obtenez des informations et exécutez des actions.",
         error: "Désolé, une erreur est survenue. Veuillez réessayer. 😥",
         input_placeholder: "Posez une question...",
         quick_questions: {
@@ -346,7 +348,9 @@ export const en = {
         ai_assistant: "AI Assistant",
         recruitment: "Pipeline",
         history: "History",
-        infra: "Infra"
+        infra: "Infra",
+        missions: "Missions",
+        timesheets: "Timesheets"
     },
     upload: {
         title: "Import CVs",
@@ -523,9 +527,9 @@ export const en = {
     ai_assistant: {
         title: "AI Assistant",
         greeting: "Hello! 👋 How can I help you analyze this profile?",
-        dashboard_greeting: "Hello! 👋 Ask me anything about the candidate pool. For example: 'Who are the top 3 candidates for a React developer role?'",
+        dashboard_greeting: "Hello! 👋 I can analyze your candidates and suggest actions.",
         dashboard_title: "Global AI Assistant",
-        dashboard_subtitle: "Get insights across all loaded candidate profiles.",
+        dashboard_subtitle: "Get insights and execute actions.",
         error: "Sorry, an error occurred. Please try again. 😥",
         input_placeholder: "Ask a question...",
         quick_questions: {
@@ -681,7 +685,9 @@ export const ar = {
         ai_assistant: "المساعد الذكي",
         recruitment: "التوظيف",
         history: "السجل",
-        infra: "البنية التحتية"
+        infra: "البنية التحتية",
+        missions: "المهام",
+        timesheets: "جداول الأوقات"
     },
     upload: {
         title: "تحميل السير الذاتية",
@@ -858,9 +864,9 @@ export const ar = {
     ai_assistant: {
         title: "المساعد الذكي",
         greeting: "مرحباً! 👋 كيف يمكنني مساعدتك في تحليل هذا الملف الشخصي؟",
-        dashboard_greeting: "مرحباً! 👋 اسألني أي شيء عن مجموعة المرشحين. على سبيل المثال: 'من هم أفضل 3 مرشحين لوظيفة مطور React؟'",
+        dashboard_greeting: "مرحباً! 👋 يمكنني تحليل المرشحين واقتراح إجراءات.",
         dashboard_title: "المساعد الذكي الشامل",
-        dashboard_subtitle: "احصل على رؤى عبر جميع ملفات المرشحين المحملة.",
+        dashboard_subtitle: "احصل على رؤى واتخذ إجراءات.",
         error: "عذراً، حدث خطأ. يرجى المحاولة مرة أخرى. 😥",
         input_placeholder: "اطرح سؤالاً...",
         quick_questions: {

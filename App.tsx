@@ -1,6 +1,4 @@
 
-
-
 // FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
 // FIX: Switched to namespace React import to correctly populate the global JSX namespace.
 import * as React from 'react';
@@ -18,7 +16,13 @@ import { AIAssistantView } from './components/AIAssistantView';
 import { RecruitmentView } from './components/RecruitmentView';
 import { HistoryView } from './components/HistoryView';
 import { InfraView } from './components/InfraView';
-import { CVFile, View, CandidateProfile, Theme, User, RecruitmentData, PipelineSnapshot } from './types';
+import { MissionsView } from './components/MissionsView';
+import { TimesheetsView } from './components/TimesheetsView';
+import { CreateCVView } from './components/CreateCVView';
+import { LeavesView } from './components/LeavesView';
+import { PurchaseOrdersView } from './components/PurchaseOrdersView';
+import { FloatingAssistant } from './components/FloatingAssistant';
+import { CVFile, View, CandidateProfile, Theme, User, RecruitmentData, PipelineSnapshot, Mission, Timesheet, AIAction } from './types';
 import { parseCvContent } from './services/geminiService';
 import { Icon } from './components/icons';
 import { LanguageProvider, useTranslation } from './i18n';
@@ -194,6 +198,20 @@ function AppContent() {
     const [uploadError, setUploadError] = React.useState<string | null>(null);
     const [isQuotaModalOpen, setIsQuotaModalOpen] = React.useState(false);
     
+    // Management State
+    const [missions, setMissions] = React.useState<Mission[]>(() => {
+        try {
+            const saved = localStorage.getItem('missions');
+            return saved ? JSON.parse(saved) : [];
+        } catch { return []; }
+    });
+    const [timesheets, setTimesheets] = React.useState<Timesheet[]>(() => {
+        try {
+            const saved = localStorage.getItem('timesheets');
+            return saved ? JSON.parse(saved) : [];
+        } catch { return []; }
+    });
+    
     const [processedCVsCache, setProcessedCVsCache] = React.useState<Record<string, CandidateProfile>>(() => {
         try {
             const cache = localStorage.getItem('processedCVsCache');
@@ -222,6 +240,7 @@ function AppContent() {
     });
     
     const [lastSnapshotId, setLastSnapshotId] = React.useState<string | null>(null);
+    const [missionPreFill, setMissionPreFill] = React.useState<Partial<Mission> | null>(null);
 
     const [theme, setTheme] = React.useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'system');
 
@@ -266,6 +285,15 @@ function AppContent() {
             console.error("Failed to save pipeline history to localStorage", error);
         }
     }, [pipelineHistory]);
+
+    // Persistence for new modules
+    React.useEffect(() => {
+        localStorage.setItem('missions', JSON.stringify(missions));
+    }, [missions]);
+    React.useEffect(() => {
+        localStorage.setItem('timesheets', JSON.stringify(timesheets));
+    }, [timesheets]);
+
 
     React.useEffect(() => {
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -435,6 +463,7 @@ function AppContent() {
                      .filter(p => !existingIds.has(p.id))
                      .map(p => ({
                         candidateId: p.id,
+                        stage: 'NEW' as const,
                         applicationDate: new Date().toISOString().split('T')[0],
                         interview1Date: '',
                         interview1Result: '' as const,
@@ -722,9 +751,13 @@ function AppContent() {
         localStorage.removeItem('lightCycleHighScore');
         localStorage.removeItem('recruitmentData');
         localStorage.removeItem('pipelineHistory');
+        localStorage.removeItem('missions');
+        localStorage.removeItem('timesheets');
         setProcessedCVsCache({});
         setRecruitmentData([]);
         setPipelineHistory([]);
+        setMissions([]);
+        setTimesheets([]);
         setAnalysisLimit(prev => ({...prev, count: 0}));
         setStorageError(null);
         setAnalysisSummaryMessage(null);
@@ -753,6 +786,78 @@ function AppContent() {
         
         setCvFiles(dummyCvFiles);
         addHighPerformersToPipeline(dummyCvFiles.map(f => f.profile!));
+        
+        // Add Dummy Missions
+        const mission1: Mission = {
+            id: 'm1',
+            candidateId: dummyCvFiles[0].id,
+            candidateName: dummyCvFiles[0].profile!.name,
+            client: 'TechCorp',
+            title: 'Senior Dev',
+            contractType: 'FREELANCE',
+            workMode: 'Hybrid',
+            country: 'France',
+            city: 'Paris',
+            startDate: '2023-01-01',
+            status: 'Active',
+            remuneration: 600,
+            currency: 'EUR',
+            remunerationType: 'Daily',
+            timeTracking: {
+                enabled: true,
+                periodicity: 'Monthly',
+                standardHoursPerDay: 8
+            }
+        };
+        const mission2: Mission = {
+            id: 'm2',
+            candidateId: dummyCvFiles[1].id,
+            candidateName: dummyCvFiles[1].profile!.name,
+            client: 'DesignStudio',
+            title: 'Lead UI',
+            contractType: 'CDI',
+            workMode: 'OnSite',
+            country: 'UK',
+            city: 'London',
+            startDate: '2023-03-15',
+            status: 'Active',
+            remuneration: 5500,
+            currency: 'EUR',
+            remunerationType: 'Monthly',
+            timeTracking: {
+                enabled: false,
+                periodicity: 'Monthly',
+                standardHoursPerDay: 8
+            }
+        };
+        setMissions([mission1, mission2]);
+
+        // Add Dummy Timesheet
+        const ts1: Timesheet = {
+            id: 'ts1',
+            missionId: 'm1',
+            consultantName: 'Alice Dubois',
+            clientName: 'TechCorp',
+            periodStart: '2023-10-01',
+            periodEnd: '2023-10-07',
+            totalHours: 40,
+            totalDays: 5,
+            status: 'Submitted',
+            days: [
+                { date: '2023-10-01', hours: 0, type: 'Absence' },
+                { date: '2023-10-02', hours: 8, type: 'Production' },
+                { date: '2023-10-03', hours: 8, type: 'Production' },
+                { date: '2023-10-04', hours: 8, type: 'Production', note: 'Deploy prod' },
+                { date: '2023-10-05', hours: 8, type: 'Production' },
+                { date: '2023-10-06', hours: 8, type: 'Production' },
+                { date: '2023-10-07', hours: 0, type: 'Absence' },
+            ],
+            history: [
+                { date: '2023-10-08T10:00:00Z', action: 'Soumission', user: 'Alice Dubois' }
+            ]
+        };
+        setTimesheets([ts1]);
+
         setIsDummyDataActive(true);
         setView('dashboard');
     };
@@ -792,6 +897,7 @@ function AppContent() {
                 const candidate = candidateProfiles.find(c => c.id === candidateId);
                 return [...prev, {
                     candidateId,
+                    stage: 'NEW',
                     applicationDate: new Date().toISOString().split('T')[0],
                     interview1Date: '',
                     interview1Result: '' as const,
@@ -886,6 +992,66 @@ function AppContent() {
         }
     };
     
+    // Mission Handlers
+    const handleUpdateMission = (mission: Mission) => {
+        setMissions(prev => {
+            const exists = prev.find(m => m.id === mission.id);
+            if (exists) return prev.map(m => m.id === mission.id ? mission : m);
+            return [...prev, mission];
+        });
+        showToast('Mission mise à jour', 'success');
+    };
+
+    const handleCreateMission = (mission: Mission) => {
+        setMissions(prev => [...prev, mission]);
+        showToast('Mission créée avec succès', 'success');
+    };
+
+    const handleCreateMissionFromCandidate = (candidate: CandidateProfile) => {
+        setMissionPreFill({
+            candidateId: candidate.id,
+            title: `${candidate.jobCategory} - ${candidate.name}`,
+            city: candidate.location.split(',')[0].trim(),
+            country: candidate.location.split(',')[1]?.trim() || '',
+        });
+        setView('missions');
+    };
+
+    // Timesheet Handler
+    const handleUpdateTimesheetStatus = (id: string, status: any) => {
+        setTimesheets(prev => prev.map(ts => ts.id === id ? { ...ts, status } : ts));
+        showToast(`Feuille de temps ${status === 'Validated' ? 'validée' : 'refusée'}`, status === 'Validated' ? 'success' : 'info');
+    };
+
+    const handleSaveTimesheet = (timesheet: Timesheet) => {
+        setTimesheets(prev => {
+            const exists = prev.find(t => t.id === timesheet.id);
+            if (exists) {
+                return prev.map(t => t.id === timesheet.id ? timesheet : t);
+            }
+            return [timesheet, ...prev];
+        });
+        showToast(timesheet.status === 'Draft' ? 'Brouillon enregistré' : 'Feuille soumise', 'success');
+    };
+    
+    // AI Action Handler
+    const handleAIAction = (action: AIAction) => {
+        switch(action.type) {
+            case 'CREATE_MISSION':
+                // Pre-fill mission creation would happen here in a real app
+                // For now, switch view and show toast
+                setView('missions');
+                showToast(`Action: Créer mission pour ${action.payload.candidateName}`, 'info');
+                break;
+            case 'VALIDATE_TIMESHEET':
+                handleUpdateTimesheetStatus(action.payload.timesheetId, 'Validated');
+                break;
+            case 'GO_TO_TIMESHEETS':
+                setView('timesheets');
+                break;
+        }
+    };
+
     const handleConnect = (credentials: { userId: string; email: string; rememberMe: boolean }): boolean => {
         const { userId, email, rememberMe } = credentials;
         if (email.toLowerCase() === 'moslihayoub@gmail.com' || userId === 'Moslih84') {
@@ -928,13 +1094,17 @@ function AppContent() {
             case 'upload':
                 return <UploadView cvFiles={cvFiles} onAddFiles={handleAddFiles} onStartAnalysis={handleStartAnalysis} onClearFile={handleClearFile} onClearAllFiles={handleReset} isAnalyzing={isAnalyzing} storageError={storageError} isOwner={isOwner} analysisLimit={analysisLimit} limitError={limitError} uploadLimit={isOwner ? Infinity : UPLOAD_SELECTION_LIMIT} />;
             case 'dashboard':
-                return <DashboardView candidates={candidateProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} comparisonList={comparisonList} onToggleCompare={handleToggleCompare} onImportProfiles={handleImportProfiles} pipelineCandidateIds={recruitmentData.map(d => d.candidateId)} onTogglePipeline={handleTogglePipeline} showBars={showBars} />;
+                return <DashboardView candidates={candidateProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} comparisonList={comparisonList} onToggleCompare={handleToggleCompare} onImportProfiles={handleImportProfiles} pipelineCandidateIds={recruitmentData.map(d => d.candidateId)} onTogglePipeline={handleTogglePipeline} showBars={showBars} missions={missions} timesheets={timesheets} />;
             case 'favorites':
                 return <DashboardView candidates={favoriteProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} isFavoritesView comparisonList={comparisonList} onToggleCompare={handleToggleCompare} onImportProfiles={handleImportProfiles} pipelineCandidateIds={recruitmentData.map(d => d.candidateId)} onTogglePipeline={handleTogglePipeline} showBars={showBars} />;
             case 'ai':
-                return <AIAssistantView candidates={candidateProfiles} />;
+                return <AIAssistantView candidates={candidateProfiles} onActionClick={handleAIAction} />;
             case 'recruitment':
-                return <RecruitmentView candidates={candidateProfiles} recruitmentData={recruitmentData} onUpdateRecruitmentData={updateRecruitmentData} onSelectCandidate={handleSelectCandidate} onTogglePipeline={handleTogglePipeline} onSaveSnapshot={handleSaveSnapshot} lastSnapshotId={lastSnapshotId} />;
+                return <RecruitmentView candidates={candidateProfiles} recruitmentData={recruitmentData} onUpdateRecruitmentData={updateRecruitmentData} onSelectCandidate={handleSelectCandidate} onTogglePipeline={handleTogglePipeline} onSaveSnapshot={handleSaveSnapshot} lastSnapshotId={lastSnapshotId} onCreateMission={handleCreateMissionFromCandidate} />;
+            case 'missions':
+                return <MissionsView missions={missions} candidates={candidateProfiles} onUpdateMission={handleUpdateMission} onCreateMission={handleCreateMission} prefillData={missionPreFill} />;
+            case 'timesheets':
+                return <TimesheetsView timesheets={timesheets} onUpdateStatus={handleUpdateTimesheetStatus} onSaveTimesheet={handleSaveTimesheet} missions={missions} currentUser={currentUser} />;
             case 'history':
                 return <HistoryView history={pipelineHistory} />;
             case 'infra':
@@ -954,6 +1124,12 @@ function AppContent() {
             case 'compare':
                  const [profile1, profile2] = comparisonProfiles;
                  return <CompareView profile1={profile1} profile2={profile2} onBack={handleBackFromCompare} />;
+            case 'create-cv':
+                return <CreateCVView />;
+            case 'leaves':
+                return <LeavesView />;
+            case 'purchase-orders':
+                return <PurchaseOrdersView timesheets={timesheets} missions={missions} />;
             default:
                 return <UploadView cvFiles={cvFiles} onAddFiles={handleAddFiles} onStartAnalysis={handleStartAnalysis} onClearFile={handleClearFile} onClearAllFiles={handleReset} isAnalyzing={isAnalyzing} storageError={storageError} isOwner={isOwner} analysisLimit={analysisLimit} limitError={limitError} uploadLimit={isOwner ? Infinity : UPLOAD_SELECTION_LIMIT} />;
         }
@@ -986,6 +1162,23 @@ function AppContent() {
         }, 200); // Show bars after 200ms of inactivity
     };
 
+    const handleViewChange = (v: View) => {
+        if (view === 'create-cv' && v !== 'create-cv' && (window as any).isCVDirty) {
+            const save = window.confirm('Modifications non enregistrées. Voulez-vous enregistrer avant de quitter ?');
+            if (save) {
+                // Simulate save draft since we can't trigger the child function easily here
+                // Best simple way: just don't navigate and let user save, or force clear.
+                // Re-following exact prompt: "afficher une alerte 'Modifications non enregistrées. Voulez-vous enregistrer avant de quitter ?'"
+                // If they say ok, we should ideally trigger a save. Since we can't, we can just block them so they can click the save button.
+                return; 
+            } else {
+                (window as any).isCVDirty = false;
+            }
+        }
+        setView(v);
+        setSelectedProfileId(null);
+    };
+
     return (
         <div className="h-screen text-gray-800 dark:text-gray-200 bg-white dark:bg-black">
             <div className="flex h-full w-full">
@@ -994,7 +1187,7 @@ function AppContent() {
 
                 <Sidebar
                     currentView={view}
-                    setCurrentView={(v) => { setView(v); setSelectedProfileId(null); }}
+                    setCurrentView={handleViewChange}
                     isCollapsed={isSidebarCollapsed}
                     setIsCollapsed={setIsSidebarCollapsed}
                     isMobileOpen={isMobileSidebarOpen}
@@ -1042,11 +1235,13 @@ function AppContent() {
                     </main>
                      <MobileNavBar 
                         currentView={view}
-                        setCurrentView={(v) => { setView(v); setSelectedProfileId(null); }}
+                        setCurrentView={handleViewChange}
                         isVisible={!isMobileSidebarOpen && !isFullScreenView && showBars}
                     />
                 </div>
             </div>
+            
+            <FloatingAssistant currentView={view} cvFile={view === 'candidate-detail' && selectedProfileId ? cvFiles.find(f => f.profile?.id === selectedProfileId) : null} />
         </div>
     );
 }

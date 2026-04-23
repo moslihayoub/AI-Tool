@@ -315,6 +315,7 @@ export const AnalysisLoader: React.FC<AnalysisLoaderProps> = ({ total, startTime
                                 <div className="absolute top-0 left-0 h-full w-full bg-gradient-button animate-indeterminate-progress"></div>
                             </div>
                         </div>
+                        {/* @ts-ignore */}
                         <dotlottie-wc 
                             src="https://lottie.host/2963f454-9533-4e4c-9889-42b36e8b411d/QdDoxVd2p9.lottie" 
                             autoplay 
