@@ -245,7 +245,7 @@ function AppContent() {
     const [theme, setTheme] = React.useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'system');
 
     const [systemTheme, setSystemTheme] = React.useState(() =>
-        window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
     );
      const [isDummyDataActive, setIsDummyDataActive] = React.useState<boolean>(() => {
         try {
@@ -297,11 +297,27 @@ function AppContent() {
 
     React.useEffect(() => {
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        const handleChange = (e: MediaQueryListEvent) => {
+        const handleChange = (e: any) => {
             setSystemTheme(e.matches ? 'dark' : 'light');
         };
-        mediaQuery.addEventListener('change', handleChange);
-        return () => mediaQuery.removeEventListener('change', handleChange);
+        
+        // Initial sync
+        setSystemTheme(mediaQuery.matches ? 'dark' : 'light');
+
+        if (mediaQuery.addEventListener) {
+            mediaQuery.addEventListener('change', handleChange);
+        } else {
+            // Deprecated 'addListener' for older Safari support
+            mediaQuery.addListener(handleChange);
+        }
+
+        return () => {
+            if (mediaQuery.removeEventListener) {
+                mediaQuery.removeEventListener('change', handleChange);
+            } else {
+                mediaQuery.removeListener(handleChange);
+            }
+        };
     }, []);
 
     const isDarkMode = React.useMemo(() => {
@@ -404,8 +420,6 @@ function AppContent() {
             console.error("Failed to save CVs to localStorage", error);
             if (error instanceof DOMException && (error.name === 'QuotaExceededError' || error.code === 22)) {
                  setStorageError(t('errors.storageFull'));
-            } else if (error instanceof Error) {
-                 setStorageError(`${t('errors.saveError')}: ${error.message}`);
             } else {
                  setStorageError(t('errors.unknownSaveError'));
             }
@@ -1180,8 +1194,8 @@ function AppContent() {
     };
 
     return (
-        <div className="h-screen text-gray-800 dark:text-gray-200 bg-white dark:bg-black">
-            <div className="flex h-full w-full">
+        <div className="h-screen print:h-auto text-gray-800 dark:text-gray-200 bg-white dark:bg-black">
+            <div className="flex h-full print:h-auto print:block w-full">
                 {isAnalyzing && <AnalysisLoader total={analysisTotal} startTime={analysisStartTime} isAnalysisDone={isAnalysisDone} onViewResults={handleViewResults} onCancel={handleCancelAnalysis} />}
                 {isQuotaModalOpen && <QuotaModal onClose={() => setIsQuotaModalOpen(false)} onConnect={handleConnect} />}
 
@@ -1194,8 +1208,8 @@ function AppContent() {
                     setIsMobileOpen={setIsMobileSidebarOpen}
                     isOwner={isOwner}
                 />
-                <div className="flex-1 flex flex-col overflow-hidden">
-                    <header className={`md:hidden flex items-center justify-between rtl:flex-row-reverse p-4 border-b dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm fixed top-0 left-0 right-0 z-20 transition-transform duration-300 ${showBars ? 'translate-y-0' : '-translate-y-full'}`}>
+                <div className="flex-1 flex flex-col overflow-hidden print:overflow-visible print:block">
+                    <header className={`print:hidden md:hidden flex items-center justify-between rtl:flex-row-reverse p-4 border-b dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm fixed top-0 left-0 right-0 z-20 transition-transform duration-300 ${showBars ? 'translate-y-0' : '-translate-y-full'}`}>
                         <>
                             <img src={logoLight} alt="ParseLIQ HR Logo" className="h-8 w-auto dark:hidden" />
                             <img src={logoDark} alt="ParseLIQ HR Logo" className="h-8 w-auto hidden dark:block" />
@@ -1229,7 +1243,7 @@ function AppContent() {
                     <main 
                         ref={mainContentRef} 
                         onScroll={handleScroll}
-                        className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 pb-16 md:pb-0 pt-16 md:pt-0"
+                        className="flex-1 overflow-y-auto print:overflow-visible print:h-auto bg-gray-50 dark:bg-gray-900 pb-16 md:pb-0 pt-16 md:pt-0"
                     >
                         {renderContent()}
                     </main>
@@ -1241,7 +1255,9 @@ function AppContent() {
                 </div>
             </div>
             
-            <FloatingAssistant currentView={view} cvFile={view === 'candidate-detail' && selectedProfileId ? cvFiles.find(f => f.profile?.id === selectedProfileId) : null} />
+            <div className="print:hidden">
+                <FloatingAssistant currentView={view} cvFile={view === 'candidate-detail' && selectedProfileId ? cvFiles.find(f => f.profile?.id === selectedProfileId) : null} />
+            </div>
         </div>
     );
 }

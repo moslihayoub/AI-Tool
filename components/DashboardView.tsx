@@ -7,6 +7,7 @@ import { Icon } from './icons';
 import { FilterView } from './FilterView';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList, LineChart, Line } from 'recharts';
 import { useTranslation } from '../i18n';
+import { useToast } from './Toast';
 import { Drawer } from './Drawer';
 
 interface DashboardViewProps {
@@ -187,6 +188,7 @@ const EmptyChartState: React.FC = () => {
 
 export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSelectCandidate, onReset, favorites, onToggleFavorite, isFavoritesView = false, comparisonList, onToggleCompare, onImportProfiles, pipelineCandidateIds, onTogglePipeline, showBars = true, missions = [], timesheets = [] }) => {
     const { t } = useTranslation();
+    const { showToast } = useToast();
     const [filters, setFilters] = React.useState<FilterCriteria>({ jobCategories: [], locations: [], experienceLevels: [], skills: [] });
     const [isFilterViewOpen, setIsFilterViewOpen] = React.useState(false);
     const [isActionsOpen, setIsActionsOpen] = React.useState(false);
@@ -219,7 +221,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                 if (file.name.endsWith('.csv')) {
                     const rows = text.split('\n').map(row => row.trim()).filter(row => row);
                     if (rows.length < 2) {
-                        alert('Invalid or empty CSV file.');
+                        showToast(t('errors.analysis_failed'), 'error');
                         return;
                     }
                     const header = rows[0].split(',').map(h => h.replace(/"/g, '').trim());
@@ -255,7 +257,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                         throw new Error("Invalid JSON structure for profiles.");
                     }
                 } else {
-                    alert("Unsupported file type for import. Please use CSV or JSON.");
+                    showToast(t('errors.analysis_failed'), 'error');
                     return;
                 }
 
@@ -264,7 +266,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                 }
             } catch (error) {
                 console.error("Failed to parse import file:", error);
-                alert(`Error parsing file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                showToast(t('errors.analysis_failed'), 'error');
             }
         };
         reader.readAsText(file);
@@ -465,15 +467,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
             </div>
         );
     }
-
-    const exportToCsv = () => {
-        // Implementation remains same
-        alert("Use global export");
-    };
-    
-    const exportToJson = () => {
-        // Implementation remains same
-    };
 
     const activeFilterCount = filters.jobCategories.length + filters.locations.length + filters.experienceLevels.length + filters.skills.length;
 

@@ -47,6 +47,119 @@ export const InfraView: React.FC<InfraViewProps> = () => {
         };
         
         const currentLogs: LogEntry[] = [
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'fix',
+                title: 'Fixed Global Fetch Error',
+                description: 'Correction de l\'erreur Cannot set property fetch of #<Window> which has only a getter provoquée par un conflit d\'importmap avec Vite.',
+                details: [
+                    'Suppression du script importmap dans index.html pour laisser Vite résoudre les dépendances (dont @google/genai).',
+                    'Résolution du conflit de la version CDN incluant un polyfill node-fetch redondant dans le build Navigateur.',
+                    'Le client Gemini API se repose maintenant nativement sur le module ESM Node/Browser généré et injecté par Vite.'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'bug',
+                title: 'Responsive Breakpoints & Overflow Fixes',
+                description: 'Correction de la mise en page (breakpoints) et du débordement de contenu.',
+                details: [
+                    'Fix de la zone d\'import Sidebar qui subissait une compression sur petits et moyens écrans.',
+                    'Correction du chevauchement de la page A4 (CreateCVView) où les conteneurs compressaient le contenu sous le canevas en blanc grâce à `shrink-0`.',
+                    'Mise en évidence du mode adaptatif avec défilement horizontal natif (overflow-x) pour la page CV, sans briser le standard 210mm x 297mm.'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'feat',
+                title: 'Error Handling & UI Polishing',
+                description: 'Amélioration des alertes techniques et restructuration de la zone d\'importation.',
+                details: [
+                    'Conversion des alertes Javascript en notifications Toast plus lisibles et traduites.',
+                    'Configuration et restructuration de la zone de dépôt (UploadView) sous forme d\'onglets pour clarifier "Import a doc" vs "Via link".',
+                    'Correction du menu latéral (Sidebar) masqué involontairement sur les écrans larges.',
+                    'Application des styles d\'impression correctifs aux conteneurs de l\'application afin d\'adopter la hauteur exacte lors de l\'export.'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'feat',
+                title: 'CV Export & UI Enhancements',
+                description: 'Ajout de l\'export Word (.doc), amélioration de la visibilité des onglets d\'import, et optimisation de l\'impression A4.',
+                details: [
+                    'Implémentation de l\'exportation Word (format .doc) avec gestion du contenu HTML.',
+                    'Refonte visuelle des onglets "Via link" et "Import a doc" en boutons CTA plus accessibles.',
+                    'Ajout d\'un sélecteur de format (PDF/Word) dans la barre d\'actions du CV.',
+                    'Optimisation CSS @media print pour éviter les coupures de texte au format A4 (break-inside-avoid).',
+                    'Ajustement de la hauteur de page à min-h-screen pour une meilleure couverture visuelle.'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'ui',
+                title: 'CV Paging & Style Refinement',
+                description: 'Optimisation de l\'aperçu CV avec support multi-pages (Word-like) et ajustement des bordures et arrondis.',
+                details: [
+                    'Mise en place d\'indicateurs de saut de page visuels (Page 2, Page 3)',
+                    'Réduction de 30% de l\'arrondi des coins du document pour un look plus pro',
+                    'Suppression des contours/bordures du wrapper de document',
+                    'Activation du scroll vertical fluide pour visualiser l\'intégralité des données CV'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'ui',
+                title: 'UI Rounding & A4 Preview',
+                description: 'Application de coins arrondis sur toute l\'interface et mise en place d\'un aperçu Document A4 avec indicateur de séparation de page.',
+                details: [
+                    'Mise à jour de CreateCVView avec des classes rounded-2xl, rounded-3xl',
+                    'Implémentation du wrapper A4 (21cm/29.7cm) pour une expérience plus moderne',
+                    'Ajout d\'un marqueur visuel de saut de page pour le contenu long'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'bug',
+                title: 'Fixed Profile Population Leak',
+                description: 'Corrected a bug where dummy data (like LinkedIn links) persisted after importing a real CV. Optimized theme sync for system preferences.',
+                details: [
+                    'Modified populateFromProfile in CreateCVView to ensure all fields are reset/overwritten on import.',
+                    'Added handling for LinkedIn and Website fields during AI parsing to match real profiles.',
+                    'Verified robust matchMedia listeners in App.tsx for cross-browser theme synchronization.'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'bug',
+                title: 'Fixed Uncaught ReferenceError',
+                description: 'Fixed t is not defined error in CreateCVView by importing and using useTranslation.',
+                details: [
+                    'Imported useTranslation from ../i18n in CreateCVView.tsx',
+                    'Added const { t } = useTranslation(); inside CreateCVView component'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'ui',
+                title: 'Refactoring & UI Enhancements',
+                description: 'Applied minimalist custom scrollbars, reorganized the Upload page, fixed Arabic translations, updated footer link, and added this auto-logger instruction.',
+                details: [
+                    'Applied minimalist Tailwind pink custom scrollbar logic into index.css.',
+                    'Reordered CV upload view to place URL input field before Drag&Drop box.',
+                    'Updated bottom sidebar LinkedIn link for "moslih84".',
+                    'Fixed missing layout styles and began preparation for Arabic missing translations.',
+                    'Added standard operational procedure to auto-log all Gemini AI updates here.'
+                ]
+            },
             { 
                 date: getDateStr(0), 
                 time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 

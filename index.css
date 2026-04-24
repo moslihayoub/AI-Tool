@@ -1,0 +1,44 @@
+/* Minimalist scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary-500, #ec4899); /* Tailwind pink-500 as fallback */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary-600, #db2777); /* Tailwind pink-600 */
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary-500, #ec4899) transparent;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .print-break-inside-avoid {
+    break-inside: avoid;
+  }
+  .print-m-0 {
+    margin: 0 !important;
+  }
+  .print-p-0 {
+    padding: 0 !important;
+  }
+}

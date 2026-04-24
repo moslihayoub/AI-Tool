@@ -18,13 +18,13 @@ export const MobileNavBar: React.FC<MobileNavBarProps> = ({ currentView, setCurr
   // Define all items
   const allNavItems = [
     { id: 'upload', label: t('sidebar.upload'), icon: 'upload' },
-    { id: 'create-cv', label: 'Créer un CV', icon: 'file-pen' },
+    { id: 'create-cv', label: t('sidebar.create_cv'), icon: 'file-pen' },
     { id: 'dashboard', label: t('sidebar.dashboard'), icon: 'dashboard' },
     { id: 'recruitment', label: t('sidebar.recruitment'), icon: 'users' },
     { id: 'missions', label: t('sidebar.missions') || 'Missions', icon: 'briefcase' },
     { id: 'timesheets', label: t('sidebar.timesheets') || 'Feuilles', icon: 'clock' },
-    { id: 'leaves', label: 'Congés', icon: 'calendar-heart' },
-    { id: 'purchase-orders', label: 'Bons de commande', icon: 'receipt' },
+    { id: 'leaves', label: t('sidebar.leaves'), icon: 'calendar-heart' },
+    { id: 'purchase-orders', label: t('sidebar.purchase_orders'), icon: 'receipt' },
     { id: 'history', label: t('sidebar.history'), icon: 'history' },
     { id: 'infra', label: t('sidebar.infra'), icon: 'activity' },
     { id: 'ai', label: t('sidebar.ai_assistant'), icon: 'bot' },
@@ -40,7 +40,7 @@ export const MobileNavBar: React.FC<MobileNavBarProps> = ({ currentView, setCurr
   
   // FIX: Fixed bug where navbar would disappear on scroll by ensuring it is always visible.
   return (
-    <nav className={`fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-t border-gray-200 dark:border-gray-800 md:hidden z-40 transform transition-transform duration-300 ${isVisible ? 'translate-y-0' : 'translate-y-full'}`}>
+    <nav className={`print:hidden fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-t border-gray-200 dark:border-gray-800 md:hidden z-40 transform transition-transform duration-300 ${isVisible ? 'translate-y-0' : 'translate-y-full'}`}>
       <div className="flex justify-around items-center h-16 px-1">
         {navItems.map((item) => (
           <button

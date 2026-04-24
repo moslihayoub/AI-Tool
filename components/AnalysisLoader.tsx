@@ -182,7 +182,7 @@ const LightCycleGame: React.FC<{onClose: () => void}> = ({onClose}) => {
         if (!gameContainerRef.current) return;
         if (!document.fullscreenElement) {
             gameContainerRef.current.requestFullscreen().catch(err => {
-              alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+              console.error(`Error full-screen mode: ${err.message}`);
             });
         } else {
             document.exitFullscreen();

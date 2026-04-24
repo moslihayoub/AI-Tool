@@ -39,6 +39,7 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
   const [isDragActive, setIsDragActive] = React.useState(false);
   const [confirmReset, setConfirmReset] = React.useState(false);
   const [urlInput, setUrlInput] = React.useState('');
+  const [selectedTab, setSelectedTab] = React.useState<'file'|'link'>('file');
   const [isUrlLoading, setIsUrlLoading] = React.useState(false);
   const [urlError, setUrlError] = React.useState('');
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -219,9 +220,12 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
                                 </div>
                                 {cvFile.status === 'error' && cvFile.error && (
                                     <div className="mt-2 pl-10">
-                                        <p className="text-xs text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/30 p-2 rounded-md">
-                                            <strong>{t('upload.status.error')}: </strong>{cvFile.error}
-                                        </p>
+                                        <div className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-100 dark:border-red-900/50">
+                                            <Icon name="alert-triangle" className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                                            <p>
+                                                <strong>{t('upload.status.error')}: </strong>{t('errors.analysis_failed')}
+                                            </p>
+                                        </div>
                                     </div>
                                 )}
                             </li>
@@ -229,65 +233,89 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
                     </ul>
                  </div>
             )}
-            <div 
-              onDragEnter={handleDrag} 
-              onDragLeave={handleDrag} 
-              onDragOver={handleDrag} 
-              onDrop={handleDrop}
-              onClick={onButtonClick}
-              className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 flex flex-col items-center justify-center min-h-[450px]
-                ${cvFiles.length > 0 ? 'lg:order-2' : 'col-span-1'}
-                ${isDragActive ? 'border-pink-500 bg-pink-50 dark:bg-pink-900/20' : 'border-gray-300 dark:border-gray-600 bg-white/30 dark:bg-gray-800/30'}
-                ${isInteractionDisabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:border-pink-400'}`}
-                 title={isUploadDisabled ? t('errors.upload_limit_reached') : ''}
-            >
-                <input ref={inputRef} type="file" multiple onChange={handleChange} className="hidden" accept=".pdf,.txt,.json,.md,.csv,.doc,.docx,.xls,.xlsx,.ppt,.pptx" disabled={isInteractionDisabled} />
-                
-                <div className="flex flex-col items-center justify-center text-gray-500 dark:text-gray-400">
-                    {/* FIX: Changed autoPlay to autoplay to align with web component standards. */}
-                    {/* @ts-ignore */}
-                    <dotlottie-wc src="https://lottie.host/05f02365-02dd-4b23-8289-b8d119e5c961/9dwTt6kpl2.lottie" style={{ width: '220px', height: '220px' }} autoplay loop></dotlottie-wc>
-                    <div className="text-center">
-                        {isDragActive ? (
-                            <p className="text-lg font-semibold text-pink-600">{t('upload.dropzone.release')}</p>
-                        ) : isInteractionDisabled ? (
-                           <p className="text-lg font-semibold text-gray-600 dark:text-gray-400">{t('upload.dropzone.limit_reached_prompt')}</p>
+            <div className={`flex flex-col gap-6 ${cvFiles.length > 0 ? 'lg:order-2' : 'col-span-1'} w-full`}>
+                <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700">
+                    <div className="flex border-b border-gray-200 dark:border-gray-700">
+                        <button 
+                            onClick={(e) => { e.preventDefault(); setUrlInput(''); setUrlError(''); setSelectedTab('file'); }}
+                            className={`flex-1 py-4 px-6 text-sm font-bold flex justify-center items-center gap-2 transition-colors ${selectedTab === 'file' ? 'bg-pink-500 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                        >
+                            <Icon name="upload-cloud" className="w-5 h-5" />
+                            {t('upload.import_doc', 'Import a doc')}
+                        </button>
+                        <button 
+                            onClick={(e) => { e.preventDefault(); setSelectedTab('link'); }}
+                            className={`flex-1 py-4 px-6 text-sm font-bold flex justify-center items-center gap-2 transition-colors ${selectedTab === 'link' ? 'bg-pink-500 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                        >
+                            <Icon name="link" className="w-5 h-5" />
+                            {t('upload.via_link', 'Via link')}
+                        </button>
+                    </div>
+
+                    <div className="p-0 sm:p-6">
+                        {selectedTab === 'link' ? (
+                            <div className="flex flex-col gap-4 animate-fadeIn p-6 sm:p-0">
+                                <p className="text-gray-600 dark:text-gray-400 text-sm">{t('upload.url_placeholder', 'Lien PDF, profil LinkedIn, ou Google Doc...')}</p>
+                                <div className="flex flex-col sm:flex-row gap-2 w-full">
+                                    <input
+                                        type="url"
+                                        placeholder="https://..."
+                                        value={urlInput}
+                                        onChange={(e) => setUrlInput(e.target.value)}
+                                        disabled={isInteractionDisabled || isUrlLoading}
+                                        className="flex-grow px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-pink-500 outline-none transition-shadow text-gray-900 dark:text-gray-100"
+                                    />
+                                    <button
+                                        onClick={handleUrlSubmit}
+                                        disabled={!urlInput || isInteractionDisabled || isUrlLoading}
+                                        className="bg-gray-800 hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-[160px]"
+                                    >
+                                        {isUrlLoading ? <Icon name="spinner" className="w-5 h-5 animate-spin" /> : <Icon name="arrow-right" className="w-5 h-5" />}
+                                        {t('upload.analyze_link', 'Analyser le lien')}
+                                    </button>
+                                </div>
+                                {urlError && <p className="text-red-500 text-sm mt-1 flex items-center gap-1"><Icon name="alert-triangle" className="w-4 h-4"/> {urlError}</p>}
+                            </div>
                         ) : (
-                            <p className="text-lg font-semibold">{t('upload.dropzone.prompt')}</p>
+                            <div 
+                              onDragEnter={handleDrag} 
+                              onDragLeave={handleDrag} 
+                              onDragOver={handleDrag} 
+                              onDrop={handleDrop}
+                              onClick={onButtonClick}
+                              className={`relative m-4 sm:m-0 border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 flex flex-col items-center justify-center min-h-[300px] animate-fadeIn cursor-pointer
+                                ${isDragActive ? 'border-pink-500 bg-pink-50 dark:bg-pink-900/20' : 'border-gray-300 dark:border-gray-600 bg-gray-50/50 dark:bg-gray-800/30'}
+                                ${isInteractionDisabled ? 'opacity-60 cursor-not-allowed' : 'hover:border-pink-400 hover:bg-pink-50/50 dark:hover:bg-gray-800/80'}`}
+                                 title={isUploadDisabled ? t('errors.upload_limit_reached') : ''}
+                            >
+                                <input ref={inputRef} type="file" multiple onChange={handleChange} className="hidden" accept=".pdf,.txt,.json,.md,.csv,.doc,.docx,.xls,.xlsx,.ppt,.pptx" disabled={isInteractionDisabled} />
+                                
+                                <div className="flex flex-col items-center justify-center text-gray-500 dark:text-gray-400">
+                                    {/* @ts-ignore */}
+                                    <dotlottie-wc src="https://lottie.host/05f02365-02dd-4b23-8289-b8d119e5c961/9dwTt6kpl2.lottie" style={{ width: '180px', height: '180px' }} autoplay loop></dotlottie-wc>
+                                    <div className="text-center mt-2">
+                                        {isDragActive ? (
+                                            <p className="text-lg font-semibold text-pink-600">{t('upload.dropzone.release')}</p>
+                                        ) : isInteractionDisabled ? (
+                                           <p className="text-lg font-semibold text-gray-600 dark:text-gray-400">{t('upload.dropzone.limit_reached_prompt')}</p>
+                                        ) : (
+                                            <p className="text-lg font-semibold text-gray-800 dark:text-gray-200">{t('upload.dropzone.prompt')}</p>
+                                        )}
+                                        <p className="text-sm mt-1 mb-4">{isInteractionDisabled ? t('upload.limit_rules.limit_reached_description') : t('upload.dropzone.supported_files')}</p>
+                                        
+                                        {!isInteractionDisabled && (
+                                            <span className="px-6 py-2.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-bold text-gray-700 dark:text-gray-200 transition-colors shadow-sm inline-flex items-center gap-2">
+                                                <Icon name="upload-cloud" className="w-4 h-4"/>
+                                                Parcourir les fichiers
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
                         )}
-                        <p className="text-sm mt-1">{isInteractionDisabled ? t('upload.limit_rules.limit_reached_description') : t('upload.dropzone.supported_files')}</p>
                     </div>
                 </div>
             </div>
-
-            {/* URL Import Section */}
-            <div className={`mt-4 ${cvFiles.length > 0 ? 'col-span-1 lg:order-3' : 'col-span-1'} w-full max-w-xl mx-auto`}>
-                <div className="flex items-center justify-center gap-4 text-gray-400 my-6">
-                    <hr className="flex-grow border-gray-300 dark:border-gray-700" />
-                    <span className="text-sm uppercase tracking-wide">-- ou --</span>
-                    <hr className="flex-grow border-gray-300 dark:border-gray-700" />
-                </div>
-                <div className="flex flex-col sm:flex-row gap-2">
-                    <input
-                        type="url"
-                        placeholder="Lien PDF, profil LinkedIn, ou Google Doc..."
-                        value={urlInput}
-                        onChange={(e) => setUrlInput(e.target.value)}
-                        disabled={isInteractionDisabled || isUrlLoading}
-                        className="flex-grow px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-pink-500 outline-none transition-shadow text-gray-900 dark:text-gray-100"
-                    />
-                    <button
-                        onClick={handleUrlSubmit}
-                        disabled={!urlInput || isInteractionDisabled || isUrlLoading}
-                        className="bg-gray-800 hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-[160px]"
-                    >
-                        {isUrlLoading ? <Icon name="spinner" className="w-5 h-5 animate-spin" /> : <Icon name="link" className="w-5 h-5" />}
-                        Analyser le lien
-                    </button>
-                </div>
-                {urlError && <p className="text-red-500 text-sm mt-2">{urlError}</p>}
-            </div>
-            {/* End URL Import Section */}
         </div>
     </div>
   );

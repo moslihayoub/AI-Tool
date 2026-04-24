@@ -35,6 +35,8 @@ export interface CandidateProfile {
   email: string;
   phone: string;
   location: string;
+  linkedin?: string;
+  website?: string;
   summary: string;
   experience: Experience[];
   education: Education[];

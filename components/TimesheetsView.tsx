@@ -3,6 +3,7 @@ import * as React from 'react';
 import { Timesheet, TimesheetStatus, TimesheetDay, Mission, User } from '../types';
 import { useTranslation } from '../i18n';
 import { Icon } from './icons';
+import { useToast } from './Toast';
 
 interface TimesheetsViewProps {
     timesheets: Timesheet[];
@@ -14,6 +15,7 @@ interface TimesheetsViewProps {
 
 export const TimesheetsView: React.FC<TimesheetsViewProps> = ({ timesheets, onUpdateStatus, onSaveTimesheet, missions = [], currentUser }) => {
     const { t } = useTranslation();
+    const { showToast } = useToast();
     const [selectedTimesheet, setSelectedTimesheet] = React.useState<Timesheet | null>(null);
     const [isCreatorOpen, setIsCreatorOpen] = React.useState(false);
     const [editingTimesheet, setEditingTimesheet] = React.useState<Partial<Timesheet>>({});
@@ -146,7 +148,7 @@ export const TimesheetsView: React.FC<TimesheetsViewProps> = ({ timesheets, onUp
 
     const saveTimesheet = (status: TimesheetStatus) => {
         if (!editingTimesheet.missionId) {
-            alert("Veuillez sélectionner une mission.");
+            showToast("Veuillez sélectionner une mission.", "error");
             return;
         }
 

@@ -14,6 +14,8 @@ const candidateProfileSchema = {
         email: { type: Type.STRING, description: "Email address of the candidate." },
         phone: { type: Type.STRING, description: "Phone number of the candidate." },
         location: { type: Type.STRING, description: "City and country of the candidate, e.g. 'Paris, France'." },
+        linkedin: { type: Type.STRING, description: "URL of the candidate's LinkedIn profile if found." },
+        website: { type: Type.STRING, description: "URL of the candidate's personal website or portfolio if found." },
         summary: { type: Type.STRING, description: "A brief summary of the candidate's profile, in 2-3 sentences." },
         experience: {
             type: Type.ARRAY,
@@ -80,16 +82,34 @@ const systemInstructionForParsing = `You are an expert HR assistant specializing
  * @returns A promise that resolves to the parsed candidate profile.
  */
 export async function parseCvContent(fileData: { mimeType: string; data: string }): Promise<Omit<CandidateProfile, 'id' | 'fileName' | 'analysisDuration'>> {
-    // Fix: Select model based on task type. 'gemini-2.5-flash' is suitable for this structured data extraction task.
-    const model = 'gemini-2.5-flash';
-    const prompt = `Please analyze the attached CV and extract the candidate's information.`;
+    // Fix: Select model based on task type. 'gemini-3.1-pro-preview' supports search grounding.
+    const model = 'gemini-3.1-pro-preview';
+    let isUrl = false;
+    let decodedText = '';
+    
+    if (fileData.mimeType === 'text/plain') {
+        try {
+            decodedText = atob(fileData.data);
+            isUrl = decodedText.includes('Contenu importé depuis:');
+        } catch (e) {
+            console.error("Failed to decode text/plain data", e);
+        }
+    }
+    
+    let prompt = `Please analyze the attached CV and extract the candidate's information.`;
+    if (isUrl) {
+        const url = decodedText.replace('Contenu importé depuis: ', '');
+        prompt = `The user provided a URL: ${url}. 
+        Please use the Google Search tool to find information about this profile and extract the candidate's details.
+        If you cannot find the profile or it is private, do not hallucinate; extract only what you are sure about or return "N/A".`;
+    }
     
     const maxRetries = 3;
     let attempt = 0;
 
     while (attempt < maxRetries) {
         try {
-            // Fix: Call Gemini API to generate content with a specific JSON schema.
+            // Fix: Call Gemini API to generate content with a specific JSON schema and tools.
             const response: GenerateContentResponse = await ai.models.generateContent({
                 model: model,
                 contents: { parts: [{ text: prompt }, { inlineData: fileData }] },
@@ -97,6 +117,7 @@ export async function parseCvContent(fileData: { mimeType: string; data: string 
                     systemInstruction: systemInstructionForParsing,
                     responseMimeType: "application/json",
                     responseSchema: candidateProfileSchema,
+                    tools: [{ googleSearch: {} }],
                 },
             });
 
@@ -110,6 +131,8 @@ export async function parseCvContent(fileData: { mimeType: string; data: string 
                 email: parsedJson.email || 'N/A',
                 phone: parsedJson.phone || 'N/A',
                 location: parsedJson.location || 'N/A',
+                linkedin: parsedJson.linkedin || 'N/A',
+                website: parsedJson.website || 'N/A',
                 summary: parsedJson.summary || 'N/A',
                 experience: parsedJson.experience || [],
                 education: parsedJson.education || [],

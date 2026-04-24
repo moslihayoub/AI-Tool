@@ -3,6 +3,7 @@ import * as React from 'react';
 import { Mission, CandidateProfile, MissionStatus, ContractType, WorkMode, Periodicity } from '../types';
 import { useTranslation } from '../i18n';
 import { Icon } from './icons';
+import { useToast } from './Toast';
 
 interface MissionsViewProps {
     missions: Mission[];
@@ -14,6 +15,7 @@ interface MissionsViewProps {
 
 export const MissionsView: React.FC<MissionsViewProps> = ({ missions, candidates, onUpdateMission, onCreateMission, prefillData }) => {
     const { t } = useTranslation();
+    const { showToast } = useToast();
     const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
     const [animateSidebar, setAnimateSidebar] = React.useState(false);
     const [editingMission, setEditingMission] = React.useState<Partial<Mission>>({});
@@ -157,7 +159,7 @@ export const MissionsView: React.FC<MissionsViewProps> = ({ missions, candidates
 
     const exportToCsv = () => {
         if (!window.XLSX) {
-            alert('Export library loading...');
+            showToast('Export library loading...', 'info');
             return;
         }
         const data = missions.map(m => ({

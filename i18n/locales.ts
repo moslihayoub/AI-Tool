@@ -13,11 +13,16 @@ export const fr = {
         history: "Historique",
         infra: "Infra",
         missions: "Missions",
-        timesheets: "Feuilles de temps"
+        timesheets: "Feuilles de temps",
+        create_cv: "Créer un CV",
+        leaves: "Congés",
+        purchase_orders: "Bons de commande"
     },
     upload: {
         title: "Importer des CVs",
         subtitle: "Glissez-déposez des fichiers ou cliquez pour les sélectionner.",
+        import_doc: "Importer un doc",
+        via_link: "Via un lien",
         results: {
             title: "Zone d'importation",
             subtitle: "Vérifiez les fichiers ci-dessous avant de lancer l'analyse."
@@ -29,6 +34,8 @@ export const fr = {
             limit_reached_prompt: "Limite de 5 fichiers atteinte"
         },
         google_drive_import: "Importer via Google Drive",
+        url_placeholder: "Lien PDF, profil LinkedIn, ou Google Doc...",
+        analyze_link: "Analyser le lien",
         pending_files: {
             title: "Fichiers en attente ({{count}})",
             analyze_button: "Commencer ({{count}})"
@@ -254,6 +261,7 @@ export const fr = {
         replay_game: "Rejouer"
     },
     common: {
+        or: "ou",
         reset: "Réinitialiser",
         reset_confirm: "Êtes-vous sûr de vouloir supprimer toutes les données ? Cette action est irréversible.",
         reset_confirm_action: "Confirmer ?",
@@ -283,7 +291,8 @@ export const fr = {
         limit_exceeded: "Limite d'opérations d'analyse quotidienne atteinte. Vous ne pouvez effectuer que {{limit}} opérations d'analyse par jour.",
         upload_limit_reached: "Vous avez atteint la limite de 5 fichiers. Veuillez analyser ou réinitialiser pour en ajouter d'autres.",
         upload_selection_ignored: "La limite de 5 fichiers a été atteinte. Seuls les {{count}} premiers fichiers ont été ajoutés.",
-        invalid_json: "Format JSON invalide."
+        invalid_json: "Format JSON invalide.",
+        analysis_failed: "Une erreur est survenue lors du traitement. Veuillez vérifier le format de votre fichier ou réessayer plus tard."
     },
     quota_modal: {
         title: "Limite de quota atteinte",
@@ -334,6 +343,17 @@ export const fr = {
             storage: "Local Persistence",
             build: "Build Tool"
         }
+    },
+    create_cv: {
+        title: "Créer un CV",
+        subtitle: "Personnalisez votre CV interactif.",
+        draft_banner: "Vous avez un brouillon non publié.",
+        resume: "Reprendre",
+        ignore: "Ignorer",
+        import_data: "Importer vos données",
+        via_link: "Via un lien",
+        import_doc: "Importer un doc",
+        save_draft: "Enregistrer le brouillon"
     }
 };
 
@@ -350,11 +370,16 @@ export const en = {
         history: "History",
         infra: "Infra",
         missions: "Missions",
-        timesheets: "Timesheets"
+        timesheets: "Timesheets",
+        create_cv: "Create CV",
+        leaves: "Leaves",
+        purchase_orders: "Purchase Orders"
     },
     upload: {
         title: "Import CVs",
         subtitle: "Drag and drop files or click to select them.",
+        import_doc: "Import a doc",
+        via_link: "Via link",
         results: {
             title: "Import Zone",
             subtitle: "Review the files below before starting the analysis."
@@ -366,6 +391,8 @@ export const en = {
             limit_reached_prompt: "5-file limit reached"
         },
         google_drive_import: "Import from Google Drive",
+        url_placeholder: "PDF Link, LinkedIn Profile, or Google Doc...",
+        analyze_link: "Analyze Link",
         pending_files: {
             title: "Pending Files ({{count}})",
             analyze_button: "Start Parsing ({{count}})"
@@ -591,6 +618,7 @@ export const en = {
         replay_game: "Replay"
     },
     common: {
+        or: "or",
         reset: "Reset",
         reset_confirm: "Are you sure you want to delete all data? This action is irreversible.",
         reset_confirm_action: "Confirm?",
@@ -620,7 +648,8 @@ export const en = {
         limit_exceeded: "Daily analysis limit reached. You can only perform {{limit}} analysis operations per day.",
         upload_limit_reached: "You have reached the 5-file limit. Please analyze or reset to add more.",
         upload_selection_ignored: "The 5-file limit was reached. Only the first {{count}} files were added.",
-        invalid_json: "Invalid JSON format."
+        invalid_json: "Invalid JSON format.",
+        analysis_failed: "An error occurred during processing. Please check your file format or try again later."
     },
     quota_modal: {
         title: "Quota Limit Reached",
@@ -671,6 +700,17 @@ export const en = {
             storage: "Local Persistence",
             build: "Build Tool"
         }
+    },
+    create_cv: {
+        title: "Create a CV",
+        subtitle: "Customize your interactive CV.",
+        draft_banner: "You have an unpublished draft.",
+        resume: "Resume",
+        ignore: "Ignore",
+        import_data: "Import your data",
+        via_link: "Via link",
+        import_doc: "Import a doc",
+        save_draft: "Save draft"
     }
 };
 
@@ -687,11 +727,16 @@ export const ar = {
         history: "السجل",
         infra: "البنية التحتية",
         missions: "المهام",
-        timesheets: "جداول الأوقات"
+        timesheets: "جداول الأوقات",
+        create_cv: "إنشاء سيرة ذاتية",
+        leaves: "إجازات",
+        purchase_orders: "أوامر الشراء"
     },
     upload: {
         title: "تحميل السير الذاتية",
         subtitle: "سحب وإفلات الملفات أو انقر لتحديدها.",
+        import_doc: "استيراد مستند",
+        via_link: "عبر رابط",
         results: {
             title: "منطقة الاستيراد",
             subtitle: "مراجعة الملفات أدناه قبل بدء التحليل."
@@ -703,6 +748,8 @@ export const ar = {
             limit_reached_prompt: "تم الوصول إلى حد 5 ملفات"
         },
         google_drive_import: "استيراد من Google Drive",
+        url_placeholder: "رابط PDF، أو ملف LinkedIn، أو مستند Google...",
+        analyze_link: "تحليل الرابط",
         pending_files: {
             title: "ملفات قيد الانتظار ({{count}})",
             analyze_button: "بدء التحليل ({{count}})"
@@ -928,6 +975,7 @@ export const ar = {
         replay_game: "إعادة اللعب"
     },
     common: {
+        or: "أو",
         reset: "إعادة تعيين",
         reset_confirm: "هل أنت متأكد أنك تريد حذف جميع البيانات؟ هذا الإجراء لا يمكن التراجع عنه.",
         reset_confirm_action: "تأكيد؟",
@@ -957,7 +1005,8 @@ export const ar = {
         limit_exceeded: "تم الوصول إلى حد التحليل اليومي. يمكنك إجراء {{limit}} عمليات تحليل فقط في اليوم.",
         upload_limit_reached: "لقد وصلت إلى حد 5 ملفات. يرجى التحليل أو إعادة التعيين لإضافة المزيد.",
         upload_selection_ignored: "تم الوصول إلى حد 5 ملفات. تمت إضافة أول {{count}} ملفات فقط.",
-        invalid_json: "تنسيق JSON غير صالح."
+        invalid_json: "تنسيق JSON غير صالح.",
+        analysis_failed: "حدث خطأ أثناء المعالجة. يرجى التحقق من تنسيق ملفك أو المحاولة مرة أخرى لاحقًا."
     },
     quota_modal: {
         title: "تم الوصول إلى حد الحصة",
@@ -1008,5 +1057,16 @@ export const ar = {
             storage: "التخزين المحلي",
             build: "أداة البناء"
         }
+    },
+    create_cv: {
+        title: "إنشاء سيرة ذاتية",
+        subtitle: "تخصيص السيرة الذاتية التفاعلية الخاصة بك.",
+        draft_banner: "لديك مسودة غير منشورة.",
+        resume: "استئناف",
+        ignore: "تجاهل",
+        import_data: "استيراد بياناتك",
+        via_link: "عبر رابط",
+        import_doc: "استيراد مستند",
+        save_draft: "حفظ المسودة"
     }
 };

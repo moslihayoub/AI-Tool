@@ -22,7 +22,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, i
   
   const recruitmentItems = [
     { id: 'upload', label: t('sidebar.upload'), icon: 'upload' },
-    { id: 'create-cv', label: 'Créer un CV', icon: 'file-pen' },
+    { id: 'create-cv', label: t('sidebar.create_cv'), icon: 'file-pen' },
     { id: 'dashboard', label: t('sidebar.dashboard'), icon: 'dashboard' },
     { id: 'recruitment', label: t('sidebar.recruitment'), icon: 'users' },
     { id: 'compare', label: t('sidebar.compare'), icon: 'compare' },
@@ -31,8 +31,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, i
   const managementItems = [
     { id: 'missions', label: t('sidebar.missions'), icon: 'briefcase' },
     { id: 'timesheets', label: t('sidebar.timesheets'), icon: 'clock' },
-    { id: 'leaves', label: 'Congés', icon: 'calendar-heart' },
-    { id: 'purchase-orders', label: 'Bons de commande', icon: 'receipt' },
+    { id: 'leaves', label: t('sidebar.leaves'), icon: 'calendar-heart' },
+    { id: 'purchase-orders', label: t('sidebar.purchase_orders'), icon: 'receipt' },
   ];
 
   const toolItems = [
@@ -49,8 +49,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, i
   const sidebarClasses = `
     h-full bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800
     flex flex-col z-40 transition-all duration-300 ease-in-out
-    fixed md:static inset-y-0 left-0 transform md:transform-none
-    ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}
+    fixed md:static inset-y-0 left-0
+    ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0
     ${isCollapsed ? 'w-20' : 'w-64'} flex-shrink-0
   `;
 
@@ -86,8 +86,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, i
   
   return (
     <>
-      {isMobileOpen && <div onClick={() => setIsMobileOpen(false)} className="fixed inset-0 bg-black/50 z-30 md:hidden" />}
-      <aside className={sidebarClasses}>
+      {isMobileOpen && <div onClick={() => setIsMobileOpen(false)} className="fixed inset-0 bg-black/50 z-30 md:hidden print:hidden" />}
+      <aside className={`${sidebarClasses} print:hidden`}>
         <div className={`p-4 h-16 border-b border-gray-200 dark:border-gray-800 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
           <div className={`flex items-center gap-2 overflow-hidden transition-all duration-300 ${isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'}`}>
             <img src={logoLight} alt="ParseLIQ HR" className="h-8 dark:hidden" />
@@ -110,7 +110,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, i
 
         <footer className={`p-4 border-t border-gray-200 dark:border-gray-800 flex items-center gap-2 ${isCollapsed ? 'justify-center' : ''}`}>
            <img src={logoIcon} alt="ParseLIQ HR Icon" className="w-6 h-6"/>
-           <a href="https://bento.me/moslih84" target="_blank" rel="noopener noreferrer" className={`text-sm text-gray-500 dark:text-gray-400 hover:underline transition-opacity duration-200 ${isCollapsed ? 'opacity-0 w-0 h-0' : 'opacity-100'}`}>
+           <a href="https://www.linkedin.com/in/moslih84/" target="_blank" rel="noopener noreferrer" className={`text-sm text-gray-500 dark:text-gray-400 hover:underline transition-opacity duration-200 ${isCollapsed ? 'opacity-0 w-0 h-0' : 'opacity-100'}`}>
               {t('sidebar.footer')}
             </a>
         </footer>
