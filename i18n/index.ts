@@ -13,8 +13,13 @@ interface LanguageContextType {
 
 const LanguageContext = React.createContext<LanguageContextType | undefined>(undefined);
 
-const getNestedTranslation = (obj: any, key: string): string | undefined => {
-    return key.split('.').reduce((acc, cur) => acc && acc[cur], obj);
+const getNestedTranslation = (obj: Record<string, unknown>, key: string): string | undefined => {
+    return key.split('.').reduce((acc: unknown, cur: string) => {
+        if (acc && typeof acc === 'object') {
+            return (acc as Record<string, unknown>)[cur];
+        }
+        return undefined;
+    }, obj) as string | undefined;
 }
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

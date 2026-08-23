@@ -50,6 +50,42 @@ export const InfraView: React.FC<InfraViewProps> = () => {
             {
                 date: getDateStr(0),
                 time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'refactor',
+                title: 'Codebase Methodology Audit & Fixes',
+                description: 'Application stricte des règles du Master Skill suite à l\'audit.',
+                details: [
+                    'Éradication totale du type `any` dans le code (App.tsx, types.ts, etc.).',
+                    'Migration des montants financiers (TJM, HT, TTC) en centimes d\'euros (Zéro Float).',
+                    'Création de `utils/currency.ts` pour la gestion propre de la monnaie.',
+                    'Ajout d\'une validation de type Zod (Mock Sécurité IA) sur les retours Gemini API.'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'feat',
+                title: 'Integration of Methodology Master Skill',
+                description: 'Adaptation et ajout du Skill Maître Complet (Méthodologie & Architecture) dans le projet.',
+                details: [
+                    'Création du fichier .agents/skills/methodology/SKILL.md avec les règles SDD adaptées au projet.',
+                    'Mise à jour de AGENTS.md pour forcer l\'utilisation de ces standards.',
+                    'Définition des règles sur l\'architecture racine (components, services, types) et la validation des données Gemini.'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'feat',
+                title: 'Clone and Setup Local Workspace',
+                description: 'Copie du projet GitHub Ai-Tool vers le répertoire de sélection.',
+                details: [
+                    'Création du répertoire /Users/fahdrahali/.gemini/antigravity/scratch/moslihayoub_projects/selection.',
+                    'Copie du contenu cloné du projet GitHub depuis Downloads vers le répertoire local.'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                 type: 'fix',
                 title: 'Fixed Global Fetch Error',
                 description: 'Correction de l\'erreur Cannot set property fetch of #<Window> which has only a getter provoquée par un conflit d\'importmap avec Vite.',

@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Icon } from './icons';
 import { Timesheet, Mission, PurchaseOrder, POStatus } from '../types';
+import { toCents, formatCents } from '../utils/currency';
 
 const SignatureBlock: React.FC<{ signature: string | undefined, onSave: (url: string | undefined) => void }> = ({ signature, onSave }) => {
     const [activeTab, setActiveTab] = useState<'upload' | 'draw'>('upload');
@@ -154,10 +155,10 @@ export const PurchaseOrdersView: React.FC<PurchaseOrdersViewProps> = ({ timeshee
             timesheetId: 't1',
             period: 'Janvier 2026',
             days: 20,
-            dailyRate: 450,
-            amountHT: 9000,
-            amountTVA: 1800,
-            amountTTC: 10800,
+            dailyRate: 45000,
+            amountHT: 900000,
+            amountTVA: 180000,
+            amountTTC: 1080000,
             status: 'Payé',
             date: '2026-02-05'
         }
@@ -169,9 +170,10 @@ export const PurchaseOrdersView: React.FC<PurchaseOrdersViewProps> = ({ timeshee
 
     const handleGeneratePO = (ts: Timesheet) => {
         const mission = missions.find(m => m.id === ts.missionId);
-        const dailyRate = mission?.remunerationType === 'Daily' ? mission.remuneration : (mission?.remuneration || 0) / 20; // fallback est 20j
-        const amountHT = ts.totalDays * dailyRate;
-        const amountTVA = amountHT * 0.20;
+        const dailyRateEuros = mission?.remunerationType === 'Daily' ? mission.remuneration : (mission?.remuneration || 0) / 20; // fallback est 20j
+        const dailyRate = toCents(dailyRateEuros);
+        const amountHT = Math.round(ts.totalDays * dailyRate);
+        const amountTVA = Math.round(amountHT * 0.20);
 
         const newPO: PurchaseOrder = {
             id: Math.random().toString(36).substring(2, 9),
@@ -273,8 +275,8 @@ export const PurchaseOrdersView: React.FC<PurchaseOrdersViewProps> = ({ timeshee
                                         <p className="text-sm text-gray-600 text-balance">Prestation intellectuelle en régie</p>
                                     </td>
                                     <td className="py-4 px-2 text-center text-gray-800">{selectedPO.days}</td>
-                                    <td className="py-4 px-2 text-right text-gray-800">{selectedPO.dailyRate.toLocaleString('fr-FR')} €</td>
-                                    <td className="py-4 px-2 text-right font-semibold">{selectedPO.amountHT.toLocaleString('fr-FR')} €</td>
+                                    <td className="py-4 px-2 text-right text-gray-800">{formatCents(selectedPO.dailyRate)} €</td>
+                                    <td className="py-4 px-2 text-right font-semibold">{formatCents(selectedPO.amountHT)} €</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -284,15 +286,15 @@ export const PurchaseOrdersView: React.FC<PurchaseOrdersViewProps> = ({ timeshee
                         <div className="w-1/2">
                             <div className="flex justify-between py-2 text-gray-600">
                                 <span>Sous-total HT</span>
-                                <span>{selectedPO.amountHT.toLocaleString('fr-FR')} €</span>
+                                <span>{formatCents(selectedPO.amountHT)} €</span>
                             </div>
                             <div className="flex justify-between py-2 text-gray-600 border-b border-gray-300">
                                 <span>TVA (20%)</span>
-                                <span>{selectedPO.amountTVA.toLocaleString('fr-FR')} €</span>
+                                <span>{formatCents(selectedPO.amountTVA)} €</span>
                             </div>
                             <div className="flex justify-between py-4 text-xl font-black text-gray-900">
                                 <span>TOTAL TTC</span>
-                                <span>{selectedPO.amountTTC.toLocaleString('fr-FR')} €</span>
+                                <span>{formatCents(selectedPO.amountTTC)} €</span>
                             </div>
                         </div>
                     </div>
@@ -326,15 +328,15 @@ export const PurchaseOrdersView: React.FC<PurchaseOrdersViewProps> = ({ timeshee
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-center border-l-4 border-l-blue-500">
                     <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Chiffre d'Affaires Généré (HT)</p>
-                    <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">{totalGenerated.toLocaleString('fr-FR')} €</p>
+                    <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">{formatCents(totalGenerated)} €</p>
                 </div>
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-center border-l-4 border-l-green-500">
                     <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">CA Encaissé (HT)</p>
-                    <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">{totalPaid.toLocaleString('fr-FR')} €</p>
+                    <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">{formatCents(totalPaid)} €</p>
                 </div>
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-center border-l-4 border-l-pink-500">
                     <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">En Attente de Paiement (TTC)</p>
-                    <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">{pendingPayment.toLocaleString('fr-FR')} €</p>
+                    <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">{formatCents(pendingPayment)} €</p>
                 </div>
             </div>
 
@@ -391,7 +393,7 @@ export const PurchaseOrdersView: React.FC<PurchaseOrdersViewProps> = ({ timeshee
                                             <div className="font-semibold text-gray-900 dark:text-gray-100">{po.clientName}</div>
                                             <div className="text-xs text-gray-500">{po.consultantName} ({po.period})</div>
                                         </td>
-                                        <td className="px-4 py-3 text-right font-medium text-gray-900 dark:text-gray-100">{po.amountHT.toLocaleString('fr-FR')} €</td>
+                                        <td className="px-4 py-3 text-right font-medium text-gray-900 dark:text-gray-100">{formatCents(po.amountHT)} €</td>
                                         <td className="px-4 py-3 text-center">
                                             <select 
                                                 value={po.status}

@@ -10,8 +10,9 @@ declare global {
 
   interface Window {
     aistudio?: AIStudio;
-    jspdf?: any;
-    XLSX?: any;
+    jspdf?: unknown;
+    XLSX?: unknown;
+    isCVDirty?: boolean;
   }
 }
 
@@ -179,7 +180,7 @@ export interface Timesheet {
 
 export interface AIAction {
   type: 'CREATE_MISSION' | 'VALIDATE_TIMESHEET' | 'GO_TO_TIMESHEETS';
-  payload: any;
+  payload: Record<string, unknown>;
   label: string;
 }
 

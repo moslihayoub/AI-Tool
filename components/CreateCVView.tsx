@@ -77,7 +77,7 @@ export const CreateCVView: React.FC = () => {
         window.addEventListener('beforeunload', handleBeforeUnload);
         
         // Sync with window object for App.tsx navigation blocker
-        (window as any).isCVDirty = isDirty;
+        window.isCVDirty = isDirty;
         
         return () => window.removeEventListener('beforeunload', handleBeforeUnload);
     }, [isDirty]);
@@ -152,7 +152,7 @@ export const CreateCVView: React.FC = () => {
         return interval;
     };
 
-    const populateFromProfile = (profile: any) => {
+    const populateFromProfile = (profile: CandidateProfile) => {
         setPersonalInfo({
             name: profile.name && profile.name !== 'N/A' ? profile.name : '',
             jobTitle: profile.jobCategory && profile.jobCategory !== 'N/A' && profile.jobCategory !== 'Other' ? profile.jobCategory : '',
@@ -166,7 +166,7 @@ export const CreateCVView: React.FC = () => {
         });
 
         if (profile.experience && profile.experience.length > 0) {
-            setExperiences(profile.experience.map((exp: any) => ({
+            setExperiences(profile.experience.map((exp) => ({
                 id: Math.random().toString(),
                 title: exp.title || '',
                 company: exp.company || '',
@@ -178,7 +178,7 @@ export const CreateCVView: React.FC = () => {
         }
 
         if (profile.education && profile.education.length > 0) {
-            setEducation(profile.education.map((edu: any) => ({
+            setEducation(profile.education.map((edu) => ({
                 id: Math.random().toString(),
                 degree: edu.degree || '',
                 school: edu.school || '',
@@ -189,7 +189,7 @@ export const CreateCVView: React.FC = () => {
         }
 
         if (profile.languages && profile.languages.length > 0) {
-            setLanguages(profile.languages.map((lang: any) => ({
+            setLanguages(profile.languages.map((lang: string) => ({
                  id: Math.random().toString(),
                  name: lang,
                  level: 'Courant'
@@ -199,7 +199,7 @@ export const CreateCVView: React.FC = () => {
         }
 
         if (profile.certifications && profile.certifications.length > 0) {
-            setCertifications(profile.certifications.map((cert: any) => ({
+            setCertifications(profile.certifications.map((cert: string) => ({
                  id: Math.random().toString(),
                  name: cert,
                  organization: '',
@@ -298,7 +298,7 @@ export const CreateCVView: React.FC = () => {
         document.body.removeChild(link);
     };
 
-    const handleChange = (setter: any) => (val: any) => {
+    const handleChange = <T,>(setter: React.Dispatch<React.SetStateAction<T>>) => (val: T) => {
         setIsDirty(true);
         setter(val);
     };

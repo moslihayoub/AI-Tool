@@ -7,7 +7,7 @@ import { Icon } from './icons';
 import { createAIChat } from '../services/geminiService';
 import { Chat, GenerateContentResponse } from '@google/genai';
 import { useTranslation } from '../i18n';
-import { Bar, BarChart, CartesianGrid, LabelList, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, LabelList, Legend, ResponsiveContainer, Tooltip, TooltipProps, XAxis, YAxis } from 'recharts';
 
 interface AIAssistantProps {
     cvFile: CVFile;
@@ -137,7 +137,7 @@ const getScoreEmoji = (score: number): string => {
     return '';
 };
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
     if (active && payload && payload.length) {
         return (
             <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border dark:border-gray-600 shadow-lg">

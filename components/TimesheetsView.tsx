@@ -123,7 +123,7 @@ export const TimesheetsView: React.FC<TimesheetsViewProps> = ({ timesheets, onUp
         }));
     };
 
-    const updateDay = (index: number, field: keyof TimesheetDay, value: any) => {
+    const updateDay = <K extends keyof TimesheetDay>(index: number, field: K, value: TimesheetDay[K]) => {
         setEditingTimesheet(prev => {
             if (!prev.days) return prev;
             const newDays = [...prev.days];

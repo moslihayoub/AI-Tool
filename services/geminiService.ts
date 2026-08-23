@@ -1,8 +1,9 @@
 import { GoogleGenAI, Type, Chat, GenerateContentResponse } from '@google/genai';
 import type { CandidateProfile, CVFile } from '../types';
+import { CandidateProfileSchema } from './schemas';
 
-// Fix: Initialize the Google Gemini AI client. It's good practice to do this once per module.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Fix: Initialize the Google Gemini AI client. Provide fallback to prevent UI crash in local dev.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || 'dummy_key' });
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -124,6 +125,11 @@ export async function parseCvContent(fileData: { mimeType: string; data: string 
             // Fix: Extract and parse the JSON text from the response.
             const jsonText = response.text.trim();
             const parsedJson = JSON.parse(jsonText);
+            const validationResult = CandidateProfileSchema.safeParse(parsedJson);
+            
+            if (!validationResult.success) {
+                throw new Error("Validation des données IA échouée: format non conforme au schéma.");
+            }
 
             // We return the parsed data, and the caller will add the file-specific metadata.
             return {

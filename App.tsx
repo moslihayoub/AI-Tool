@@ -159,7 +159,7 @@ function AppContent() {
     const [cvFiles, setCvFiles] = React.useState<CVFile[]>(() => {
         try {
             const savedFiles = localStorage.getItem('cvFiles');
-            return savedFiles ? JSON.parse(savedFiles).map((f: any) => ({ ...f, file: new File([], f.fileName), content: '' })) : [];
+            return savedFiles ? JSON.parse(savedFiles).map((f: CVFile & { fileName: string }) => ({ ...f, file: new File([], f.fileName), content: '' })) : [];
         } catch (error) {
             console.error("Failed to load CVs from localStorage", error);
             return [];
@@ -297,7 +297,7 @@ function AppContent() {
 
     React.useEffect(() => {
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        const handleChange = (e: any) => {
+        const handleChange = (e: MediaQueryListEvent) => {
             setSystemTheme(e.matches ? 'dark' : 'light');
         };
         
@@ -1032,7 +1032,7 @@ function AppContent() {
     };
 
     // Timesheet Handler
-    const handleUpdateTimesheetStatus = (id: string, status: any) => {
+    const handleUpdateTimesheetStatus = (id: string, status: TimesheetStatus) => {
         setTimesheets(prev => prev.map(ts => ts.id === id ? { ...ts, status } : ts));
         showToast(`Feuille de temps ${status === 'Validated' ? 'validée' : 'refusée'}`, status === 'Validated' ? 'success' : 'info');
     };
@@ -1177,16 +1177,12 @@ function AppContent() {
     };
 
     const handleViewChange = (v: View) => {
-        if (view === 'create-cv' && v !== 'create-cv' && (window as any).isCVDirty) {
-            const save = window.confirm('Modifications non enregistrées. Voulez-vous enregistrer avant de quitter ?');
-            if (save) {
-                // Simulate save draft since we can't trigger the child function easily here
-                // Best simple way: just don't navigate and let user save, or force clear.
-                // Re-following exact prompt: "afficher une alerte 'Modifications non enregistrées. Voulez-vous enregistrer avant de quitter ?'"
-                // If they say ok, we should ideally trigger a save. Since we can't, we can just block them so they can click the save button.
-                return; 
+        // Warning on dirty CV view
+        if (view === 'create-cv' && v !== 'create-cv' && window.isCVDirty) {
+            if (!window.confirm("Vous avez des modifications non sauvegardées (non exportées). Êtes-vous sûr de vouloir quitter cette page ?")) {
+                return; // Cancel navigation
             } else {
-                (window as any).isCVDirty = false;
+                window.isCVDirty = false;
             }
         }
         setView(v);

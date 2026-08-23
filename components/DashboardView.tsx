@@ -5,7 +5,7 @@ import * as React from 'react';
 import { CandidateProfile, FilterCriteria, Mission, Timesheet } from '../types';
 import { Icon } from './icons';
 import { FilterView } from './FilterView';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList, LineChart, Line } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList, LineChart, Line, TooltipProps } from 'recharts';
 import { useTranslation } from '../i18n';
 import { useToast } from './Toast';
 import { Drawer } from './Drawer';
@@ -157,7 +157,7 @@ const groupData = (data: string[], t: (key: string) => string) => {
     return sortedData.map(([name, value]) => ({ name, value }));
 };
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
     if (active && payload && payload.length) {
         return (
             <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border dark:border-gray-600 shadow-lg">
@@ -227,7 +227,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                     const header = rows[0].split(',').map(h => h.replace(/"/g, '').trim());
                     profiles = rows.slice(1).map(row => {
                         const values = row.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g)?.map(v => v.replace(/^"|"$/g, '').trim()) || [];
-                        const profileData: any = {};
+                        const profileData: Record<string, string> = {};
                         header.forEach((key, index) => {
                             profileData[key] = values[index];
                         });
