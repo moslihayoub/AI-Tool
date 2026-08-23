@@ -84,8 +84,7 @@ const systemInstructionForParsing = `You are an expert HR assistant specializing
  * @returns A promise that resolves to the parsed candidate profile.
  */
 export async function parseCvContent(fileData: { mimeType: string; data: string }): Promise<Omit<CandidateProfile, 'id' | 'fileName' | 'analysisDuration'>> {
-    // Fix: Select model based on task type. 'gemini-3.1-pro-preview' supports search grounding.
-    const model = 'gemini-3.1-pro-preview';
+    const model = 'gemini-2.5-flash';
     let isUrl = false;
     let decodedText = '';
     
@@ -111,16 +110,20 @@ export async function parseCvContent(fileData: { mimeType: string; data: string 
 
     while (attempt < maxRetries) {
         try {
-            // Fix: Call Gemini API to generate content with a specific JSON schema and tools.
+            const config: any = {
+                systemInstruction: systemInstructionForParsing,
+                responseMimeType: "application/json",
+                responseSchema: candidateProfileSchema,
+            };
+
+            if (isUrl) {
+                config.tools = [{ googleSearch: {} }];
+            }
+
             const response: GenerateContentResponse = await ai.models.generateContent({
                 model: model,
                 contents: { parts: [{ text: prompt }, { inlineData: fileData }] },
-                config: {
-                    systemInstruction: systemInstructionForParsing,
-                    responseMimeType: "application/json",
-                    responseSchema: candidateProfileSchema,
-                    tools: [{ googleSearch: {} }],
-                },
+                config: config,
             });
 
             // Fix: Extract and parse the JSON text from the response.

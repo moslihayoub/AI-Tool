@@ -51,6 +51,17 @@ export const InfraView: React.FC<InfraViewProps> = () => {
                 date: getDateStr(0),
                 time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                 type: 'fix',
+                title: 'Fixed Gemini Model Identifier for CV Parsing',
+                description: 'Correction du nom de modèle Gemini invalide `gemini-3.1-pro-preview` par `gemini-2.5-flash`.',
+                details: [
+                    'Remplacement de `gemini-3.1-pro-preview` (invalide) par `gemini-2.5-flash` dans `parseCvContent`.',
+                    'Ajustement de la configuration des outils (`googleSearch`) pour qu\'ils ne soient envoyés que lors du parsing d\'URL.'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'fix',
                 title: 'Vercel GOOGLE_API_KEY Environment Variable Support',
                 description: 'Support de la variable GOOGLE_API_KEY configurée dans Vercel lors du build Vite.',
                 details: [
