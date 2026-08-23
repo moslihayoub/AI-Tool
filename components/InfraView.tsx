@@ -50,6 +50,17 @@ export const InfraView: React.FC<InfraViewProps> = () => {
             {
                 date: getDateStr(0),
                 time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'fix',
+                title: 'Vercel GOOGLE_API_KEY Environment Variable Support',
+                description: 'Support de la variable GOOGLE_API_KEY configurée dans Vercel lors du build Vite.',
+                details: [
+                    'Mise à jour de `vite.config.ts` pour capturer `GOOGLE_API_KEY`, `GEMINI_API_KEY` et `API_KEY` depuis `process.env` de Vercel.',
+                    'Correction de la résolution dans `geminiService.ts` pour supporter les 3 noms de variables d\'environnement.'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                 type: 'refactor',
                 title: 'Codebase Methodology Audit & Fixes',
                 description: 'Application stricte des règles du Master Skill suite à l\'audit.',

@@ -2,8 +2,9 @@ import { GoogleGenAI, Type, Chat, GenerateContentResponse } from '@google/genai'
 import type { CandidateProfile, CVFile } from '../types';
 import { CandidateProfileSchema } from './schemas';
 
-// Fix: Initialize the Google Gemini AI client. Provide fallback to prevent UI crash in local dev.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || 'dummy_key' });
+// Fix: Initialize the Google Gemini AI client. Support GOOGLE_API_KEY, GEMINI_API_KEY, and API_KEY.
+const getApiKey = () => process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || process.env.API_KEY || '';
+const ai = new GoogleGenAI({ apiKey: getApiKey() || 'dummy_key' });
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
