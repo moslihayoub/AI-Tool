@@ -8,7 +8,7 @@ interface InfraViewProps {}
 interface LogEntry {
     date: string;
     time: string;
-    type: 'feat' | 'fix' | 'ui' | 'refactor' | 'logic' | 'perf';
+    type: 'feat' | 'fix' | 'ui' | 'refactor' | 'logic' | 'perf' | 'bug';
     title: string;
     description: string;
     details: string[];
@@ -47,6 +47,20 @@ export const InfraView: React.FC<InfraViewProps> = () => {
         };
         
         const currentLogs: LogEntry[] = [
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'feat',
+                title: 'Full TestSprite Suite Execution on Live Production Site',
+                description: 'Exécution complète des 4 scénarios E2E sur https://parseliqhr.vercel.app/ avec diagnostic précis et validation du CV Builder.',
+                details: [
+                    'Projet `ParseLIQ HR` actif sur TestSprite Cloud (ID: d8fbbe39-5451-4e79-8f4e-414f334b14d4).',
+                    'CV Builder (ID: cca86ff6-68b6-4f0a-9785-4f3a3d964bba) : PASSED (3/3 étapes validées, canevas A4 et formulaire opérationnels).',
+                    'Dashboard & Pipeline : Navigation validée, détection autonome des états initiaux vierges ("No CVs", "No candidates").',
+                    'Missions : Interface validée avec boutons d\'action (Export CSV, Nouvelle Mission).',
+                    'Rapports d\'analyse et vidéos consultables sur le dashboard TestSprite en temps réel.'
+                ]
+            },
             {
                 date: getDateStr(0),
                 time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),

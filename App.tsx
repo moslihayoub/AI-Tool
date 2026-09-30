@@ -22,7 +22,7 @@ import { CreateCVView } from './components/CreateCVView';
 import { LeavesView } from './components/LeavesView';
 import { PurchaseOrdersView } from './components/PurchaseOrdersView';
 import { FloatingAssistant } from './components/FloatingAssistant';
-import { CVFile, View, CandidateProfile, Theme, User, RecruitmentData, PipelineSnapshot, Mission, Timesheet, AIAction } from './types';
+import { CVFile, View, CandidateProfile, Theme, User, RecruitmentData, PipelineSnapshot, Mission, Timesheet, AIAction, TimesheetStatus } from './types';
 import { parseCvContent } from './services/geminiService';
 import { Icon } from './components/icons';
 import { LanguageProvider, useTranslation } from './i18n';
@@ -1055,10 +1055,10 @@ function AppContent() {
                 // Pre-fill mission creation would happen here in a real app
                 // For now, switch view and show toast
                 setView('missions');
-                showToast(`Action: Créer mission pour ${action.payload.candidateName}`, 'info');
+                showToast(`Action: Créer mission pour ${String(action.payload?.candidateName || '')}`, 'info');
                 break;
             case 'VALIDATE_TIMESHEET':
-                handleUpdateTimesheetStatus(action.payload.timesheetId, 'Validated');
+                handleUpdateTimesheetStatus(String(action.payload?.timesheetId || ''), 'Validated');
                 break;
             case 'GO_TO_TIMESHEETS':
                 setView('timesheets');

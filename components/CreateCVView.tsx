@@ -152,7 +152,7 @@ export const CreateCVView: React.FC = () => {
         return interval;
     };
 
-    const populateFromProfile = (profile: CandidateProfile) => {
+    const populateFromProfile = (profile: Omit<CandidateProfile, 'id' | 'fileName' | 'analysisDuration'> | CandidateProfile) => {
         setPersonalInfo({
             name: profile.name && profile.name !== 'N/A' ? profile.name : '',
             jobTitle: profile.jobCategory && profile.jobCategory !== 'N/A' && profile.jobCategory !== 'Other' ? profile.jobCategory : '',

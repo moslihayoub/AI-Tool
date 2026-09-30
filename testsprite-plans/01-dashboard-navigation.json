@@ -1,0 +1,9 @@
+{
+  "projectId": "d8fbbe39-5451-4e79-8f4e-414f334b14d4",
+  "type": "frontend",
+  "name": "Dashboard & Navigation — verify header and metrics",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to https://parseliqhr.vercel.app/" },
+    { "type": "assertion", "description": "The main dashboard navigation, logo, and metrics cards are visible" }
+  ]
+}

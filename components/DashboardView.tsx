@@ -157,11 +157,17 @@ const groupData = (data: string[], t: (key: string) => string) => {
     return sortedData.map(([name, value]) => ({ name, value }));
 };
 
-const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
+interface CustomTooltipProps {
+    active?: boolean;
+    payload?: Array<{ name: string; value: number | string; payload?: { name?: string } }>;
+    label?: string;
+}
+
+const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
         return (
             <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border dark:border-gray-600 shadow-lg">
-                <p className="font-bold text-gray-500 dark:text-gray-400 text-sm mb-1">{label || payload[0].payload.name}</p>
+                <p className="font-bold text-gray-500 dark:text-gray-400 text-sm mb-1">{label || payload[0].payload?.name || ''}</p>
                 <p className="font-bold text-lg" style={{ color: '#ec4899' }}>
                     {`${payload[0].name}: ${payload[0].value}`}
                 </p>

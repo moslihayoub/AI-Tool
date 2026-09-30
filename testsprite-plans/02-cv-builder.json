@@ -1,0 +1,9 @@
+{
+  "projectId": "d8fbbe39-5451-4e79-8f4e-414f334b14d4",
+  "type": "frontend",
+  "name": "CV Builder — create and view A4 preview",
+  "planSteps": [
+    { "type": "action", "description": "Click on 'Créer un CV' in the sidebar navigation" },
+    { "type": "assertion", "description": "The CV builder editor and preview canvas are visible" }
+  ]
+}

@@ -10,8 +10,22 @@ declare global {
 
   interface Window {
     aistudio?: AIStudio;
-    jspdf?: unknown;
-    XLSX?: unknown;
+    jspdf?: {
+      jsPDF: new (options?: unknown) => {
+        setFontSize: (size: number) => void;
+        text: (text: string, x: number, y: number) => void;
+        autoTable: (options: { startY: number; head: string[][]; body: (string | number)[][] }) => void;
+        save: (filename: string) => void;
+      };
+    };
+    XLSX?: {
+      utils: {
+        json_to_sheet: (data: unknown[]) => unknown;
+        book_new: () => unknown;
+        book_append_sheet: (wb: unknown, ws: unknown, sheetName: string) => void;
+      };
+      writeFile: (wb: unknown, fileName: string) => void;
+    };
     isCVDirty?: boolean;
   }
 }

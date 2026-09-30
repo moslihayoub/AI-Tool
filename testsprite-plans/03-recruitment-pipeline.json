@@ -1,0 +1,9 @@
+{
+  "projectId": "d8fbbe39-5451-4e79-8f4e-414f334b14d4",
+  "type": "frontend",
+  "name": "Recruitment Pipeline — Kanban stage columns",
+  "planSteps": [
+    { "type": "action", "description": "Click on 'Recrutement' in the navigation menu" },
+    { "type": "assertion", "description": "The recruitment Kanban pipeline columns are displayed" }
+  ]
+}

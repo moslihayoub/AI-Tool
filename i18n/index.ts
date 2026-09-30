@@ -8,7 +8,7 @@ const translations = { fr, en, ar };
 interface LanguageContextType {
     language: Language;
     setLanguage: (lang: Language) => void;
-    t: (key: string, options?: { [key: string]: string | number }) => string;
+    t: (key: string, fallbackOrOptions?: string | { [key: string]: string | number }, options?: { [key: string]: string | number }) => string;
 }
 
 const LanguageContext = React.createContext<LanguageContextType | undefined>(undefined);
@@ -52,16 +52,23 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setLanguageState(lang);
     };
 
-    const t = React.useMemo(() => (key: string, options?: { [key: string]: string | number }): string => {
+    const t = React.useMemo(() => (
+        key: string,
+        fallbackOrOptions?: string | { [key: string]: string | number },
+        options?: { [key: string]: string | number }
+    ): string => {
         const translation = getNestedTranslation(translations[language], key);
-        
+        const fallback = typeof fallbackOrOptions === 'string' ? fallbackOrOptions : undefined;
+        const opts = typeof fallbackOrOptions === 'object' ? fallbackOrOptions : options;
+
         if (!translation) {
+            if (fallback) return fallback;
             console.warn(`[i18n] Missing translation for key: ${key}`);
             return key;
         }
 
-        if (options) {
-            return Object.entries(options).reduce((acc, [optKey, optValue]) => {
+        if (opts) {
+            return Object.entries(opts).reduce((acc, [optKey, optValue]) => {
                  const placeholder = ['s', 'S'].includes(String(optValue)) ? '' : (optValue !== 1 ? 's' : '');
                  return acc.replace(new RegExp(`{{${optKey}}}`, 'g'), String(optValue))
                          .replace(new RegExp(`{{plural:${optKey}}}`, 'g'), placeholder);
