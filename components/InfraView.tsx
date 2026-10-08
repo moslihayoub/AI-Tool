@@ -50,6 +50,18 @@ export const InfraView: React.FC<InfraViewProps> = () => {
             {
                 date: getDateStr(0),
                 time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'chore',
+                title: 'TestSprite E2E Cloud Validation — 100% Passed',
+                description: 'Validation complète de la suite de tests E2E sur TestSprite Cloud pour la production Vercel.',
+                details: [
+                    'Mise à jour des planSteps TestSprite pour cibler https://parseliqhr.vercel.app/?demo=true.',
+                    'Exécution et validation des 4 suites de tests E2E : CV Builder, Dashboard, Recruitment Pipeline, Missions.',
+                    'Taux de succès : 4/4 (100% PASSED) avec enregistrements vidéo et traces d\'exécution validés.'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                 type: 'feat',
                 title: 'Demo Mode URL Seeding & Missions Status Filtering',
                 description: 'Support du chargement automatique de données de démo via ?demo=true et ajout du filtre de statut dans la vue Missions.',
