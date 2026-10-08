@@ -51,6 +51,19 @@ export const InfraView: React.FC<InfraViewProps> = () => {
                 date: getDateStr(0),
                 time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                 type: 'feat',
+                title: 'Demo Mode URL Seeding & Missions Status Filtering',
+                description: 'Support du chargement automatique de données de démo via ?demo=true et ajout du filtre de statut dans la vue Missions.',
+                details: [
+                    'Support du paramètre URL `?demo=true` pour précharger candidats, missions et feuilles de temps sur n\'importe quelle session vierge.',
+                    'Ajout d\'un bouton "Charger données de démo" dans les états vides du Dashboard et du Kanban Recrutement.',
+                    'Implémentation de la barre de filtrage par Statut (All, Active, Draft, Upcoming, Paused, Ended) dans MissionsView.',
+                    'Mise à jour des scénarios TestSprite pour tester la session de démonstration préremplie.'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'feat',
                 title: 'Full TestSprite Suite Execution on Live Production Site',
                 description: 'Exécution complète des 4 scénarios E2E sur https://parseliqhr.vercel.app/ avec diagnostic précis et validation du CV Builder.',
                 details: [

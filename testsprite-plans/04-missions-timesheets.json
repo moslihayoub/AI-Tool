@@ -3,7 +3,8 @@
   "type": "frontend",
   "name": "Missions & Timesheets — consultant missions overview",
   "planSteps": [
+    { "type": "action", "description": "Navigate to https://parseliqhr.vercel.app/?demo=true" },
     { "type": "action", "description": "Navigate to 'Missions' in the navigation menu" },
-    { "type": "assertion", "description": "The missions management interface and status filters are visible" }
+    { "type": "assertion", "description": "The missions management interface and status filter are visible" }
   ]
 }

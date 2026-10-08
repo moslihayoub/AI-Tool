@@ -3,7 +3,7 @@
   "type": "frontend",
   "name": "Dashboard & Navigation — verify header and metrics",
   "planSteps": [
-    { "type": "action", "description": "Navigate to https://parseliqhr.vercel.app/" },
+    { "type": "action", "description": "Navigate to https://parseliqhr.vercel.app/?demo=true" },
     { "type": "assertion", "description": "The main dashboard navigation, logo, and metrics cards are visible" }
   ]
 }

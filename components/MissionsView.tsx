@@ -73,6 +73,12 @@ export const MissionsView: React.FC<MissionsViewProps> = ({ missions, candidates
 
     // Derived State
     const isSalaried = ['CDI', 'CDD', 'STAGE'].includes(contractType);
+    const [statusFilter, setStatusFilter] = React.useState<string>('All');
+
+    const filteredMissions = React.useMemo(() => {
+        if (statusFilter === 'All') return missions;
+        return missions.filter(m => m.status === statusFilter);
+    }, [missions, statusFilter]);
     const remunerationLabel = isSalaried ? "Salaire Mensuel Brut" : "TJM (Tarif Journalier)";
 
     const resetForm = () => {
@@ -216,8 +222,37 @@ export const MissionsView: React.FC<MissionsViewProps> = ({ missions, candidates
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {missions.map(mission => (
+            {/* Filter bar */}
+            <div className="flex flex-wrap items-center gap-3 bg-white dark:bg-gray-800 p-3 rounded-xl border dark:border-gray-700 shadow-sm">
+                <span className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                    <Icon name="filter" className="w-4 h-4 text-primary-500" />
+                    <span>Statut :</span>
+                </span>
+                <div className="flex flex-wrap gap-2">
+                    {['All', 'Active', 'Draft', 'Upcoming', 'Paused', 'Ended'].map((st) => (
+                        <button
+                            key={st}
+                            onClick={() => setStatusFilter(st)}
+                            className={`px-3 py-1 text-xs font-semibold rounded-full transition-all ${
+                                statusFilter === st
+                                    ? 'bg-primary-600 text-white shadow-sm'
+                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                            }`}
+                        >
+                            {st === 'All' ? 'Tous les statuts' : st}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {filteredMissions.length === 0 ? (
+                <div className="flex flex-col items-center justify-center p-12 text-center bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700">
+                    <Icon name="archive" className="w-12 h-12 text-gray-400 mb-3" />
+                    <p className="text-gray-600 dark:text-gray-400 font-medium">Aucune mission trouvée pour le filtre sélectionné.</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {filteredMissions.map(mission => (
                     <div key={mission.id} onClick={() => handleEdit(mission)} className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700 shadow-sm hover:shadow-md hover:border-primary-300 dark:hover:border-primary-700 transition-all cursor-pointer group relative overflow-hidden">
                         <div className="absolute top-0 right-0 p-4">
                              <span className={`px-2 py-1 rounded-full text-xs font-bold ${getStatusColor(mission.status)}`}>
@@ -264,6 +299,7 @@ export const MissionsView: React.FC<MissionsViewProps> = ({ missions, candidates
                     </div>
                 ))}
             </div>
+            )}
 
             {/* Right Sidebar (50% width) */}
             {(isSidebarOpen || animateSidebar) && (

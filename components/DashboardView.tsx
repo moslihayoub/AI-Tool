@@ -25,6 +25,7 @@ interface DashboardViewProps {
   showBars?: boolean;
   missions?: Mission[];
   timesheets?: Timesheet[];
+  onLoadDummyData?: () => void;
 }
 
 const COLORS = ['#3b82f6', '#ec4899', '#f59e0b', '#10b981', '#8b5cf6', '#ef4444'];
@@ -192,7 +193,7 @@ const EmptyChartState: React.FC = () => {
     );
 };
 
-export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSelectCandidate, onReset, favorites, onToggleFavorite, isFavoritesView = false, comparisonList, onToggleCompare, onImportProfiles, pipelineCandidateIds, onTogglePipeline, showBars = true, missions = [], timesheets = [] }) => {
+export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSelectCandidate, onReset, favorites, onToggleFavorite, isFavoritesView = false, comparisonList, onToggleCompare, onImportProfiles, pipelineCandidateIds, onTogglePipeline, showBars = true, missions = [], timesheets = [], onLoadDummyData }) => {
     const { t } = useTranslation();
     const { showToast } = useToast();
     const [filters, setFilters] = React.useState<FilterCriteria>({ jobCategories: [], locations: [], experienceLevels: [], skills: [] });
@@ -463,11 +464,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                         style={{ width: '200px', height: '200px' }}
                     ></dotlottie-wc>
                     <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">{t('dashboard.no_cv_analyzed')}</p>
-                    <div className="mt-6">
+                    <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
                         <button onClick={handleImportClick} className="flex items-center justify-center gap-2 bg-gradient-button text-white font-semibold px-6 py-3 rounded-full hover:opacity-90 transition-opacity">
                             <Icon name="upload" className="w-6 h-6" />
                             <span>{t('common.import')}</span>
                         </button>
+                        {onLoadDummyData && (
+                            <button onClick={onLoadDummyData} className="flex items-center justify-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-semibold px-6 py-3 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-all shadow-sm">
+                                <Icon name="sparkles" className="w-5 h-5 text-pink-500" />
+                                <span>{t('settings.load_dummy_data', 'Charger données de démo')}</span>
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>

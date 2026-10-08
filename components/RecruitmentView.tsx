@@ -15,6 +15,7 @@ interface RecruitmentViewProps {
     onSaveSnapshot: () => void;
     lastSnapshotId?: string | null;
     onCreateMission: (candidate: CandidateProfile) => void;
+    onLoadDummyData?: () => void;
 }
 
 const getScoreClass = (score: number) => {
@@ -32,7 +33,7 @@ const getScoreEmoji = (score: number): string => {
     return '';
 };
 
-export const RecruitmentView: React.FC<RecruitmentViewProps> = ({ candidates, recruitmentData, onUpdateRecruitmentData, onSelectCandidate, onTogglePipeline, onSaveSnapshot, lastSnapshotId, onCreateMission }) => {
+export const RecruitmentView: React.FC<RecruitmentViewProps> = ({ candidates, recruitmentData, onUpdateRecruitmentData, onSelectCandidate, onTogglePipeline, onSaveSnapshot, lastSnapshotId, onCreateMission, onLoadDummyData }) => {
     const { t } = useTranslation();
     const { showToast } = useToast();
     const [jobFilter, setJobFilter] = React.useState<string>('all');
@@ -107,6 +108,12 @@ export const RecruitmentView: React.FC<RecruitmentViewProps> = ({ candidates, re
                     style={{ width: '200px', height: '200px' }}
                 ></dotlottie-wc>
                 <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">{t('recruitment.empty')}</p>
+                {onLoadDummyData && (
+                    <button onClick={onLoadDummyData} className="mt-6 flex items-center justify-center gap-2 bg-gradient-button text-white font-semibold px-6 py-3 rounded-full hover:opacity-90 transition-opacity shadow-md">
+                        <Icon name="sparkles" className="w-5 h-5 text-white" />
+                        <span>{t('settings.load_dummy_data', 'Charger données de démo')}</span>
+                    </button>
+                )}
             </div>
         );
     }

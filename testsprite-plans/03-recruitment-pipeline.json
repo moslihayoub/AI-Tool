@@ -3,6 +3,7 @@
   "type": "frontend",
   "name": "Recruitment Pipeline — Kanban stage columns",
   "planSteps": [
+    { "type": "action", "description": "Navigate to https://parseliqhr.vercel.app/?demo=true" },
     { "type": "action", "description": "Click on 'Recrutement' in the navigation menu" },
     { "type": "assertion", "description": "The recruitment Kanban pipeline columns are displayed" }
   ]
