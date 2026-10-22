@@ -614,6 +614,10 @@ function AppContent() {
     const handleClearFile = (fileId: string) => {
         setCvFiles(prev => prev.filter(f => f.id !== fileId));
     };
+
+    const handleRetryFile = (fileId: string) => {
+        setCvFiles(prev => prev.map(f => f.id === fileId ? { ...f, status: 'pending', error: undefined } : f));
+    };
     
     const handleStartAnalysis = async () => {
         const pendingFiles = cvFiles.filter(f => f.status === 'pending');
@@ -1126,7 +1130,7 @@ function AppContent() {
 
         switch (view) {
             case 'upload':
-                return <UploadView cvFiles={cvFiles} onAddFiles={handleAddFiles} onStartAnalysis={handleStartAnalysis} onClearFile={handleClearFile} onClearAllFiles={handleReset} isAnalyzing={isAnalyzing} storageError={storageError} isOwner={isOwner} analysisLimit={analysisLimit} limitError={limitError} uploadLimit={isOwner ? Infinity : UPLOAD_SELECTION_LIMIT} />;
+                return <UploadView cvFiles={cvFiles} onAddFiles={handleAddFiles} onStartAnalysis={handleStartAnalysis} onClearFile={handleClearFile} onClearAllFiles={handleReset} onRetryFile={handleRetryFile} isAnalyzing={isAnalyzing} storageError={storageError} isOwner={isOwner} analysisLimit={analysisLimit} limitError={limitError} uploadLimit={isOwner ? Infinity : UPLOAD_SELECTION_LIMIT} />;
             case 'dashboard':
                 return <DashboardView candidates={candidateProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} comparisonList={comparisonList} onToggleCompare={handleToggleCompare} onImportProfiles={handleImportProfiles} pipelineCandidateIds={recruitmentData.map(d => d.candidateId)} onTogglePipeline={handleTogglePipeline} showBars={showBars} missions={missions} timesheets={timesheets} onLoadDummyData={handleLoadDummyData} />;
             case 'favorites':
@@ -1165,7 +1169,7 @@ function AppContent() {
             case 'purchase-orders':
                 return <PurchaseOrdersView timesheets={timesheets} missions={missions} />;
             default:
-                return <UploadView cvFiles={cvFiles} onAddFiles={handleAddFiles} onStartAnalysis={handleStartAnalysis} onClearFile={handleClearFile} onClearAllFiles={handleReset} isAnalyzing={isAnalyzing} storageError={storageError} isOwner={isOwner} analysisLimit={analysisLimit} limitError={limitError} uploadLimit={isOwner ? Infinity : UPLOAD_SELECTION_LIMIT} />;
+                return <UploadView cvFiles={cvFiles} onAddFiles={handleAddFiles} onStartAnalysis={handleStartAnalysis} onClearFile={handleClearFile} onClearAllFiles={handleReset} onRetryFile={handleRetryFile} isAnalyzing={isAnalyzing} storageError={storageError} isOwner={isOwner} analysisLimit={analysisLimit} limitError={limitError} uploadLimit={isOwner ? Infinity : UPLOAD_SELECTION_LIMIT} />;
         }
     };
 

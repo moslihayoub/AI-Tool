@@ -12,6 +12,7 @@ interface UploadViewProps {
   onStartAnalysis: () => void;
   onClearFile: (fileId: string) => void;
   onClearAllFiles: () => void;
+  onRetryFile?: (fileId: string) => void;
   isAnalyzing: boolean;
   storageError: string | null;
   isOwner: boolean;
@@ -33,7 +34,7 @@ const FileStatusChip: React.FC<{ status: CVFile['status'] }> = ({ status }) => {
 };
 
 
-export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onStartAnalysis, onClearFile, onClearAllFiles, isAnalyzing, storageError, isOwner, analysisLimit, limitError, uploadLimit }) => {
+export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onStartAnalysis, onClearFile, onClearAllFiles, onRetryFile, isAnalyzing, storageError, isOwner, analysisLimit, limitError, uploadLimit }) => {
   const { t } = useTranslation();
   const { showToast } = useToast();
   const [isDragActive, setIsDragActive] = React.useState(false);
@@ -220,11 +221,21 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
                                 </div>
                                 {cvFile.status === 'error' && cvFile.error && (
                                     <div className="mt-2 pl-10">
-                                        <div className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-100 dark:border-red-900/50">
-                                            <Icon name="alert-triangle" className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                                            <p>
-                                                <strong>{t('upload.status.error')}: </strong>{cvFile.error || t('errors.analysis_failed')}
-                                            </p>
+                                        <div className="flex items-start justify-between gap-3 text-sm text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-100 dark:border-red-900/50">
+                                            <div className="flex items-start gap-2">
+                                                <Icon name="alert-triangle" className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                                                <p>
+                                                    <strong>{t('upload.status.error')}: </strong>{cvFile.error || t('errors.analysis_failed')}
+                                                </p>
+                                            </div>
+                                            {onRetryFile && (
+                                                <button
+                                                    onClick={() => onRetryFile(cvFile.id)}
+                                                    className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md text-xs font-semibold flex-shrink-0 transition-colors shadow-sm cursor-pointer"
+                                                >
+                                                    Réessayer
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 )}

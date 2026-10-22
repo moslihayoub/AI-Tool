@@ -50,6 +50,18 @@ export const InfraView: React.FC<InfraViewProps> = () => {
             {
                 date: getDateStr(0),
                 time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'ui',
+                title: 'Instant Retry Action on Failed Upload Cards',
+                description: 'Ajout d\'un bouton de réessai instantané sur chaque fichier en erreur pour relancer le parsing sans avoir à réimporter le document.',
+                details: [
+                    'Intégration d\'un bouton "Réessayer" direct dans l\'alerte d\'erreur de la carte fichier.',
+                    'Remise automatique du statut à `pending` pour réactiver immédiatement le CTA d\'analyse.',
+                    'Élimine la friction de suppression/glisser-déposer lors des incidents réseau ou réessais.'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                 type: 'fix',
                 title: 'Gemini Models Auto-Fallback Chain & PDF MIME Resolver',
                 description: 'Migration du modèle déprécié gemini-2.5-flash vers la chaîne de résilience gemini-3.6-flash / gemini-3.8-flash / gemini-3.5-flash et fiabilisation du MIME type PDF.',
