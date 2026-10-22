@@ -90,10 +90,15 @@ const systemInstructionForParsing = `You are an expert HR assistant specializing
 
 /**
  * Parses the content of a CV file using the Gemini API.
+ * Supports both Hybrid Mode (fast local text extraction) and Vision Mode (full base64 binary).
  * @param fileData An object containing the MIME type and base64 encoded data of the file.
+ * @param extractedText Optional raw text extracted locally by pdfjs-dist.
  * @returns A promise that resolves to the parsed candidate profile.
  */
-export async function parseCvContent(fileData: { mimeType: string; data: string }): Promise<Omit<CandidateProfile, 'id' | 'fileName' | 'analysisDuration'>> {
+export async function parseCvContent(
+    fileData: { mimeType: string; data: string },
+    extractedText?: string
+): Promise<Omit<CandidateProfile, 'id' | 'fileName' | 'analysisDuration'>> {
     let isUrl = false;
     let decodedText = '';
     
@@ -107,11 +112,17 @@ export async function parseCvContent(fileData: { mimeType: string; data: string 
     }
     
     let prompt = `Please analyze the attached CV and extract the candidate's information.`;
-    if (isUrl) {
+    let contentsParts: any[] = [{ text: prompt }, { inlineData: fileData }];
+
+    if (extractedText && extractedText.trim().length > 20) {
+        prompt = `Voici le texte brut extrait du CV du candidat :\n---\n${extractedText.trim()}\n---\nExtrais toutes les informations requises dans le format JSON structuré selon le schéma fourni.`;
+        contentsParts = [{ text: prompt }];
+    } else if (isUrl) {
         const url = decodedText.replace('Contenu importé depuis: ', '');
         prompt = `The user provided a URL: ${url}. 
         Please use the Google Search tool to find information about this profile and extract the candidate's details.
         If you cannot find the profile or it is private, do not hallucinate; extract only what you are sure about or return "N/A".`;
+        contentsParts = [{ text: prompt }, { inlineData: fileData }];
     }
 
     let lastError: Error | null = null;
@@ -135,7 +146,7 @@ export async function parseCvContent(fileData: { mimeType: string; data: string 
 
                 const response: GenerateContentResponse = await ai.models.generateContent({
                     model: model,
-                    contents: { parts: [{ text: prompt }, { inlineData: fileData }] },
+                    contents: { parts: contentsParts },
                     config: config,
                 });
 

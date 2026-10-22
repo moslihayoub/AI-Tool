@@ -1,7 +1,7 @@
 // FIX: Changed React import to namespace import `* as React` to resolve widespread JSX intrinsic element type errors, which likely stem from a project configuration that requires this import style.
 // FIX: Switched to namespace React import to correctly populate the global JSX namespace.
 import * as React from 'react';
-import { CVFile } from '../types';
+import { CVFile, ParsingMode } from '../types';
 import { Icon } from './icons';
 import { useTranslation } from '../i18n';
 import { useToast } from './Toast';
@@ -19,6 +19,8 @@ interface UploadViewProps {
   analysisLimit: { count: number; limit: number };
   limitError: string | null;
   uploadLimit: number;
+  parsingMode?: ParsingMode;
+  onSetParsingMode?: (mode: ParsingMode) => void;
 }
 
 const FileStatusChip: React.FC<{ status: CVFile['status'] }> = ({ status }) => {
@@ -34,7 +36,22 @@ const FileStatusChip: React.FC<{ status: CVFile['status'] }> = ({ status }) => {
 };
 
 
-export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onStartAnalysis, onClearFile, onClearAllFiles, onRetryFile, isAnalyzing, storageError, isOwner, analysisLimit, limitError, uploadLimit }) => {
+export const UploadView: React.FC<UploadViewProps> = ({ 
+  cvFiles, 
+  onAddFiles, 
+  onStartAnalysis, 
+  onClearFile, 
+  onClearAllFiles, 
+  onRetryFile, 
+  isAnalyzing, 
+  storageError, 
+  isOwner, 
+  analysisLimit, 
+  limitError, 
+  uploadLimit,
+  parsingMode = 'hybrid',
+  onSetParsingMode
+}) => {
   const { t } = useTranslation();
   const { showToast } = useToast();
   const [isDragActive, setIsDragActive] = React.useState(false);
@@ -265,7 +282,45 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
                     </ul>
                  </div>
             )}
-            <div className={`flex flex-col gap-6 ${cvFiles.length > 0 ? 'lg:order-2' : 'col-span-1'} w-full`}>
+            <div className={`flex flex-col gap-4 ${cvFiles.length > 0 ? 'lg:order-2' : 'col-span-1'} w-full`}>
+                {onSetParsingMode && (
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm text-xs">
+                        <div className="flex items-center gap-2">
+                            <span className="font-semibold text-gray-700 dark:text-gray-200">Mode de parsing :</span>
+                            <span className="text-gray-500 dark:text-gray-400">
+                                {parsingMode === 'hybrid' 
+                                    ? '⚡ Hybride (PDF.js + Gemini texte : ~7-9s, -90% tokens)' 
+                                    : '👁️ Vision (Base64 multimodal complet : OCR & scans)'}
+                            </span>
+                        </div>
+                        <div className="inline-flex p-1 bg-gray-100 dark:bg-gray-700 rounded-lg self-start sm:self-auto">
+                            <button
+                                type="button"
+                                onClick={() => onSetParsingMode('hybrid')}
+                                className={`px-3 py-1.5 rounded-md font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+                                    parsingMode === 'hybrid'
+                                        ? 'bg-white dark:bg-gray-900 text-pink-600 dark:text-pink-400 shadow-sm'
+                                        : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                                }`}
+                                title="Extraction directe du texte via PDF.js + analyse IA textuelle structurée"
+                            >
+                                <span>⚡ Hybride (Rapide)</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => onSetParsingMode('vision')}
+                                className={`px-3 py-1.5 rounded-md font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+                                    parsingMode === 'vision'
+                                        ? 'bg-white dark:bg-gray-900 text-pink-600 dark:text-pink-400 shadow-sm'
+                                        : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                                }`}
+                                title="Analyse visuelle complète par Gemini Vision (recommandé pour documents scannés ou images)"
+                            >
+                                <span>👁️ Vision (Base64)</span>
+                            </button>
+                        </div>
+                    </div>
+                )}
                 <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700">
                     <div className="flex border-b border-gray-200 dark:border-gray-700">
                         <button 

@@ -214,6 +214,8 @@ export interface LeaveRequest {
 
 export type POStatus = 'Brouillon' | 'Émis' | 'Payé' | 'Archivé';
 
+export type ParsingMode = 'hybrid' | 'vision';
+
 export interface PurchaseOrder {
   id: string;
   number: string;

@@ -22,8 +22,9 @@ import { CreateCVView } from './components/CreateCVView';
 import { LeavesView } from './components/LeavesView';
 import { PurchaseOrdersView } from './components/PurchaseOrdersView';
 import { FloatingAssistant } from './components/FloatingAssistant';
-import { CVFile, View, CandidateProfile, Theme, User, RecruitmentData, PipelineSnapshot, Mission, Timesheet, AIAction, TimesheetStatus } from './types';
+import { CVFile, View, CandidateProfile, Theme, User, RecruitmentData, PipelineSnapshot, Mission, Timesheet, AIAction, TimesheetStatus, ParsingMode } from './types';
 import { parseCvContent } from './services/geminiService';
+import { extractTextFromPdf } from './utils/pdfExtractor';
 import { Icon } from './components/icons';
 import { LanguageProvider, useTranslation } from './i18n';
 import { ToastProvider, useToast } from './components/Toast';
@@ -263,6 +264,23 @@ function AppContent() {
             return false;
         }
     });
+
+    const [parsingMode, setParsingMode] = React.useState<ParsingMode>(() => {
+        try {
+            return (localStorage.getItem('parseliq_parsing_mode') as ParsingMode) || 'hybrid';
+        } catch {
+            return 'hybrid';
+        }
+    });
+
+    const handleSetParsingMode = (mode: ParsingMode) => {
+        setParsingMode(mode);
+        try {
+            localStorage.setItem('parseliq_parsing_mode', mode);
+        } catch (e) {
+            console.error('Failed to persist parsing mode:', e);
+        }
+    };
     
     const mainContentRef = React.useRef<HTMLElement>(null);
     const [showBars, setShowBars] = React.useState(true);
@@ -666,7 +684,17 @@ function AppContent() {
 
             try {
                 const fileData = await readFileAsBase64(cvFile.file);
-                const profileData = await parseCvContent(fileData);
+                let extractedText: string | undefined = undefined;
+
+                if (parsingMode === 'hybrid' && (cvFile.file.type === 'application/pdf' || cvFile.file.name.toLowerCase().endsWith('.pdf'))) {
+                    try {
+                        extractedText = await extractTextFromPdf(cvFile.file);
+                    } catch (pdfErr) {
+                        console.warn(`[Hybrid Parser] Extraction locale échouée pour ${cvFile.file.name}, bascule automatique en Vision multimodale:`, pdfErr);
+                    }
+                }
+
+                const profileData = await parseCvContent(fileData, extractedText);
                 const duration = Date.now() - analysisStartTimeForFile;
                 const profile: CandidateProfile = {
                     ...profileData,
@@ -1130,7 +1158,7 @@ function AppContent() {
 
         switch (view) {
             case 'upload':
-                return <UploadView cvFiles={cvFiles} onAddFiles={handleAddFiles} onStartAnalysis={handleStartAnalysis} onClearFile={handleClearFile} onClearAllFiles={handleReset} onRetryFile={handleRetryFile} isAnalyzing={isAnalyzing} storageError={storageError} isOwner={isOwner} analysisLimit={analysisLimit} limitError={limitError} uploadLimit={isOwner ? Infinity : UPLOAD_SELECTION_LIMIT} />;
+                return <UploadView cvFiles={cvFiles} onAddFiles={handleAddFiles} onStartAnalysis={handleStartAnalysis} onClearFile={handleClearFile} onClearAllFiles={handleReset} onRetryFile={handleRetryFile} isAnalyzing={isAnalyzing} storageError={storageError} isOwner={isOwner} analysisLimit={analysisLimit} limitError={limitError} uploadLimit={isOwner ? Infinity : UPLOAD_SELECTION_LIMIT} parsingMode={parsingMode} onSetParsingMode={handleSetParsingMode} />;
             case 'dashboard':
                 return <DashboardView candidates={candidateProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} comparisonList={comparisonList} onToggleCompare={handleToggleCompare} onImportProfiles={handleImportProfiles} pipelineCandidateIds={recruitmentData.map(d => d.candidateId)} onTogglePipeline={handleTogglePipeline} showBars={showBars} missions={missions} timesheets={timesheets} onLoadDummyData={handleLoadDummyData} />;
             case 'favorites':
@@ -1158,6 +1186,8 @@ function AppContent() {
                             onDisconnect={handleDisconnect}
                             isDummyDataActive={isDummyDataActive}
                             onReset={handleReset}
+                            parsingMode={parsingMode}
+                            onSetParsingMode={handleSetParsingMode}
                         />;
             case 'compare':
                  const [profile1, profile2] = comparisonProfiles;
@@ -1169,7 +1199,7 @@ function AppContent() {
             case 'purchase-orders':
                 return <PurchaseOrdersView timesheets={timesheets} missions={missions} />;
             default:
-                return <UploadView cvFiles={cvFiles} onAddFiles={handleAddFiles} onStartAnalysis={handleStartAnalysis} onClearFile={handleClearFile} onClearAllFiles={handleReset} onRetryFile={handleRetryFile} isAnalyzing={isAnalyzing} storageError={storageError} isOwner={isOwner} analysisLimit={analysisLimit} limitError={limitError} uploadLimit={isOwner ? Infinity : UPLOAD_SELECTION_LIMIT} />;
+                return <UploadView cvFiles={cvFiles} onAddFiles={handleAddFiles} onStartAnalysis={handleStartAnalysis} onClearFile={handleClearFile} onClearAllFiles={handleReset} onRetryFile={handleRetryFile} isAnalyzing={isAnalyzing} storageError={storageError} isOwner={isOwner} analysisLimit={analysisLimit} limitError={limitError} uploadLimit={isOwner ? Infinity : UPLOAD_SELECTION_LIMIT} parsingMode={parsingMode} onSetParsingMode={handleSetParsingMode} />;
         }
     };
 

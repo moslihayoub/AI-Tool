@@ -2,7 +2,7 @@
 // FIX: Switched to namespace React import to correctly populate the global JSX namespace.
 import * as React from 'react';
 import { Icon } from './icons';
-import { Theme } from '../types';
+import { Theme, ParsingMode } from '../types';
 import { useTranslation } from '../i18n';
 
 interface SettingsViewProps {
@@ -15,9 +15,23 @@ interface SettingsViewProps {
     onDisconnect: () => void;
     isDummyDataActive: boolean;
     onReset: () => void;
+    parsingMode?: ParsingMode;
+    onSetParsingMode?: (mode: ParsingMode) => void;
 }
 
-export const SettingsView: React.FC<SettingsViewProps> = ({ theme, setTheme, onLoadDummyData, isDummyDataButtonDisabled, onOpenQuotaModal, isOwner, onDisconnect, isDummyDataActive, onReset }) => {
+export const SettingsView: React.FC<SettingsViewProps> = ({ 
+    theme, 
+    setTheme, 
+    onLoadDummyData, 
+    isDummyDataButtonDisabled, 
+    onOpenQuotaModal, 
+    isOwner, 
+    onDisconnect, 
+    isDummyDataActive, 
+    onReset,
+    parsingMode = 'hybrid',
+    onSetParsingMode
+}) => {
     const { t, language, setLanguage } = useTranslation();
     const [confirmDisconnect, setConfirmDisconnect] = React.useState(false);
 
@@ -93,6 +107,70 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ theme, setTheme, onL
                              <Icon name="desktop" className="w-5 h-5"/>
                             <span className="hidden sm:inline">{t('settings.theme.system')}</span>
                         </button>
+                    </div>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700">
+                    <h3 className="text-lg font-semibold font-display mb-1">Moteur d'analyse CV</h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                        Choisissez la stratégie d'extraction des données. Vous pouvez basculer à tout moment.
+                    </p>
+                    <div className="space-y-3">
+                        <label 
+                            onClick={() => onSetParsingMode && onSetParsingMode('hybrid')}
+                            className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
+                                parsingMode === 'hybrid'
+                                    ? 'border-pink-500 bg-pink-50/50 dark:bg-pink-950/20 shadow-xs'
+                                    : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750'
+                            }`}
+                        >
+                            <input 
+                                type="radio" 
+                                name="parsingMode" 
+                                checked={parsingMode === 'hybrid'} 
+                                onChange={() => onSetParsingMode && onSetParsingMode('hybrid')}
+                                className="mt-1 text-pink-600 focus:ring-pink-500"
+                            />
+                            <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                    <span className="font-bold text-sm text-gray-800 dark:text-gray-100">⚡ Hybride (Recommandé)</span>
+                                    <span className="text-[10px] uppercase tracking-wider font-extrabold px-1.5 py-0.5 rounded bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300">
+                                        ~7s • -90% tokens
+                                    </span>
+                                </div>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                    Extraction de texte directe côté client via PDF.js + structuration IA textuelle ultra-rapide. Recommandé pour les CVs natifs.
+                                </p>
+                            </div>
+                        </label>
+
+                        <label 
+                            onClick={() => onSetParsingMode && onSetParsingMode('vision')}
+                            className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
+                                parsingMode === 'vision'
+                                    ? 'border-pink-500 bg-pink-50/50 dark:bg-pink-950/20 shadow-xs'
+                                    : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750'
+                            }`}
+                        >
+                            <input 
+                                type="radio" 
+                                name="parsingMode" 
+                                checked={parsingMode === 'vision'} 
+                                onChange={() => onSetParsingMode && onSetParsingMode('vision')}
+                                className="mt-1 text-pink-600 focus:ring-pink-500"
+                            />
+                            <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                    <span className="font-bold text-sm text-gray-800 dark:text-gray-100">👁️ Vision Multimodale</span>
+                                    <span className="text-[10px] uppercase tracking-wider font-extrabold px-1.5 py-0.5 rounded bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                                        Base64 OCR
+                                    </span>
+                                </div>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                    Transmission de l'image/PDF complet à Gemini Vision. Idéal pour les scans d'anciens documents ou photos de CV.
+                                </p>
+                            </div>
+                        </label>
                     </div>
                 </div>
 
