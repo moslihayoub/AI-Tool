@@ -6,10 +6,11 @@
 - **Branche:** `main`
 
 ## 🚀 Progrès Récents
-- **Correctif Parsing CV (Google Gemini) :** Remplacement du modèle obsolète `gemini-2.5-flash` (rejeté 404 par Google) par une chaîne de repli automatique multi-modèles (`gemini-3.6-flash`, `gemini-3.8-flash`, `gemini-3.5-flash`, `gemini-3.1-flash-lite`) dans `services/geminiService.ts`.
-- **Détection Fiabilisée MIME Type PDF :** Correction dans `readFileAsBase64` pour assigner explicitement `application/pdf` lors de l'encodage base64 de fichiers PDF avec MIME absent ou binaire brut.
-- **Affichage Réel des Erreurs d'Upload :** Amélioration de `UploadView.tsx` pour afficher le message d'erreur technique précis renvoyé par l'IA plutôt qu'un message générique bloquant.
-- **Mode Démo & Résolution du Zero-Data Trap :** Prise en charge du paramètre URL `?demo=true` pour précharger instantanément candidats, missions et feuilles de temps sur toute session vierge.
+- **Quota Journalier Étendu à 10 Opérations :** Augmentation du nombre d'opérations d'analyse quotidiennes de 3 à 10 par jour dans `App.tsx` et alignement des textes i18n (`fr`, `en`, `ar`).
+- **Bandeau de Limitation Contextuel & Auto-Hide :** Remplacement automatique du bandeau de limitation par une bannière de succès positive dès que tous les CVs sont analysés avec succès, et ajout d'un bouton de fermeture manuel (croix).
+- **Bouton Réessayer Instantané :** Intégration d'un bouton "Réessayer" direct sur chaque carte de CV en erreur pour relancer sans réimporter.
+- **Correctif Parsing CV (Google Gemini) :** Remplacement du modèle obsolète `gemini-2.5-flash` par une chaîne de repli automatique multi-modèles (`gemini-3.6-flash`, `gemini-3.8-flash`, `gemini-3.5-flash`, `gemini-3.1-flash-lite`).
+- **Détection Fiabilisée MIME Type PDF :** Correction dans `readFileAsBase64` pour assigner explicitement `application/pdf` lors de l'encodage base64.
 - **Validation TypeScript & Build :** `npx tsc --noEmit` et `npm run build` validés avec 0 erreur.
 - **Journalisation Système :** Mise à jour du registre `currentLogs` dans `components/InfraView.tsx`.
 

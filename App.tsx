@@ -202,7 +202,7 @@ function AppContent() {
     const [analysisSummaryMessage, setAnalysisSummaryMessage] = React.useState<string | null>(null);
     const [currentUser, setCurrentUser] = React.useState<User | null>(null);
     const [isOwner, setIsOwner] = React.useState(false);
-    const [analysisLimit, setAnalysisLimit] = React.useState({ count: 0, limit: 3 });
+    const [analysisLimit, setAnalysisLimit] = React.useState({ count: 0, limit: 10 });
     const [limitError, setLimitError] = React.useState<string | null>(null);
     const [uploadError, setUploadError] = React.useState<string | null>(null);
     const [isQuotaModalOpen, setIsQuotaModalOpen] = React.useState(false);
@@ -400,14 +400,14 @@ function AppContent() {
             if (usageDataStr) {
                 const usageData = JSON.parse(usageDataStr);
                 if (usageData.date === today) {
-                    setAnalysisLimit(prev => ({ ...prev, count: usageData.count }));
+                    setAnalysisLimit(prev => ({ ...prev, count: usageData.count, limit: 10 }));
                 } else {
                     localStorage.setItem('analysisOperationUsage', JSON.stringify({ date: today, count: 0 }));
-                    setAnalysisLimit(prev => ({ ...prev, count: 0 }));
+                    setAnalysisLimit(prev => ({ ...prev, count: 0, limit: 10 }));
                 }
             } else {
                 localStorage.setItem('analysisOperationUsage', JSON.stringify({ date: today, count: 0 }));
-                setAnalysisLimit(prev => ({ ...prev, count: 0 }));
+                setAnalysisLimit(prev => ({ ...prev, count: 0, limit: 10 }));
             }
         } catch (e) {
             console.error("Error reading usage from localStorage", e);

@@ -50,6 +50,18 @@ export const InfraView: React.FC<InfraViewProps> = () => {
             {
                 date: getDateStr(0),
                 time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'feat',
+                title: 'Daily Analysis Limit Raised to 10 Operations & Contextual Banner Auto-Hide',
+                description: 'Augmentation du quota journalier à 10 opérations par jour et masquage automatique du bandeau de limitation une fois les CVs analysés avec succès.',
+                details: [
+                    'Passage de la limite quotidienne d\'analyse de 3 à 10 opérations par jour dans l\'état global et le stockage.',
+                    'Remplacement automatique du bandeau de limitation par un statut de succès positif lorsque tous les fichiers sont analysés.',
+                    'Ajout d\'un bouton de fermeture (croix) sur le bandeau d\'information de quota pour permettre à l\'utilisateur de le masquer.'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                 type: 'ui',
                 title: 'Instant Retry Action on Failed Upload Cards',
                 description: 'Ajout d\'un bouton de réessai instantané sur chaque fichier en erreur pour relancer le parsing sans avoir à réimporter le document.',

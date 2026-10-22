@@ -50,10 +50,11 @@ export const fr = {
         limit_rules: {
             title: "Règles de limitation",
             title_owner: "Mode Propriétaire",
-            description_with_count: "Il vous reste <strong>{{count}}/{{limit}}</strong> opérations d'analyse pour aujourd'hui. Chaque opération peut traiter jusqu'à {{uploadLimit}} CVs.",
+            description_with_count: "Il vous reste <strong>{{count}}/{{limit}}</strong> opérations d'analyse pour aujourd'hui (10 opérations par jour). Chaque opération peut traiter jusqu'à {{uploadLimit}} CVs.",
             limit_reached_title: "Limite quotidienne atteinte",
-            limit_reached_description: "Vous avez atteint votre quota d'analyse pour aujourd'hui. Revenez demain ou connectez-vous pour un accès illimité."
-        }
+            limit_reached_description: "Vous avez atteint votre quota de 10 analyses pour aujourd'hui. Revenez demain ou connectez-vous pour un accès illimité."
+        },
+        all_parsed_success: "Tous les CVs ont été analysés avec succès. Vous pouvez consulter les profils complets dans le Tableau de bord.",
     },
     dashboard: {
         title: "Tableau de bord",
@@ -407,10 +408,11 @@ export const en = {
         limit_rules: {
             title: "Limitation Rules",
             title_owner: "Owner Mode",
-            description_with_count: "You have <strong>{{count}}/{{limit}}</strong> analysis operations remaining for today. Each operation can process up to {{uploadLimit}} CVs.",
+            description_with_count: "You have <strong>{{count}}/{{limit}}</strong> analysis operations remaining for today (10 operations per day). Each operation can process up to {{uploadLimit}} CVs.",
             limit_reached_title: "Daily Limit Reached",
-            limit_reached_description: "You have reached your analysis quota for today. Come back tomorrow or connect for unlimited access."
-        }
+            limit_reached_description: "You have reached your quota of 10 analyses for today. Come back tomorrow or connect for unlimited access."
+        },
+        all_parsed_success: "All CVs have been analyzed successfully. You can view the full candidate profiles in the Dashboard.",
     },
     dashboard: {
         title: "Dashboard",
@@ -764,10 +766,11 @@ export const ar = {
         limit_rules: {
             title: "قواعد الحد",
             title_owner: "وضع المالك",
-            description_with_count: "لديك <strong>{{count}}/{{limit}}</strong> عمليات تحليل متبقية لهذا اليوم. يمكن لكل عملية معالجة ما يصل إلى {{uploadLimit}} سير ذاتية.",
+            description_with_count: "لديك <strong>{{count}}/{{limit}}</strong> عمليات تحليل متبقية لهذا اليوم (10 عمليات في اليوم). يمكن لكل عملية معالجة ما يصل إلى {{uploadLimit}} سير ذاتية.",
             limit_reached_title: "تم الوصول للحد اليومي",
-            limit_reached_description: "لقد وصلت إلى حصة التحليل الخاصة بك لهذا اليوم. عد غدًا أو اتصل للحصول على وصول غير محدود."
-        }
+            limit_reached_description: "لقد وصلت إلى حصتك البالغة 10 تحليلات لهذا اليوم. عد غدًا أو اتصل للحصول على وصول غير محدود."
+        },
+        all_parsed_success: "تم تحليل جميع السير الذاتية بنجاح. يمكنك مراجعة الملفات في لوحة القيادة.",
     },
     dashboard: {
         title: "لوحة القيادة",

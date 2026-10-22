@@ -43,6 +43,7 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
   const [selectedTab, setSelectedTab] = React.useState<'file'|'link'>('file');
   const [isUrlLoading, setIsUrlLoading] = React.useState(false);
   const [urlError, setUrlError] = React.useState('');
+  const [isQuotaDismissed, setIsQuotaDismissed] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
   
   const remainingAnalyses = analysisLimit.limit - analysisLimit.count;
@@ -119,6 +120,7 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
   };
 
   const pendingFilesCount = cvFiles.filter(f => f.status === 'pending').length;
+  const allFilesSuccess = cvFiles.length > 0 && cvFiles.every(f => f.status === 'success');
 
   return (
     <div className="p-4 sm:p-8 space-y-8">
@@ -129,7 +131,17 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
             </header>
         )}
         
-        {isOwner ? (
+        {allFilesSuccess ? (
+            <div className="p-4 rounded-lg border bg-green-50 border-green-200 text-green-800 dark:bg-green-900/30 dark:border-green-700 dark:text-green-200">
+              <div className="flex items-center gap-3">
+                <Icon name="check" className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
+                <div>
+                  <h4 className="font-semibold">{t('toast.analysis_complete', 'Analyse terminée')}</h4>
+                  <p className="text-sm">{t('upload.all_parsed_success')}</p>
+                </div>
+              </div>
+            </div>
+        ) : isOwner ? (
             <div className="p-4 rounded-lg border bg-green-50 border-green-200 text-green-800 dark:bg-green-900/30 dark:border-green-700 dark:text-green-200">
               <div className="flex items-start gap-3">
                 <Icon name="check" className="w-5 h-5 mt-0.5 flex-shrink-0" />
@@ -139,22 +151,31 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
                 </div>
               </div>
             </div>
-        ) : (
-            <div className={`p-4 rounded-lg border ${remainingAnalyses > 0 ? 'bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-200' : 'bg-red-50 border-red-200 text-red-800 dark:bg-red-900/30 dark:border-red-700 dark:text-red-200'}`}>
-              <div className="flex items-start gap-3">
-                <Icon name={remainingAnalyses > 0 ? 'info' : 'alert-triangle'} className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                <div>
-                  <h4 className="font-semibold">{remainingAnalyses > 0 ? t('upload.limit_rules.title') : t('upload.limit_rules.limit_reached_title')}</h4>
-                  <p 
-                    className="text-sm" 
-                    dangerouslySetInnerHTML={{ __html: remainingAnalyses > 0 
-                      ? t('upload.limit_rules.description_with_count', { count: remainingAnalyses, limit: analysisLimit.limit, uploadLimit }) 
-                      : t('upload.limit_rules.limit_reached_description')
-                  }}></p>
+        ) : !isQuotaDismissed ? (
+            <div className={`p-4 rounded-lg border relative ${remainingAnalyses > 0 ? 'bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-200' : 'bg-red-50 border-red-200 text-red-800 dark:bg-red-900/30 dark:border-red-700 dark:text-red-200'}`}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <Icon name={remainingAnalyses > 0 ? 'info' : 'alert-triangle'} className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold">{remainingAnalyses > 0 ? t('upload.limit_rules.title') : t('upload.limit_rules.limit_reached_title')}</h4>
+                    <p 
+                      className="text-sm" 
+                      dangerouslySetInnerHTML={{ __html: remainingAnalyses > 0 
+                        ? t('upload.limit_rules.description_with_count', { count: remainingAnalyses, limit: analysisLimit.limit, uploadLimit }) 
+                        : t('upload.limit_rules.limit_reached_description')
+                    }}></p>
+                  </div>
                 </div>
+                <button 
+                  onClick={() => setIsQuotaDismissed(true)} 
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1 rounded-full transition-colors cursor-pointer"
+                  aria-label={t('common.cancel', 'Fermer')}
+                >
+                  <Icon name="close" className="w-4 h-4" />
+                </button>
               </div>
             </div>
-        )}
+        ) : null}
 
         <div className={`grid grid-cols-1 ${cvFiles.length > 0 ? 'lg:grid-cols-2 gap-8 items-start' : ''}`}>
              {cvFiles.length > 0 && (
