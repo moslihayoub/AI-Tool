@@ -132,12 +132,21 @@ const readFileAsBase64 = (file: File): Promise<{ mimeType: string; data: string 
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
-      const base64String = (reader.result as string).split(',')[1];
+      const result = reader.result as string;
+      const base64String = result.includes(',') ? result.split(',')[1] : result;
       if (!base64String) {
           reject(new Error("Could not read file as base64."));
           return;
       }
-      resolve({ mimeType: file.type || 'application/octet-stream', data: base64String });
+      let mimeType = file.type;
+      if (!mimeType || mimeType === 'application/octet-stream') {
+        const ext = file.name.split('.').pop()?.toLowerCase();
+        if (ext === 'pdf') mimeType = 'application/pdf';
+        else if (ext === 'txt') mimeType = 'text/plain';
+        else if (ext === 'json') mimeType = 'application/json';
+        else mimeType = 'application/pdf';
+      }
+      resolve({ mimeType, data: base64String });
     };
     reader.onerror = (error) => reject(error);
     reader.readAsDataURL(file);

@@ -223,7 +223,7 @@ export const UploadView: React.FC<UploadViewProps> = ({ cvFiles, onAddFiles, onS
                                         <div className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-100 dark:border-red-900/50">
                                             <Icon name="alert-triangle" className="w-5 h-5 flex-shrink-0 mt-0.5" />
                                             <p>
-                                                <strong>{t('upload.status.error')}: </strong>{t('errors.analysis_failed')}
+                                                <strong>{t('upload.status.error')}: </strong>{cvFile.error || t('errors.analysis_failed')}
                                             </p>
                                         </div>
                                     </div>

@@ -8,6 +8,14 @@ const ai = new GoogleGenAI({ apiKey: getApiKey() || 'dummy_key' });
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+// Candidate models for resilience (with automated fallback if one experiences 503 overload or 404 deprecation)
+export const GEMINI_MODELS = [
+    'gemini-3.6-flash',
+    'gemini-3.8-flash',
+    'gemini-3.5-flash',
+    'gemini-3.1-flash-lite'
+];
+
 // Fix: Define the JSON schema for the candidate profile to ensure structured output from the AI.
 const candidateProfileSchema = {
     type: Type.OBJECT,
@@ -84,7 +92,6 @@ const systemInstructionForParsing = `You are an expert HR assistant specializing
  * @returns A promise that resolves to the parsed candidate profile.
  */
 export async function parseCvContent(fileData: { mimeType: string; data: string }): Promise<Omit<CandidateProfile, 'id' | 'fileName' | 'analysisDuration'>> {
-    const model = 'gemini-2.5-flash';
     let isUrl = false;
     let decodedText = '';
     
@@ -104,93 +111,88 @@ export async function parseCvContent(fileData: { mimeType: string; data: string 
         Please use the Google Search tool to find information about this profile and extract the candidate's details.
         If you cannot find the profile or it is private, do not hallucinate; extract only what you are sure about or return "N/A".`;
     }
-    
-    const maxRetries = 3;
-    let attempt = 0;
 
-    while (attempt < maxRetries) {
-        try {
-            const config: any = {
-                systemInstruction: systemInstructionForParsing,
-                responseMimeType: "application/json",
-                responseSchema: candidateProfileSchema,
-            };
+    let lastError: Error | null = null;
 
-            if (isUrl) {
-                config.tools = [{ googleSearch: {} }];
-            }
+    // Automated fallback loop through available Gemini models
+    for (const model of GEMINI_MODELS) {
+        const maxRetriesPerModel = 2;
+        let attempt = 0;
 
-            const response: GenerateContentResponse = await ai.models.generateContent({
-                model: model,
-                contents: { parts: [{ text: prompt }, { inlineData: fileData }] },
-                config: config,
-            });
+        while (attempt < maxRetriesPerModel) {
+            try {
+                const config: any = {
+                    systemInstruction: systemInstructionForParsing,
+                    responseMimeType: "application/json",
+                    responseSchema: candidateProfileSchema,
+                };
 
-            // Fix: Extract and parse the JSON text from the response.
-            const jsonText = response.text.trim();
-            const parsedJson = JSON.parse(jsonText);
-            const validationResult = CandidateProfileSchema.safeParse(parsedJson);
-            
-            if (!validationResult.success) {
-                throw new Error("Validation des données IA échouée: format non conforme au schéma.");
-            }
-
-            // We return the parsed data, and the caller will add the file-specific metadata.
-            return {
-                name: parsedJson.name || 'N/A',
-                email: parsedJson.email || 'N/A',
-                phone: parsedJson.phone || 'N/A',
-                location: parsedJson.location || 'N/A',
-                linkedin: parsedJson.linkedin || 'N/A',
-                website: parsedJson.website || 'N/A',
-                summary: parsedJson.summary || 'N/A',
-                experience: parsedJson.experience || [],
-                education: parsedJson.education || [],
-                skills: parsedJson.skills || { hard: [], soft: [] },
-                languages: parsedJson.languages || [],
-                certifications: parsedJson.certifications || [],
-                detectedLanguage: parsedJson.detectedLanguage || 'N/A',
-                jobCategory: parsedJson.jobCategory || 'N/A',
-                totalExperienceYears: parsedJson.totalExperienceYears || 0,
-                performanceScore: parsedJson.performanceScore || 0,
-            };
-        } catch (e) {
-            attempt++;
-            console.warn(`Attempt ${attempt} failed for CV processing. Error:`, e);
-            
-            let isRetryable = false;
-            let finalError: Error | null = null;
-
-            if (e instanceof Error) {
-                try {
-                    const errorObj = JSON.parse(e.message);
-                    if (errorObj.error && errorObj.error.message) {
-                        if (errorObj.error.code === 503 || errorObj.error.status === 'UNAVAILABLE') {
-                            isRetryable = true;
-                            finalError = new Error('The AI model is overloaded. Please try again later.');
-                        } else {
-                            finalError = new Error(`AI API Error: ${errorObj.error.message}`);
-                        }
-                    }
-                } catch (jsonError) { /* Not a JSON API error */ }
-                
-                if (!finalError) {
-                    finalError = new Error(`Failed to get structured data from AI. The CV might be unparsable or in an unsupported format. Gemini Error: ${e.message}`);
+                if (isUrl) {
+                    config.tools = [{ googleSearch: {} }];
                 }
-            } else {
-                finalError = new Error("An unknown error occurred during CV analysis.");
-            }
 
-            if (isRetryable && attempt < maxRetries) {
-                const backoffTime = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
-                console.log(`Model overloaded. Retrying in ${Math.round(backoffTime / 1000)}s...`);
-                await delay(backoffTime);
-            } else {
-                throw finalError;
+                const response: GenerateContentResponse = await ai.models.generateContent({
+                    model: model,
+                    contents: { parts: [{ text: prompt }, { inlineData: fileData }] },
+                    config: config,
+                });
+
+                const jsonText = response.text ? response.text.trim() : '';
+                if (!jsonText) {
+                    throw new Error("Réponse vide de l'IA.");
+                }
+
+                const parsedJson = JSON.parse(jsonText);
+                const validationResult = CandidateProfileSchema.safeParse(parsedJson);
+                
+                if (!validationResult.success) {
+                    throw new Error("Validation des données IA échouée: format non conforme au schéma.");
+                }
+
+                return {
+                    name: parsedJson.name || 'N/A',
+                    email: parsedJson.email || 'N/A',
+                    phone: parsedJson.phone || 'N/A',
+                    location: parsedJson.location || 'N/A',
+                    linkedin: parsedJson.linkedin || 'N/A',
+                    website: parsedJson.website || 'N/A',
+                    summary: parsedJson.summary || 'N/A',
+                    experience: parsedJson.experience || [],
+                    education: parsedJson.education || [],
+                    skills: parsedJson.skills || { hard: [], soft: [] },
+                    languages: parsedJson.languages || [],
+                    certifications: parsedJson.certifications || [],
+                    detectedLanguage: parsedJson.detectedLanguage || 'N/A',
+                    jobCategory: parsedJson.jobCategory || 'N/A',
+                    totalExperienceYears: parsedJson.totalExperienceYears || 0,
+                    performanceScore: parsedJson.performanceScore || 0,
+                };
+            } catch (e: any) {
+                attempt++;
+                const errMsg = e?.message || String(e);
+                console.warn(`[Gemini] Model ${model} (attempt ${attempt}) failed:`, errMsg);
+                
+                const isOverloaded = errMsg.includes('503') || errMsg.includes('UNAVAILABLE');
+                const isRetiredOrNotFound = errMsg.includes('404') || errMsg.includes('NOT_FOUND') || errMsg.includes('no longer available');
+
+                if (isRetiredOrNotFound) {
+                    // Stop retrying this model, break to next model in GEMINI_MODELS
+                    lastError = new Error(`Modèle ${model} indisponible: ${errMsg}`);
+                    break;
+                }
+
+                if (isOverloaded && attempt < maxRetriesPerModel) {
+                    await delay(800 * attempt);
+                    continue;
+                }
+
+                lastError = e instanceof Error ? e : new Error(errMsg);
+                break; // Try next model in chain
             }
         }
     }
-    throw new Error("Failed to process CV after multiple retries.");
+
+    throw lastError || new Error("Échec du traitement du CV avec les modèles Gemini disponibles.");
 }
 
 
@@ -218,7 +220,7 @@ export function createAIChat(cvFile: CVFile): Chat {
 
     // Fix: Create a chat instance with a system instruction containing the candidate's profile as context.
     const chat: Chat = ai.chats.create({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3.6-flash',
         config: {
             systemInstruction: systemInstruction,
         },
@@ -242,7 +244,7 @@ export function createGeneralAIChat(viewContext: string): Chat {
     If the view is "purchase-orders", you can explain what a PO is.`;
 
     const chat: Chat = ai.chats.create({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3.6-flash',
         config: {
             systemInstruction: systemInstruction,
         },
@@ -284,7 +286,7 @@ export function createDashboardAIChat(profiles: CandidateProfile[]): Chat {
     `;
 
     const chat: Chat = ai.chats.create({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3.6-flash',
         config: {
             systemInstruction: systemInstruction,
         },

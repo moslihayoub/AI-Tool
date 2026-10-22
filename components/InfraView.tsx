@@ -50,7 +50,19 @@ export const InfraView: React.FC<InfraViewProps> = () => {
             {
                 date: getDateStr(0),
                 time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-                type: 'chore',
+                type: 'fix',
+                title: 'Gemini Models Auto-Fallback Chain & PDF MIME Resolver',
+                description: 'Migration du modèle déprécié gemini-2.5-flash vers la chaîne de résilience gemini-3.6-flash / gemini-3.8-flash / gemini-3.5-flash et fiabilisation du MIME type PDF.',
+                details: [
+                    'Résolution de l\'erreur 404 (modèle gemini-2.5-flash déprécié par Google) avec boucle de fallback automatique sur les modèles actifs.',
+                    'Détection et assignation automatique du MIME type application/pdf lors de l\'encodage base64 dans readFileAsBase64.',
+                    'Affichage dynamique de l\'erreur réelle retournée par l\'API dans la carte Upload au lieu du message générique masquant.'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'fix',
                 title: 'TestSprite E2E Cloud Validation — 100% Passed',
                 description: 'Validation complète de la suite de tests E2E sur TestSprite Cloud pour la production Vercel.',
                 details: [
