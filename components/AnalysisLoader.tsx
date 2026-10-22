@@ -289,8 +289,12 @@ export const AnalysisLoader: React.FC<AnalysisLoaderProps> = ({ total, startTime
   React.useEffect(() => {
     if (isAnalysisDone) {
       setShowCompletionToast(true);
+      const autoRedirectTimer = setTimeout(() => {
+        onViewResults();
+      }, 1500);
+      return () => clearTimeout(autoRedirectTimer);
     }
-  }, [isAnalysisDone]);
+  }, [isAnalysisDone, onViewResults]);
 
   return (
     <div className="fixed inset-0 z-50 text-white">

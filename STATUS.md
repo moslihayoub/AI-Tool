@@ -6,6 +6,7 @@
 - **Branche:** `main`
 
 ## 🚀 Progrès Récents
+- **Optimisation Latence Parsing & Auto-Redirection :** Éradication des attentes anormales (190s) grâce au bornage du timeout HTTP à 25s, priorisation des modèles flash ultra-rapides (`gemini-3.6-flash`, `gemini-3.5-flash`), failover immédiat sans retry interne bloquant, et auto-redirection fluide vers le Dashboard en fin d'analyse.
 - **Quota Journalier Étendu à 10 Opérations :** Augmentation du nombre d'opérations d'analyse quotidiennes de 3 à 10 par jour dans `App.tsx` et alignement des textes i18n (`fr`, `en`, `ar`).
 - **Bandeau de Limitation Contextuel & Auto-Hide :** Remplacement automatique du bandeau de limitation par une bannière de succès positive dès que tous les CVs sont analysés avec succès, et ajout d'un bouton de fermeture manuel (croix).
 - **Bouton Réessayer Instantané :** Intégration d'un bouton "Réessayer" direct sur chaque carte de CV en erreur pour relancer sans réimporter.

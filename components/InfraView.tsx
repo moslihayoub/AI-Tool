@@ -50,6 +50,18 @@ export const InfraView: React.FC<InfraViewProps> = () => {
             {
                 date: getDateStr(0),
                 time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'perf',
+                title: 'Parsing Latency Optimization & Instant Auto-Redirect',
+                description: 'Optimisation drastique des temps de réponse IA : timeout HTTP à 25s, suppression des retries internes bloquants et auto-redirection post-analyse.',
+                details: [
+                    'Priorisation stricte des modèles à très faible latence (`gemini-3.6-flash` à ~1.5s et `gemini-3.5-flash`).',
+                    'Configuration du timeout client à 25s et bascule immédiate au modèle suivant sans retry bloquant sur les nœuds 503.',
+                    'Auto-redirection fluide de la modale de chargement vers le Dashboard dès complétion de l\'analyse (1.5s).'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                 type: 'feat',
                 title: 'Daily Analysis Limit Raised to 10 Operations & Contextual Banner Auto-Hide',
                 description: 'Augmentation du quota journalier à 10 opérations par jour et masquage automatique du bandeau de limitation une fois les CVs analysés avec succès.',

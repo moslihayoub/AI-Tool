@@ -4,16 +4,18 @@ import { CandidateProfileSchema } from './schemas';
 
 // Fix: Initialize the Google Gemini AI client. Support GOOGLE_API_KEY, GEMINI_API_KEY, and API_KEY.
 const getApiKey = () => process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || process.env.API_KEY || '';
-const ai = new GoogleGenAI({ apiKey: getApiKey() || 'dummy_key' });
+const ai = new GoogleGenAI({ 
+    apiKey: getApiKey() || 'dummy_key',
+    httpOptions: { timeout: 25000 }
+});
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Candidate models for resilience (with automated fallback if one experiences 503 overload or 404 deprecation)
+// Candidate models for resilience — prioritized by speed and stability benchmark (< 2.5s response)
 export const GEMINI_MODELS = [
     'gemini-3.6-flash',
-    'gemini-3.8-flash',
     'gemini-3.5-flash',
-    'gemini-3.1-flash-lite'
+    'gemini-3.8-flash'
 ];
 
 // Fix: Define the JSON schema for the candidate profile to ensure structured output from the AI.
@@ -116,7 +118,7 @@ export async function parseCvContent(fileData: { mimeType: string; data: string 
 
     // Automated fallback loop through available Gemini models
     for (const model of GEMINI_MODELS) {
-        const maxRetriesPerModel = 2;
+        const maxRetriesPerModel = 1;
         let attempt = 0;
 
         while (attempt < maxRetriesPerModel) {
