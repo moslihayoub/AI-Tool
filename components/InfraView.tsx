@@ -50,6 +50,19 @@ export const InfraView: React.FC<InfraViewProps> = () => {
             {
                 date: getDateStr(0),
                 time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'ui',
+                title: 'Standardisation Intégrale des Icônes sous Lucide React',
+                description: 'Refonte complète du système d\'icônes (components/icons.tsx) : élimination de tous les SVG codés à la main déformés au profit des icônes officielles vectorielles de Lucide React.',
+                details: [
+                    'Éradication des glyphes custom défectueux : remplacement des tracés SVG approximatifs (notamment l\'icône sparkles déformée) par les composants certifiés lucide-react.',
+                    'Mapping exhaustif Lucide : 60+ icônes d\'interface (Sparkles, LayoutDashboard, BrainCircuit, Users, FilePenLine, ArrowLeftRight, Clock, etc.) mappées en résolution vectorielle parfaite.',
+                    'Conservation ciblée des drapeaux & marques : sanctuarisation exclusive des drapeaux multilingues (FR, GB, MA) et logos vectoriels tiers (WhatsApp, Google) sans équivalent Lucide natif.',
+                    'Harmonisation visuelle 100% cohérente : rendu homogène avec gestion dynamique des classes Tailwind (w-*, h-*, text-*, flex-shrink-0).'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                 type: 'security',
                 title: 'Révocation Privilèges Admin fahdrahali@gmail.com',
                 description: 'Révocation immédiate et complète de tous les droits d\'administration pour fahdrahali@gmail.com. Accès propriétaire strictement réservé à moslihayoub@gmail.com et Moslih84.',

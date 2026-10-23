@@ -6,6 +6,10 @@
 - **Branche:** `main`
 
 ## 🚀 Progrès Récents
+- **Standardisation Intégrale des Icônes sous Lucide React :**
+  * **Remplacement du système d'icônes artisanal (`components/icons.tsx`)** : Élimination de tous les tracés SVG manuels déformés (notamment l'icône `sparkles` défectueuse du bandeau d'onboarding) au profit des icônes officielles de `lucide-react`.
+  * **Couverture complète (60+ icônes)** : `Sparkles`, `LayoutDashboard`, `BrainCircuit`, `Users`, `ArrowLeftRight`, `Briefcase`, `CalendarHeart`, `Receipt`, `FilePenLine`, `FileText`, `History`, `Settings`, etc.
+  * **Préservation ciblée** : Maintien des drapeaux de langues (FR, GB, MA), logos tiers (WhatsApp, Google) et animations Lottie qui n'ont pas d'équivalent Lucide.
 - **Révocation Stricte des Droits d'Administration pour fahdrahali@gmail.com :**
   * **Suppression complète des privilèges tiers** : Retrait de l'adresse `fahdrahali@gmail.com` de tous les contrôles d'habilitation administrateur (`isOwner`) dans `App.tsx` (`initAuth`, `onAuthStateChange`, `AuthModal onSuccess`).
   * **Sanctuarisation de l'accès Propriétaire** : Seuls l'email `moslihayoub@gmail.com` et l'identifiant `Moslih84` conservent les privilèges d'administration et l'accès exclusif aux modules *"Moteur d'analyse CV (Admin)"* et *"Gestion des données"*.
