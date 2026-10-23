@@ -50,6 +50,18 @@ export const InfraView: React.FC<InfraViewProps> = () => {
             {
                 date: getDateStr(0),
                 time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'fix',
+                title: 'Google OAuth Feedback & Fallback Guidance',
+                description: 'Traitement explicite de l\'erreur "provider is not enabled" dans AuthModal et guidage vers l\'activation Google Console / Supabase ou la connexion Email.',
+                details: [
+                    'Détection de l\'erreur de validation Supabase (code 400 provider is not enabled).',
+                    'Message explicatif guidant l\'administrateur vers l\'activation du provider Google dans le dashboard Supabase.',
+                    'Maintien de la connexion fonctionnelle par Email/Mot de passe.'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                 type: 'feat',
                 title: 'Supabase Backend, Gmail/Email Auth & Auto-Bascule Hybride Dynamique',
                 description: 'Mise en place de l\'infrastructure backend Supabase avec 5 tables et RLS, authentification Google/Email, interface shadcn/lucide et bascule automatique en mode hybride sur token épuisé.',

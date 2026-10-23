@@ -6,6 +6,7 @@
 - **Branche:** `main`
 
 ## 🚀 Progrès Récents
+- **Gestion d'Erreur Google OAuth & Guidage d'Activation :** Détection de l'erreur `provider is not enabled` dans `AuthModal.tsx` avec message clair guidant vers l'activation dans le tableau de bord Supabase ou l'usage immédiat d'Email/Mot de passe.
 - **Backend Supabase & Base de Données Sécurisée (RLS) :**
   * Création des tables Postgres : `hr_candidates`, `hr_pipeline`, `hr_missions`, `hr_timesheets`, `hr_user_quotas`.
   * Activation du Row Level Security (RLS) à 100% avec règles d'isolation par `user_id`.

@@ -27,7 +27,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
       await signInWithGoogle();
       showToast('Redirection vers Google...', 'info');
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Échec de connexion Google';
+      const rawMessage = err instanceof Error ? err.message : String(err);
+      let message = rawMessage;
+      if (rawMessage.includes('provider is not enabled') || rawMessage.includes('validation_failed')) {
+        message = 'Le fournisseur Google OAuth n\'est pas encore activé dans Supabase (Authentication > Providers > Google). Utilisez la connexion Email/Mot de passe ci-dessous.';
+      } else {
+        message = 'Échec de connexion Google : ' + rawMessage;
+      }
       setError(message);
       showToast(message, 'error');
       setIsLoading(false);
