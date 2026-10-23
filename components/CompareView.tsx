@@ -70,6 +70,13 @@ export const CompareView: React.FC<CompareViewProps> = ({ profile1, profile2, on
                         style={{ width: '200px', height: '200px' }}
                     ></dotlottie-wc>
                     <p className="mt-4 text-lg text-gray-600 dark:text-gray-400 max-w-md">{t('compare.empty_state_description')}</p>
+                    <button 
+                        onClick={onBack}
+                        className="mt-6 flex items-center justify-center gap-2 bg-gradient-button text-white font-semibold px-6 py-2.5 rounded-full hover:opacity-90 transition-opacity shadow-md text-sm"
+                    >
+                        <Icon name="users" className="w-4 h-4 text-white" />
+                        <span>Sélectionner des candidats dans le Dashboard</span>
+                    </button>
                 </div>
             </div>
         );

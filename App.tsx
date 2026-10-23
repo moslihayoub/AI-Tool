@@ -1270,7 +1270,7 @@ function AppContent() {
             case 'favorites':
                 return <DashboardView candidates={favoriteProfiles} onSelectCandidate={handleSelectCandidate} onReset={handleReset} favorites={favorites} onToggleFavorite={toggleFavorite} isFavoritesView comparisonList={comparisonList} onToggleCompare={handleToggleCompare} onImportProfiles={handleImportProfiles} pipelineCandidateIds={recruitmentData.map(d => d.candidateId)} onTogglePipeline={handleTogglePipeline} showBars={showBars} onLoadDummyData={handleLoadDummyData} />;
             case 'ai':
-                return <AIAssistantView candidates={candidateProfiles} onActionClick={handleAIAction} />;
+                return <AIAssistantView candidates={candidateProfiles} onActionClick={handleAIAction} onLoadDummyData={handleLoadDummyData} />;
             case 'recruitment':
                 return <RecruitmentView candidates={candidateProfiles} recruitmentData={recruitmentData} onUpdateRecruitmentData={updateRecruitmentData} onSelectCandidate={handleSelectCandidate} onTogglePipeline={handleTogglePipeline} onSaveSnapshot={handleSaveSnapshot} lastSnapshotId={lastSnapshotId} onCreateMission={handleCreateMissionFromCandidate} onLoadDummyData={handleLoadDummyData} />;
             case 'missions':

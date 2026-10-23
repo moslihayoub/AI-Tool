@@ -50,6 +50,21 @@ export const InfraView: React.FC<InfraViewProps> = () => {
             {
                 date: getDateStr(0),
                 time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'ui',
+                title: 'Test Scénario ATS Complet & Résolution des Gaps Fonctionnels',
+                description: 'Audit et test de bout en bout des 8 parcours utilisateurs ATS, correction des états vides manquants, renforcement mobile du pipeline et ajout des bannières interactives.',
+                details: [
+                    'Parcours Dashboard : correction du bug d\'affichage sur résultats filtrés vides, ajout d\'un empty state explicite avec CTA de réinitialisation et d\'une bannière flottante de comparaison (1/2 et 2/2 prêts).',
+                    'Parcours Comparateur : ajout d\'un CTA interactif de redirection vers le Dashboard lorsque moins de 2 profils sont sélectionnés.',
+                    'Parcours Pipeline Kanban : ajout d\'un sélecteur d\'étape 1-tap directement sur chaque carte pour garantir l\'accessibilité mobile sans dépendance au drag-and-drop HTML5.',
+                    'Parcours Assistant IA : déblocage du cas 0 profil avec message explicatif et bouton d\'injection des données de démonstration.',
+                    'Parcours CRA & Missions : ajout de gardes d\'alerte si aucune mission active n\'est disponible lors de la création d\'une feuille de temps.',
+                    'Parcours Créer un CV : ajout d\'une fonction et d\'un bouton de réinitialisation complète du formulaire pour repartir d\'une page blanche.'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                 type: 'perf',
                 title: 'Synchronisation Vercel CLI & Nettoyage Intégral des Clés',
                 description: 'Connexion directe au projet Vercel ai-tool, injection sécurisée des variables d\'environnement en production et élimination des clés en dur dans le code source.',

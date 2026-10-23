@@ -11,9 +11,10 @@ import { useTranslation } from '../i18n';
 interface AIAssistantViewProps {
     candidates: CandidateProfile[];
     onActionClick?: (action: AIAction) => void;
+    onLoadDummyData?: () => void;
 }
 
-export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ candidates, onActionClick }) => {
+export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ candidates, onActionClick, onLoadDummyData }) => {
     const { t } = useTranslation();
     const [chat, setChat] = React.useState<Chat | null>(null);
     const [messages, setMessages] = React.useState<ChatMessage[]>([]);
@@ -111,6 +112,15 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({ candidates, on
                         style={{ width: '200px', height: '200px' }}
                     ></dotlottie-wc>
                     <p className="mt-4 text-lg text-gray-600 dark:text-gray-400 max-w-md">{t('dashboard.no_cv_analyzed')}</p>
+                    {onLoadDummyData && (
+                        <button 
+                            onClick={onLoadDummyData}
+                            className="mt-6 flex items-center justify-center gap-2 bg-gradient-button text-white font-semibold px-6 py-2.5 rounded-full hover:opacity-90 transition-opacity shadow-md text-sm"
+                        >
+                            <Icon name="sparkles" className="w-4 h-4 text-white" />
+                            <span>Charger les données de démonstration</span>
+                        </button>
+                    )}
                 </div>
             </div>
         )

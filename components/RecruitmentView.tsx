@@ -86,14 +86,18 @@ export const RecruitmentView: React.FC<RecruitmentViewProps> = ({ candidates, re
     const handleDrop = (e: React.DragEvent, stage: PipelineStage) => {
         e.preventDefault();
         if (draggedCandidateId) {
-            const item = pipelineData.find(p => p.candidateId === draggedCandidateId);
-            if (item && item.stage !== stage) {
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const { profile, ...rest } = item;
-                onUpdateRecruitmentData({ ...rest, stage });
-                showToast(`Déplacé vers ${stages.find(s => s.id === stage)?.label}`, 'success');
-            }
+            handleMoveStage(draggedCandidateId, stage);
             setDraggedCandidateId(null);
+        }
+    };
+
+    const handleMoveStage = (candidateId: string, targetStage: PipelineStage) => {
+        const item = pipelineData.find(p => p.candidateId === candidateId);
+        if (item && item.stage !== targetStage) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { profile, ...rest } = item;
+            onUpdateRecruitmentData({ ...rest, stage: targetStage });
+            showToast(`Déplacé vers ${stages.find(s => s.id === targetStage)?.label}`, 'success');
         }
     };
 
@@ -209,7 +213,17 @@ export const RecruitmentView: React.FC<RecruitmentViewProps> = ({ candidates, re
                                             )}
 
                                             <div className="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-gray-700">
-                                                <span className="text-[10px] text-gray-400">{new Date(item.applicationDate).toLocaleDateString()}</span>
+                                                <select
+                                                    value={stage.id}
+                                                    onChange={(e) => handleMoveStage(item.candidateId, e.target.value as PipelineStage)}
+                                                    className="text-[11px] bg-gray-100 dark:bg-gray-700/60 border border-gray-200 dark:border-gray-600 rounded px-1.5 py-0.5 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-primary-500 cursor-pointer max-w-[110px]"
+                                                    title="Changer d'étape"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    {stages.map(s => (
+                                                        <option key={s.id} value={s.id}>{s.label}</option>
+                                                    ))}
+                                                </select>
                                                 <div className="flex gap-1">
                                                     <button 
                                                         onClick={() => onSelectCandidate(item.profile)}

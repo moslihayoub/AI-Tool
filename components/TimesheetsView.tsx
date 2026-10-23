@@ -446,13 +446,18 @@ export const TimesheetsView: React.FC<TimesheetsViewProps> = ({ timesheets, onUp
                                         value={editingTimesheet.missionId} 
                                         onChange={e => handleMissionChange(e.target.value)}
                                         className="w-full p-2 rounded border dark:bg-gray-800 dark:border-gray-600"
-                                        disabled={!!editingTimesheet.id} // Lock mission on edit
+                                        disabled={!!editingTimesheet.id || activeMissions.length === 0} // Lock mission on edit
                                     >
                                         <option value="">-- Sélectionner --</option>
                                         {activeMissions.map(m => (
                                             <option key={m.id} value={m.id}>{m.candidateName} - {m.title} ({m.client})</option>
                                         ))}
                                     </select>
+                                    {activeMissions.length === 0 && (
+                                        <p className="mt-1.5 text-xs text-amber-600 dark:text-amber-400 font-medium">
+                                            Aucune mission active trouvée. Créez ou activez d'abord une mission dans le module Missions.
+                                        </p>
+                                    )}
                                     {selectedMission && (
                                         <div className="mt-2 text-sm text-primary-700 dark:text-primary-300 bg-primary-50 dark:bg-primary-900/20 p-2 rounded border border-primary-200 dark:border-primary-800">
                                             <span className="font-bold">{selectedMission.remunerationType === 'Daily' ? 'TJM' : 'Salaire Mensuel'} :</span> {selectedMission.remuneration} {selectedMission.currency}

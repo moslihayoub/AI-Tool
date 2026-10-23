@@ -235,6 +235,32 @@ export const CreateCVView: React.FC = () => {
         }, 1000);
     };
 
+    const handleClearCV = () => {
+        if (window.confirm("Voulez-vous réinitialiser tous les champs du CV ?")) {
+            setPersonalInfo({
+                name: '',
+                jobTitle: '',
+                email: '',
+                phone: '',
+                location: '',
+                linkedin: '',
+                website: '',
+                summary: '',
+                skills: ''
+            });
+            setExperiences([]);
+            setEducation([]);
+            setLanguages([]);
+            setCertifications([]);
+            setPhoto(null);
+            setIsDirty(false);
+            window.isCVDirty = false;
+            localStorage.removeItem('parseLIQ_cv_draft');
+            setHasDraft(false);
+            showToast('Formulaire de CV réinitialisé', 'info');
+        }
+    };
+
     const handleFileImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -346,6 +372,14 @@ export const CreateCVView: React.FC = () => {
                         </h2>
                         <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{t('create_cv.subtitle')}</p>
                     </div>
+                    <button 
+                        onClick={handleClearCV}
+                        title="Vider et réinitialiser le formulaire"
+                        className="text-xs text-gray-500 hover:text-red-600 dark:hover:text-red-400 font-semibold px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-red-300 dark:hover:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all flex items-center gap-1.5 shadow-sm"
+                    >
+                        <Icon name="refresh-cw" className="w-3.5 h-3.5" />
+                        <span>Vider</span>
+                    </button>
                 </div>
 
                 {hasDraft && (

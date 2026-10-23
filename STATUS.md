@@ -6,6 +6,15 @@
 - **Branche:** `main`
 
 ## 🚀 Progrès Récents
+- **Test Scénario ATS Exhaustif & Résolution des Gaps Fonctionnels :**
+  * **Audit complet des 8 parcours ATS** : Ingestion & Parsing, Dashboard & Candidats, Comparateur, Pipeline Kanban, Missions & Contrats, Feuilles de Temps (CRA) & Bons de Commande, Créateur de CV, Assistant IA & Authentification.
+  * **Parcours Dashboard (Fix UX critique)** : Résolution du bug d'écran blanc lorsque les filtres ou la recherche ne renvoient aucun profil. Intégration d'un état vide explicite avec bouton de réinitialisation des filtres et bouton de chargement des données de test.
+  * **Bannière Flottante de Comparaison** : Ajout d'une notification persistante lors de la sélection d'un candidat (`1/2 sélectionné`) avec bouton direct d'accès au comparateur dès que 2 candidats sont cochés (`2/2 sélectionnés`).
+  * **Parcours Comparateur (Auto-guérison)** : Ajout d'un bouton direct "Sélectionner des candidats dans le Dashboard" dans l'état vide pour guider l'utilisateur immédiatement.
+  * **Parcours Pipeline Kanban (Accessibilité Mobile)** : Ajout d'un sélecteur d'étape compact 1-tap sur chaque carte de candidat pour permettre la transition d'étape sur appareils tactiles et mobiles sans dépendre du drag-and-drop HTML5.
+  * **Parcours Assistant IA (Résolution blocage silencieux)** : Ajout de la prise en charge du cas 0 profil avec état vide informatif et bouton de chargement direct du jeu de données de test.
+  * **Parcours Feuilles de Temps (CRA)** : Ajout d'un message d'alerte explicite lorsqu'aucune mission active n'est disponible lors de la création d'un CRA.
+  * **Parcours Créer un CV** : Ajout d'une action "Vider le formulaire" pour repartir instantanément d'une page blanche sans devoir effacer manuellement chaque section.
 - **Synchronisation Vercel CLI & Nettoyage Intégral des Clés :**
   * Connexion CLI et synchronisation du projet avec Vercel (`moslihayoubs-projects/ai-tool`).
   * Injection automatique des variables d'environnement sur Vercel (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `GEMINI_API_KEY`, `GOOGLE_API_KEY`) pour les environnements Production, Preview et Development.

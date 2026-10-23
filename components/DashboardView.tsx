@@ -777,8 +777,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                             })}
                         </div>
                     ) : (
-                        isFavoritesView && (
+                        isFavoritesView ? (
                             <div className="flex flex-col items-center justify-center min-h-[50vh] p-8 text-center">
+                                {/* @ts-ignore */}
                                 <dotlottie-wc
                                     src="https://lottie.host/89c66344-281d-4450-91d3-4574a47fec47/31ogoyP4Mh.lottie"
                                     autoplay
@@ -786,6 +787,45 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                                     style={{ width: '200px', height: '200px' }}
                                 ></dotlottie-wc>
                                 <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">{t('dashboard.no_favorites')}</p>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center min-h-[35vh] p-8 text-center bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm mt-4">
+                                {/* @ts-ignore */}
+                                <dotlottie-wc
+                                    src="https://lottie.host/89c66344-281d-4450-91d3-4574a47fec47/31ogoyP4Mh.lottie"
+                                    autoplay
+                                    loop
+                                    style={{ width: '160px', height: '160px' }}
+                                ></dotlottie-wc>
+                                <p className="mt-3 text-lg font-bold text-gray-800 dark:text-gray-200">
+                                    {candidates.length === 0 ? t('dashboard.no_cv_analyzed', 'Aucun profil analysé pour le moment') : 'Aucun candidat ne correspond aux filtres appliqués'}
+                                </p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-md">
+                                    {candidates.length === 0 
+                                        ? 'Importez vos CVs en PDF ou chargez le jeu de données de test pour explorer l\'ensemble des métriques ATS.'
+                                        : 'Ajustez ou réinitialisez vos critères de recherche, métier ou d\'expérience pour afficher les profils.'}
+                                </p>
+                                <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                                    {candidates.length > 0 ? (
+                                        <button 
+                                            onClick={() => setFilterCriteria({ jobCategory: 'all', experienceRange: 'all', minScore: 0, searchQuery: '' })}
+                                            className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold px-5 py-2.5 rounded-full transition-colors shadow-sm text-sm"
+                                        >
+                                            <Icon name="refresh-cw" className="w-4 h-4" />
+                                            <span>Réinitialiser les filtres</span>
+                                        </button>
+                                    ) : (
+                                        onLoadDummyData && (
+                                            <button 
+                                                onClick={onLoadDummyData}
+                                                className="flex items-center gap-2 bg-gradient-button text-white font-semibold px-6 py-2.5 rounded-full hover:opacity-90 transition-opacity shadow-md text-sm"
+                                            >
+                                                <Icon name="sparkles" className="w-4 h-4 text-white" />
+                                                <span>Charger les données de démonstration</span>
+                                            </button>
+                                        )
+                                    )}
+                                </div>
                             </div>
                         )
                     )}
@@ -806,6 +846,27 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ candidates, onSele
                     </div>
                 </Drawer>
             </div>
+
+            {/* Floating Compare Notification Banner */}
+            {comparisonList.length > 0 && (
+                <div className="fixed bottom-6 right-6 z-40 animate-fade-in shadow-2xl rounded-full bg-gray-900/95 dark:bg-gray-100/95 backdrop-blur text-white dark:text-gray-900 px-5 py-3 flex items-center gap-3 border border-gray-700 dark:border-gray-300">
+                    <Icon name="compare" className="w-5 h-5 text-primary-400 dark:text-primary-600" />
+                    <span className="text-sm font-semibold">
+                        {comparisonList.length === 1 
+                            ? '1/2 sélectionné • Choisissez un second candidat' 
+                            : '2/2 sélectionnés • Prêt pour le comparateur'}
+                    </span>
+                    {comparisonList.length === 2 && (
+                        <button 
+                            onClick={() => onToggleCompare('')}
+                            className="bg-gradient-button text-white text-xs font-bold px-3 py-1.5 rounded-full transition-opacity hover:opacity-90 flex items-center gap-1 shadow-sm"
+                        >
+                            <span>Comparer</span>
+                            <Icon name="arrow-right" className="w-3.5 h-3.5" />
+                        </button>
+                    )}
+                </div>
+            )}
         </div>
     )
 }
