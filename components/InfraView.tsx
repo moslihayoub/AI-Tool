@@ -51,6 +51,18 @@ export const InfraView: React.FC<InfraViewProps> = () => {
                 date: getDateStr(0),
                 time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                 type: 'ui',
+                title: 'Éradication Définitive du Scroll Vide & Toolbar Carrousel Sticky',
+                description: 'Suppression du marqueur fantôme Page 3 qui forçait 60cm de défilement vide et replacement du carrousel de modèles en en-tête sticky au-dessus de la feuille A4.',
+                details: [
+                    'Suppression du marqueur fantôme top-[59.4cm] : élimination de plus de 1100px de scroll vide artificiel forcé par un élément absolu hors-flux.',
+                    'Carrousel de templates en Sticky Header : déplacé au sommet du panneau de prévisualisation avec effet backdrop-blur pour permettre un changement de modèle immédiat sans scroller 1200px vers le bas.',
+                    'Suppression du trou gris inférieur : le container A4 se termine désormais proprement au bas de la page avec un espacement maîtrisé (py-3).'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'ui',
                 title: 'Test Scénario ATS Complet & Résolution des Gaps Fonctionnels',
                 description: 'Audit et test de bout en bout des 8 parcours utilisateurs ATS, correction des états vides manquants, renforcement mobile du pipeline et ajout des bannières interactives.',
                 details: [

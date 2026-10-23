@@ -682,7 +682,53 @@ export const CreateCVView: React.FC = () => {
 
 
             {/* Preview Side */}
-            <div className="flex-1 h-full overflow-y-auto overflow-x-hidden p-4 sm:p-8 bg-gray-100/80 dark:bg-gray-950 flex flex-col items-center gap-6 print:block print:w-full print:p-0 print:bg-white transition-colors duration-500">
+            <div className="flex-1 h-full overflow-y-auto overflow-x-hidden p-4 sm:p-6 bg-gray-100/80 dark:bg-gray-950 flex flex-col items-center gap-4 print:block print:w-full print:p-0 print:bg-white transition-colors duration-500">
+                {/* Template Carousel Controls (< ● ● ● ● >) Sticky Top Header */}
+                <div className="sticky top-0 z-30 w-full flex flex-col items-center gap-1.5 py-2 px-4 bg-gray-100/90 dark:bg-gray-950/90 backdrop-blur-md rounded-2xl print:hidden">
+                    <div className="flex items-center gap-4 px-4 py-1.5 bg-white dark:bg-gray-900 rounded-full shadow-md border border-gray-200 dark:border-gray-800">
+                        <button
+                            type="button"
+                            onClick={handlePrevTemplate}
+                            className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 transition-colors cursor-pointer"
+                            title="Modèle précédent"
+                            aria-label="Modèle précédent"
+                        >
+                            <Icon name="chevron-left" className="w-5 h-5" />
+                        </button>
+
+                        <div className="flex items-center gap-2.5 px-2">
+                            {TEMPLATES.map((tpl) => (
+                                <button
+                                    key={tpl.id}
+                                    type="button"
+                                    onClick={() => setTemplate(tpl.id)}
+                                    className={`transition-all rounded-full cursor-pointer ${
+                                        template === tpl.id
+                                            ? 'w-7 h-2.5 bg-pink-500 shadow-sm'
+                                            : 'w-2.5 h-2.5 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400'
+                                    }`}
+                                    title={`${tpl.label} - ${tpl.desc}`}
+                                    aria-label={`Choisir le modèle ${tpl.label}`}
+                                />
+                            ))}
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={handleNextTemplate}
+                            className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 transition-colors cursor-pointer"
+                            title="Modèle suivant"
+                            aria-label="Modèle suivant"
+                        >
+                            <Icon name="chevron-right" className="w-5 h-5" />
+                        </button>
+                    </div>
+
+                    <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">
+                        Modèle actif : <strong className="text-pink-600 dark:text-pink-400">{TEMPLATES.find(t => t.id === template)?.label}</strong> ({TEMPLATES.find(t => t.id === template)?.desc})
+                    </span>
+                </div>
+
                 {/* CV Document Wrapper */}
                 <div id="cv-preview-content" className={`shrink-0 w-full md:w-[210mm] max-w-none min-h-[297mm] h-max bg-white text-gray-900 shadow-xl print:shadow-none relative p-6 sm:p-12 transition-all duration-500 rounded-xl lg:rounded-2xl group print:rounded-none print:m-0 print:p-8 ${
                     template === 'technical' ? 'font-mono' :
@@ -692,10 +738,6 @@ export const CreateCVView: React.FC = () => {
                     {/* Visual Page Break Marker (Simulation) */}
                     <div className="absolute left-0 right-0 top-[29.7cm] border-t-2 border-dashed border-gray-200/50 pointer-events-none print:hidden z-10">
                         <div className="absolute right-4 -top-3 bg-gray-100 text-[10px] font-bold text-gray-400 px-2 py-1 rounded">Page 2</div>
-                    </div>
-                    
-                    <div className="absolute left-0 right-0 top-[59.4cm] border-t-2 border-dashed border-gray-200/50 pointer-events-none print:hidden z-10">
-                        <div className="absolute right-4 -top-3 bg-gray-100 text-[10px] font-bold text-gray-400 px-2 py-1 rounded">Page 3</div>
                     </div>
 
                     {/* Header */}
@@ -827,55 +869,9 @@ export const CreateCVView: React.FC = () => {
                     {/* Visual Page 2 Placeholder (if content is really long) */}
                 </div>
                 
-                {/* Template Carousel Controls (< ● ● ● ● >) as requested */}
-                <div className="flex flex-col items-center gap-2 print:hidden pb-4">
-                    <div className="flex items-center gap-4 px-4 py-2 bg-white dark:bg-gray-900 rounded-full shadow-lg border border-gray-200 dark:border-gray-800">
-                        <button
-                            type="button"
-                            onClick={handlePrevTemplate}
-                            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 transition-colors cursor-pointer"
-                            title="Modèle précédent"
-                            aria-label="Modèle précédent"
-                        >
-                            <Icon name="chevron-left" className="w-5 h-5" />
-                        </button>
-
-                        <div className="flex items-center gap-2.5 px-2">
-                            {TEMPLATES.map((tpl) => (
-                                <button
-                                    key={tpl.id}
-                                    type="button"
-                                    onClick={() => setTemplate(tpl.id)}
-                                    className={`transition-all rounded-full cursor-pointer ${
-                                        template === tpl.id
-                                            ? 'w-7 h-3 bg-pink-500 shadow-sm'
-                                            : 'w-3 h-3 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400'
-                                    }`}
-                                    title={`${tpl.label} - ${tpl.desc}`}
-                                    aria-label={`Choisir le modèle ${tpl.label}`}
-                                />
-                            ))}
-                        </div>
-
-                        <button
-                            type="button"
-                            onClick={handleNextTemplate}
-                            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 transition-colors cursor-pointer"
-                            title="Modèle suivant"
-                            aria-label="Modèle suivant"
-                        >
-                            <Icon name="chevron-right" className="w-5 h-5" />
-                        </button>
-                    </div>
-
-                    <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                        Modèle actif : <strong className="text-pink-600 dark:text-pink-400">{TEMPLATES.find(t => t.id === template)?.label}</strong> ({TEMPLATES.find(t => t.id === template)?.desc})
-                    </span>
-
-                    {/* Footer instructions for print */}
-                    <div className="text-center text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">
-                        Conseil : Le réglage "Marges : Aucune" dans les paramètres d'impression est recommandé.
-                    </div>
+                {/* Footer instructions for print */}
+                <div className="text-center text-[10px] text-gray-400 font-bold uppercase tracking-widest py-3 print:hidden">
+                    Conseil : Le réglage "Marges : Aucune" dans les paramètres d'impression est recommandé.
                 </div>
             </div>
         </div>

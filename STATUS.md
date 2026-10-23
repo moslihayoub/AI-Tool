@@ -6,6 +6,10 @@
 - **Branche:** `main`
 
 ## 🚀 Progrès Récents
+- **Éradication Définitive du Scroll Vide & Carrousel Sticky dans "Créer un CV" :**
+  * **Suppression du marqueur fantôme `top-[59.4cm]`** : Un indicateur visuel absolu pour une "Page 3" inexistante forçait le conteneur scrollable à étirer sa hauteur à près de 60 cm (~2250px), créant un vide gris béant de plus de 1000px sous le document.
+  * **Carrousel de templates en Sticky Header** : Déplacement des boutons de sélection de modèles (`< ● ● ● ● >`) au sommet du panneau de prévisualisation (en barre flottante avec `backdrop-blur`). L'utilisateur peut ainsi basculer instantanément entre les styles (Minimaliste, Technique, Cadre, Freelance) tout en voyant directement l'en-tête et les polices changer, sans devoir scroller tout en bas du CV.
+  * **Confinement du défilement** : Élimination du vide sous les conseils d'impression, le panneau de prévisualisation s'ajuste parfaitement à la hauteur réelle du document A4.
 - **Test Scénario ATS Exhaustif & Résolution des Gaps Fonctionnels :**
   * **Audit complet des 8 parcours ATS** : Ingestion & Parsing, Dashboard & Candidats, Comparateur, Pipeline Kanban, Missions & Contrats, Feuilles de Temps (CRA) & Bons de Commande, Créateur de CV, Assistant IA & Authentification.
   * **Parcours Dashboard (Fix UX critique)** : Résolution du bug d'écran blanc lorsque les filtres ou la recherche ne renvoient aucun profil. Intégration d'un état vide explicite avec bouton de réinitialisation des filtres et bouton de chargement des données de test.
