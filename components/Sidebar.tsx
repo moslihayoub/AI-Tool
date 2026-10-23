@@ -37,7 +37,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   
   const recruitmentItems = [
     { id: 'upload', label: t('sidebar.upload'), icon: 'upload' },
-    { id: 'create-cv', label: t('sidebar.create_cv'), icon: 'file-pen' },
     { id: 'dashboard', label: t('sidebar.dashboard'), icon: 'dashboard' },
     { id: 'recruitment', label: t('sidebar.recruitment'), icon: 'users' },
     { id: 'compare', label: t('sidebar.compare'), icon: 'compare' },
@@ -51,6 +50,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   const toolItems = [
+    { id: 'create-cv', label: t('sidebar.create_cv'), icon: 'file-pen' },
     { id: 'history', label: t('sidebar.history'), icon: 'history' },
     { id: 'ai', label: t('sidebar.ai_assistant'), icon: 'bot' },
     { id: 'favorites', label: t('sidebar.favorites'), icon: 'heart' },

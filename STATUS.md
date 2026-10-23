@@ -6,6 +6,10 @@
 - **Branche:** `main`
 
 ## 🚀 Progrès Récents
+- **Optimisation "Créer un CV" & Correction du Scroll Vide :**
+  * Déplacement de l'élément "Créer un CV" de la catégorie *Recrutement* vers la catégorie *Outils* dans `Sidebar.tsx`.
+  * Suppression définitive du double scroll et de l'espace vide sous la feuille A4 grâce à l'ajustement du conteneur parent (`overflow-hidden` pour cette vue) et le confinement du défilement dans le panneau de prévisualisation.
+  * Ajout d'un carrousel de modèles de CV interactif avec flèches de navigation `< >` et pastilles d'indication (dots) pour basculer facilement entre les styles (Minimaliste, Technique, Cadre, Freelance).
 - **Gestion d'Erreur Google OAuth & Guidage d'Activation :** Détection de l'erreur `provider is not enabled` dans `AuthModal.tsx` avec message clair guidant vers l'activation dans le tableau de bord Supabase ou l'usage immédiat d'Email/Mot de passe.
 - **Backend Supabase & Base de Données Sécurisée (RLS) :**
   * Création des tables Postgres : `hr_candidates`, `hr_pipeline`, `hr_missions`, `hr_timesheets`, `hr_user_quotas`.

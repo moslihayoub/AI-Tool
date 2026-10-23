@@ -1413,7 +1413,7 @@ function AppContent() {
                     <main 
                         ref={mainContentRef} 
                         onScroll={handleScroll}
-                        className="flex-1 overflow-y-auto print:overflow-visible print:h-auto bg-gray-50 dark:bg-gray-900 pb-16 md:pb-0 pt-16 md:pt-0"
+                        className={`flex-1 ${view === 'create-cv' ? 'overflow-hidden' : 'overflow-y-auto'} print:overflow-visible print:h-auto bg-gray-50 dark:bg-gray-900 pb-16 md:pb-0 pt-16 md:pt-0`}
                     >
                         {renderContent()}
                     </main>

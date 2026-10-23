@@ -7,6 +7,13 @@ import type { CandidateProfile } from '../types';
 
 type CVTemplate = 'minimalist' | 'technical' | 'executive' | 'freelance';
 
+const TEMPLATES: { id: CVTemplate; label: string; desc: string }[] = [
+    { id: 'minimalist', label: 'Minimaliste', desc: 'Clair & Moderne' },
+    { id: 'technical', label: 'Technique', desc: 'Code & Dev' },
+    { id: 'executive', label: 'Cadre', desc: 'Élégant & Serif' },
+    { id: 'freelance', label: 'Freelance', desc: 'Créatif & Coloré' },
+];
+
 interface Experience { id: string; title: string; company: string; period: string; description: string; }
 interface Education { id: string; degree: string; school: string; year: string; }
 interface Language { id: string; name: string; level: string; }
@@ -16,6 +23,18 @@ export const CreateCVView: React.FC = () => {
     const { t } = useTranslation();
     const { showToast } = useToast();
     const [template, setTemplate] = useState<CVTemplate>('minimalist');
+
+    const handlePrevTemplate = () => {
+        const currentIndex = TEMPLATES.findIndex(t => t.id === template);
+        const prevIndex = (currentIndex - 1 + TEMPLATES.length) % TEMPLATES.length;
+        setTemplate(TEMPLATES[prevIndex].id);
+    };
+
+    const handleNextTemplate = () => {
+        const currentIndex = TEMPLATES.findIndex(t => t.id === template);
+        const nextIndex = (currentIndex + 1) % TEMPLATES.length;
+        setTemplate(TEMPLATES[nextIndex].id);
+    };
 
     const [activeSection, setActiveSection] = useState<string>('personal');
     const [photo, setPhoto] = useState<string | null>(null);
@@ -316,9 +335,9 @@ export const CreateCVView: React.FC = () => {
     );
 
     return (
-        <div className="flex flex-col lg:flex-row min-h-screen bg-gray-50 dark:bg-gray-900 print:bg-white text-gray-900 dark:text-gray-100">
+        <div className="flex flex-col lg:flex-row h-full w-full overflow-hidden bg-gray-50 dark:bg-gray-900 print:bg-white text-gray-900 dark:text-gray-100">
             {/* Form Side */}
-            <div className="w-full lg:w-1/3 p-6 lg:h-screen lg:overflow-y-auto border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 print:hidden relative">
+            <div className="w-full lg:w-[420px] xl:w-[460px] shrink-0 h-full overflow-y-auto p-6 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 print:hidden relative">
                 <div className="mb-6 flex justify-between items-start">
                     <div>
                         <h2 className="text-2xl font-bold font-display flex items-center gap-2">
@@ -629,9 +648,9 @@ export const CreateCVView: React.FC = () => {
 
 
             {/* Preview Side */}
-            <div className="w-full lg:w-2/3 p-4 sm:p-12 lg:h-screen lg:overflow-y-auto overflow-x-auto bg-gray-200/50 dark:bg-gray-950 flex flex-col items-center gap-12 print:block print:items-start print:w-full print:p-0 print:bg-white print:overflow-visible transition-colors duration-500">
+            <div className="flex-1 h-full overflow-y-auto overflow-x-hidden p-4 sm:p-8 bg-gray-100/80 dark:bg-gray-950 flex flex-col items-center gap-6 print:block print:w-full print:p-0 print:bg-white transition-colors duration-500">
                 {/* CV Document Wrapper */}
-                <div id="cv-preview-content" className={`shrink-0 w-full md:w-[210mm] max-w-none min-h-[297mm] h-max bg-white text-gray-900 shadow-2xl print:shadow-none relative p-6 sm:p-12 transition-all duration-500 rounded-xl lg:rounded-2xl group print:rounded-none print:m-0 print:p-8 ${
+                <div id="cv-preview-content" className={`shrink-0 w-full md:w-[210mm] max-w-none min-h-[297mm] h-max bg-white text-gray-900 shadow-xl print:shadow-none relative p-6 sm:p-12 transition-all duration-500 rounded-xl lg:rounded-2xl group print:rounded-none print:m-0 print:p-8 ${
                     template === 'technical' ? 'font-mono' :
                     template === 'executive' ? 'font-serif' :
                     template === 'freelance' ? 'font-display' : 'font-sans'
@@ -774,9 +793,55 @@ export const CreateCVView: React.FC = () => {
                     {/* Visual Page 2 Placeholder (if content is really long) */}
                 </div>
                 
-                {/* Footer instructions for print */}
-                <div className="text-center text-[10px] text-gray-400 font-bold mb-8 uppercase tracking-widest hidden lg:block">
-                    Conseil : Le réglage "Marges : Aucune" dans les paramètres d'impression est recommandé.
+                {/* Template Carousel Controls (< ● ● ● ● >) as requested */}
+                <div className="flex flex-col items-center gap-2 print:hidden pb-4">
+                    <div className="flex items-center gap-4 px-4 py-2 bg-white dark:bg-gray-900 rounded-full shadow-lg border border-gray-200 dark:border-gray-800">
+                        <button
+                            type="button"
+                            onClick={handlePrevTemplate}
+                            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 transition-colors cursor-pointer"
+                            title="Modèle précédent"
+                            aria-label="Modèle précédent"
+                        >
+                            <Icon name="chevron-left" className="w-5 h-5" />
+                        </button>
+
+                        <div className="flex items-center gap-2.5 px-2">
+                            {TEMPLATES.map((tpl) => (
+                                <button
+                                    key={tpl.id}
+                                    type="button"
+                                    onClick={() => setTemplate(tpl.id)}
+                                    className={`transition-all rounded-full cursor-pointer ${
+                                        template === tpl.id
+                                            ? 'w-7 h-3 bg-pink-500 shadow-sm'
+                                            : 'w-3 h-3 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400'
+                                    }`}
+                                    title={`${tpl.label} - ${tpl.desc}`}
+                                    aria-label={`Choisir le modèle ${tpl.label}`}
+                                />
+                            ))}
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={handleNextTemplate}
+                            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 transition-colors cursor-pointer"
+                            title="Modèle suivant"
+                            aria-label="Modèle suivant"
+                        >
+                            <Icon name="chevron-right" className="w-5 h-5" />
+                        </button>
+                    </div>
+
+                    <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                        Modèle actif : <strong className="text-pink-600 dark:text-pink-400">{TEMPLATES.find(t => t.id === template)?.label}</strong> ({TEMPLATES.find(t => t.id === template)?.desc})
+                    </span>
+
+                    {/* Footer instructions for print */}
+                    <div className="text-center text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">
+                        Conseil : Le réglage "Marges : Aucune" dans les paramètres d'impression est recommandé.
+                    </div>
                 </div>
             </div>
         </div>

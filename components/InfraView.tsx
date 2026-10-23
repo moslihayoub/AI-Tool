@@ -50,6 +50,18 @@ export const InfraView: React.FC<InfraViewProps> = () => {
             {
                 date: getDateStr(0),
                 time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'ui',
+                title: 'Déplacement de "Créer un CV" dans Outils & Correction du Scroll Vide',
+                description: 'Reclassification du module "Créer un CV" dans la section Outils du menu latéral, suppression des scrollbars imbriquées et ajout d\'un contrôleur de carrousel de modèles.',
+                details: [
+                    'Reclassification : "Créer un CV" est déplacé de la section "Recrutement" vers le sommet de la section "Outils" dans Sidebar.tsx.',
+                    'Éradication du scroll vide : neutralisation de l\'overflow global du container parent lorsque CreateCVView est actif et confinement des scrollbars au formulaire et à la prévisualisation.',
+                    'Carrousel de templates interactif : ajout d\'un contrôleur tactile avec flèches précédent/suivant et indicateurs de pagination (dots) pour basculer aisément entre les 4 modèles visuels.'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                 type: 'fix',
                 title: 'Google OAuth Feedback & Fallback Guidance',
                 description: 'Traitement explicite de l\'erreur "provider is not enabled" dans AuthModal et guidage vers l\'activation Google Console / Supabase ou la connexion Email.',
