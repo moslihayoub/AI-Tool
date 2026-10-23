@@ -33,3 +33,5 @@ testsprite_tests/tmp/config.json
 .testsprite/
 .testsprite
 
+.vercel
+.env*

@@ -51,6 +51,19 @@ export const InfraView: React.FC<InfraViewProps> = () => {
                 date: getDateStr(0),
                 time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                 type: 'perf',
+                title: 'Synchronisation Vercel CLI & Nettoyage Intégral des Clés',
+                description: 'Connexion directe au projet Vercel ai-tool, injection sécurisée des variables d\'environnement en production et élimination des clés en dur dans le code source.',
+                details: [
+                    'Liaison Vercel CLI : projet connecté à moslihayoubs-projects/ai-tool.',
+                    'Variables de production injectées : VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, GEMINI_API_KEY et GOOGLE_API_KEY configurées sur Production, Preview et Development.',
+                    'Nettoyage du code : suppression des clés de repli codées en dur dans lib/supabase.ts au profit d\'une lecture 100% via import.meta.env.',
+                    'Déploiement immédiat en production validé et actif sur https://parseliqhr.vercel.app.'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'perf',
                 title: 'Audit de Cybersécurité & Hardening (M84 Secure Core)',
                 description: 'Vérification complète de l\'étanchéité des secrets : historique Git 100% propre, isolation des clés d\'API, RLS Supabase validé et template .env.example déployé.',
                 details: [

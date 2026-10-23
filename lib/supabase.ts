@@ -1,8 +1,8 @@
 /// <reference types="vite/client" />
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL || 'https://rjmujizjdamjgejagxax.supabase.co';
-const supabaseAnonKey = import.meta.env?.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJqbXVqaXpqZGFtamdlamFneGF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk3MjU2MTcsImV4cCI6MjEwNTMwMTYxN30.0QdD4YtO4vd6FLbhh43AV1S6OSq81BF3RLkEyXldMe8';
+const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL || '';
+const supabaseAnonKey = import.meta.env?.VITE_SUPABASE_ANON_KEY || '';
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 

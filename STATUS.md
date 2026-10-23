@@ -6,6 +6,11 @@
 - **Branche:** `main`
 
 ## 🚀 Progrès Récents
+- **Synchronisation Vercel CLI & Nettoyage Intégral des Clés :**
+  * Connexion CLI et synchronisation du projet avec Vercel (`moslihayoubs-projects/ai-tool`).
+  * Injection automatique des variables d'environnement sur Vercel (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `GEMINI_API_KEY`, `GOOGLE_API_KEY`) pour les environnements Production, Preview et Development.
+  * Élimination des chaînes de clés de secours en dur dans le code source (`lib/supabase.ts`) au profit d'une lecture stricte via les variables d'environnement.
+  * Déploiement en production immédiat exécuté avec succès sur `https://parseliqhr.vercel.app`.
 - **Audit de Cybersécurité & Hardening (M84 Secure Core) :**
   * Audit complet de l'historique Git : aucune clé secrète (Google Client Secret, Gemini API Key, OpenRouter) n'a fuité dans les commits.
   * Validation du `.gitignore` pour sanctuariser les fichiers `.env` et création d'un gabarit `.env.example` sans secrets pour le déploiement d'équipe.
