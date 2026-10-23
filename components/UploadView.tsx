@@ -283,7 +283,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
                  </div>
             )}
             <div className={`flex flex-col gap-4 ${cvFiles.length > 0 ? 'lg:order-2' : 'col-span-1'} w-full`}>
-                {onSetParsingMode && (
+                {isOwner && onSetParsingMode && (
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm text-xs">
                         <div className="flex items-center gap-2">
                             <span className="font-semibold text-gray-700 dark:text-gray-200">Mode de parsing :</span>

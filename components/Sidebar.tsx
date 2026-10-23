@@ -3,9 +3,10 @@
 // FIX: Switched to namespace React import to correctly populate the global JSX namespace.
 import * as React from 'react';
 import { Icon } from './icons';
-import { View } from '../types';
+import { View, User } from '../types';
 import { useTranslation } from '../i18n';
 import { logoDark, logoIcon, logoLight } from '../assets';
+import { LogIn, LogOut, User as UserIcon, ShieldCheck } from 'lucide-react';
 
 interface SidebarProps {
   currentView: View;
@@ -15,9 +16,23 @@ interface SidebarProps {
   isMobileOpen: boolean;
   setIsMobileOpen: (isOpen: boolean) => void;
   isOwner: boolean;
+  currentUser?: User | null;
+  onOpenAuthModal?: () => void;
+  onSignOut?: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen, isOwner }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ 
+  currentView, 
+  setCurrentView, 
+  isCollapsed, 
+  setIsCollapsed, 
+  isMobileOpen, 
+  setIsMobileOpen, 
+  isOwner,
+  currentUser,
+  onOpenAuthModal,
+  onSignOut
+}) => {
   const { t } = useTranslation();
   
   const recruitmentItems = [
@@ -108,9 +123,53 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, i
           <NavGroup title="Outils" items={toolItems} />
         </nav>
 
-        <footer className={`p-4 border-t border-gray-200 dark:border-gray-800 flex items-center gap-2 ${isCollapsed ? 'justify-center' : ''}`}>
-           <img src={logoIcon} alt="ParseLIQ HR Icon" className="w-6 h-6"/>
-           <a href="https://www.linkedin.com/in/moslih84/" target="_blank" rel="noopener noreferrer" className={`text-sm text-gray-500 dark:text-gray-400 hover:underline transition-opacity duration-200 ${isCollapsed ? 'opacity-0 w-0 h-0' : 'opacity-100'}`}>
+        {/* User Profile / Supabase Auth Card */}
+        <div className="p-3 border-t border-gray-200 dark:border-gray-800">
+          {currentUser && currentUser.id !== 'guest' ? (
+            <div className={`flex items-center gap-2 p-2 rounded-xl bg-gray-100 dark:bg-gray-800/60 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-500 to-rose-600 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
+                  {currentUser.email ? currentUser.email.charAt(0).toUpperCase() : 'U'}
+                </div>
+                {!isCollapsed && (
+                  <div className="min-w-0 truncate">
+                    <p className="text-xs font-bold text-gray-800 dark:text-gray-100 truncate flex items-center gap-1">
+                      {currentUser.email.split('@')[0]}
+                      {isOwner && <ShieldCheck className="w-3.5 h-3.5 text-pink-500 flex-shrink-0" />}
+                    </p>
+                    <p className="text-[10px] text-gray-400 truncate">
+                      {isOwner ? 'Administrateur' : 'Utilisateur'}
+                    </p>
+                  </div>
+                )}
+              </div>
+              {!isCollapsed && onSignOut && (
+                <button
+                  onClick={onSignOut}
+                  title="Se déconnecter"
+                  className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          ) : (
+            <button
+              onClick={onOpenAuthModal}
+              title="Se connecter"
+              className={`w-full py-2.5 px-3 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-semibold text-xs transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer ${
+                isCollapsed ? 'px-0' : ''
+              }`}
+            >
+              <LogIn className="w-4 h-4" />
+              {!isCollapsed && <span>Connexion / Inscription</span>}
+            </button>
+          )}
+        </div>
+
+        <footer className={`p-3 border-t border-gray-200 dark:border-gray-800 flex items-center gap-2 ${isCollapsed ? 'justify-center' : ''}`}>
+           <img src={logoIcon} alt="ParseLIQ HR Icon" className="w-5 h-5"/>
+           <a href="https://www.linkedin.com/in/moslih84/" target="_blank" rel="noopener noreferrer" className={`text-xs text-gray-500 dark:text-gray-400 hover:underline transition-opacity duration-200 ${isCollapsed ? 'opacity-0 w-0 h-0' : 'opacity-100'}`}>
               {t('sidebar.footer')}
             </a>
         </footer>

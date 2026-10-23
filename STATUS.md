@@ -1,11 +1,22 @@
 # 📊 Statut du Projet - Ai-Tool
 
 ## Dernière Mise à Jour
-- **Date:** 22 Octobre 2026
+- **Date:** 23 Octobre 2026
 - **Environnement:** Localhost (Port 5180) & Production (Déploiement Vercel via GitHub)
 - **Branche:** `main`
 
 ## 🚀 Progrès Récents
+- **Backend Supabase & Base de Données Sécurisée (RLS) :**
+  * Création des tables Postgres : `hr_candidates`, `hr_pipeline`, `hr_missions`, `hr_timesheets`, `hr_user_quotas`.
+  * Activation du Row Level Security (RLS) à 100% avec règles d'isolation par `user_id`.
+  * Client Supabase initialisé dans `lib/supabase.ts` et services de persistance dans `services/dbService.ts`.
+- **Authentification Gmail (Google OAuth) & Email (shadcn / Lucide) :**
+  * Création de la modal d'authentification `AuthModal.tsx` avec design shadcn et icônes `lucide-react`.
+  * Prise en charge de la connexion Gmail en 1-clic via OAuth et inscription/connexion par Email & Mot de passe.
+  * Synchronisation en temps réel de la session utilisateur dans le bandeau latéral `Sidebar.tsx`.
+- **Bascule Dynamique Automatique en Mode Hybride & Toggle Réservé Admin :**
+  * Le sélecteur de mode de parsing (Hybride / Vision) est désormais **strictement réservé à l'administrateur** (`isOwner`) et totalement masqué pour les utilisateurs standards.
+  * **Auto-Bascule Hybride sur Épuisement de Token / Quota :** Dès qu'un utilisateur ou une requête heurte un épuisement de tokens, un quota restreint (429/503), le système bascule automatiquement et de manière transparente sur le mode Hybride ultra-léger (-90% tokens) sans bloquer le parsing.
 - **Moteur de Parsing Double Stratégie (Hybride & Vision) :** Intégration complète d'un double moteur d'analyse :
   * **⚡ Mode Hybride (Défaut)** : Extraction locale du texte PDF via `pdfjs-dist` (70ms) + structuration Gemini textuelle. Réduit les tokens de 90% et divise le temps d'analyse par 10 (~7-9s).
   * **👁️ Mode Vision (Base64)** : Analyse visuelle multimodale native préservée pour les CVs scannés ou images.

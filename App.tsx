@@ -25,6 +25,9 @@ import { FloatingAssistant } from './components/FloatingAssistant';
 import { CVFile, View, CandidateProfile, Theme, User, RecruitmentData, PipelineSnapshot, Mission, Timesheet, AIAction, TimesheetStatus, ParsingMode } from './types';
 import { parseCvContent } from './services/geminiService';
 import { extractTextFromPdf } from './utils/pdfExtractor';
+import { AuthModal } from './components/AuthModal';
+import { supabase, signOut as supabaseSignOut } from './lib/supabase';
+import { saveCandidateToDb, loadCandidatesFromDb, getUserQuotaFromDb, incrementUserQuotaInDb } from './services/dbService';
 import { Icon } from './components/icons';
 import { LanguageProvider, useTranslation } from './i18n';
 import { ToastProvider, useToast } from './components/Toast';
@@ -207,6 +210,7 @@ function AppContent() {
     const [limitError, setLimitError] = React.useState<string | null>(null);
     const [uploadError, setUploadError] = React.useState<string | null>(null);
     const [isQuotaModalOpen, setIsQuotaModalOpen] = React.useState(false);
+    const [isAuthModalOpen, setIsAuthModalOpen] = React.useState(false);
     
     // Management State
     const [missions, setMissions] = React.useState<Mission[]>(() => {
@@ -370,7 +374,47 @@ function AppContent() {
     const [analysisTotal, setAnalysisTotal] = React.useState(0);
 
     React.useEffect(() => {
-        const fetchUser = async () => {
+        const initAuth = async () => {
+            // 1. Check Supabase session
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session?.user) {
+                    const email = session.user.email || '';
+                    const id = session.user.id;
+                    setCurrentUser({ id, email });
+                    const isAdm = email.toLowerCase() === 'moslihayoub@gmail.com' || email.toLowerCase() === 'fahdrahali@gmail.com' || localStorage.getItem('specialUser') !== null;
+                    setIsOwner(isAdm);
+                    
+                    // Sync Candidates from Supabase DB
+                    loadCandidatesFromDb(id).then(dbCandidates => {
+                        if (dbCandidates.length > 0) {
+                            setCvFiles(prev => {
+                                const existingIds = new Set(prev.map(f => f.id));
+                                const newFiles: CVFile[] = dbCandidates
+                                    .filter(c => !existingIds.has(c.id))
+                                    .map(c => ({
+                                        id: c.id,
+                                        file: new File([], c.fileName || `${c.name}.pdf`, { type: 'application/pdf' }),
+                                        status: 'success' as const,
+                                        profile: c,
+                                        analysisDuration: c.analysisDuration || 0,
+                                    }));
+                                return [...prev, ...newFiles];
+                            });
+                        }
+                    });
+
+                    // Sync Quotas
+                    getUserQuotaFromDb(id).then(q => {
+                        setAnalysisLimit({ count: q.count, limit: q.limit });
+                    });
+                    return;
+                }
+            } catch (err) {
+                console.warn('[Supabase Auth] Session init error:', err);
+            }
+
+            // 2. Special user / LocalStorage check
             let specialUserFound = false;
             try {
                 const specialUser = localStorage.getItem('specialUser');
@@ -378,35 +422,56 @@ function AppContent() {
                     const { userId, email } = JSON.parse(specialUser);
                     if (email.toLowerCase() === 'moslihayoub@gmail.com' || userId === 'Moslih84') {
                         specialUserFound = true;
+                        setCurrentUser({ id: userId, email });
+                        setIsOwner(true);
                     }
                 }
             } catch (e) {
                 console.error("Failed to check special user from localStorage", e);
             }
 
-            if (specialUserFound) {
-                setIsOwner(true);
-            }
-
-            try {
-                if (window.aistudio && typeof window.aistudio.getAuthenticatedUser === 'function') {
-                    const user = await window.aistudio.getAuthenticatedUser();
-                    setCurrentUser(user);
-                    if (user && (user.email.toLowerCase() === 'moslihayoub@gmail.com' || user.id === 'Moslih84')) {
-                        setIsOwner(true);
-                    }
-                } else if (!specialUserFound) {
-                    console.warn("User authentication service not found.");
-                    setIsOwner(false);
-                    setCurrentUser({ email: 'guest@example.com', id: 'guest' });
-                }
-            } catch (e) {
-                console.error("Could not get authenticated user:", e);
-                if (!specialUserFound) setIsOwner(false);
-                setCurrentUser(null);
+            if (!specialUserFound) {
+                setIsOwner(false);
+                setCurrentUser({ email: 'guest@example.com', id: 'guest' });
             }
         };
-        fetchUser();
+
+        initAuth();
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+            if (session?.user) {
+                const email = session.user.email || '';
+                const id = session.user.id;
+                setCurrentUser({ id, email });
+                const isAdm = email.toLowerCase() === 'moslihayoub@gmail.com' || email.toLowerCase() === 'fahdrahali@gmail.com' || localStorage.getItem('specialUser') !== null;
+                setIsOwner(isAdm);
+
+                loadCandidatesFromDb(id).then(dbCandidates => {
+                    if (dbCandidates.length > 0) {
+                        setCvFiles(prev => {
+                            const existingIds = new Set(prev.map(f => f.id));
+                            const newFiles: CVFile[] = dbCandidates
+                                .filter(c => !existingIds.has(c.id))
+                                .map(c => ({
+                                    id: c.id,
+                                    file: new File([], c.fileName || `${c.name}.pdf`, { type: 'application/pdf' }),
+                                    status: 'success' as const,
+                                    profile: c,
+                                    analysisDuration: c.analysisDuration || 0,
+                                }));
+                            return [...prev, ...newFiles];
+                        });
+                    }
+                });
+            } else {
+                setCurrentUser({ email: 'guest@example.com', id: 'guest' });
+                setIsOwner(false);
+            }
+        });
+
+        return () => {
+            subscription.unsubscribe();
+        };
     }, []);
 
     React.useEffect(() => {
@@ -686,15 +751,37 @@ function AppContent() {
                 const fileData = await readFileAsBase64(cvFile.file);
                 let extractedText: string | undefined = undefined;
 
-                if (parsingMode === 'hybrid' && (cvFile.file.type === 'application/pdf' || cvFile.file.name.toLowerCase().endsWith('.pdf'))) {
+                // Règle : Seul l'admin a accès au mode Vision, l'utilisateur standard est en mode Hybride
+                const effectiveMode = isOwner ? parsingMode : 'hybrid';
+
+                if (effectiveMode === 'hybrid' && (cvFile.file.type === 'application/pdf' || cvFile.file.name.toLowerCase().endsWith('.pdf'))) {
                     try {
                         extractedText = await extractTextFromPdf(cvFile.file);
                     } catch (pdfErr) {
-                        console.warn(`[Hybrid Parser] Extraction locale échouée pour ${cvFile.file.name}, bascule automatique en Vision multimodale:`, pdfErr);
+                        console.warn(`[Hybrid Parser] Extraction locale échouée pour ${cvFile.file.name}:`, pdfErr);
                     }
                 }
 
-                const profileData = await parseCvContent(fileData, extractedText);
+                let profileData;
+                try {
+                    profileData = await parseCvContent(fileData, extractedText);
+                } catch (parseErr: unknown) {
+                    const errStr = parseErr instanceof Error ? parseErr.message : String(parseErr);
+                    const isTokenOrQuota = errStr.includes('429') || errStr.includes('quota') || errStr.includes('RESOURCE_EXHAUSTED') || errStr.includes('token') || errStr.includes('503');
+
+                    // Bascule dynamique automatique en Hybride dès épuisement du token ou incident Vision
+                    if (isTokenOrQuota || effectiveMode === 'vision') {
+                        console.warn('[Auto-Bascule Hybride] Quota/Token épuisé ou incident Vision. Bascule dynamique automatique vers Hybride texte (-90% tokens)...');
+                        if (!extractedText && (cvFile.file.type === 'application/pdf' || cvFile.file.name.toLowerCase().endsWith('.pdf'))) {
+                            extractedText = await extractTextFromPdf(cvFile.file);
+                        }
+                        profileData = await parseCvContent(fileData, extractedText);
+                        setParsingMode('hybrid');
+                    } else {
+                        throw parseErr;
+                    }
+                }
+
                 const duration = Date.now() - analysisStartTimeForFile;
                 const profile: CandidateProfile = {
                     ...profileData,
@@ -704,6 +791,12 @@ function AppContent() {
                 };
                 
                 setProcessedCVsCache(prev => ({ ...prev, [hash]: profile }));
+
+                // Synchronisation Supabase immédiate
+                if (currentUser?.id && currentUser.id !== 'guest') {
+                    saveCandidateToDb(profile, currentUser.id).catch(err => console.warn('[Supabase] Candidate sync failed:', err));
+                }
+
                 return { ...cvFile, status: 'success' as const, profile, content: '', analysisDuration: duration, hash };
             } catch (error) {
                 const duration = Date.now() - analysisStartTimeForFile;
@@ -740,6 +833,13 @@ function AppContent() {
         }
         
         showToast(t('toast.analysis_complete'), 'success');
+
+        if (!isOwner) {
+            setAnalysisLimit(prev => ({ ...prev, count: prev.count + 1 }));
+            if (currentUser?.id && currentUser.id !== 'guest') {
+                incrementUserQuotaInDb(currentUser.id).catch(err => console.warn('[Supabase] Quota increment error:', err));
+            }
+        }
 
         setIsAnalysisDone(true);
     };
@@ -1136,7 +1236,12 @@ function AppContent() {
         return false;
     };
 
-    const handleDisconnect = () => {
+    const handleDisconnect = async () => {
+        try {
+            await supabaseSignOut();
+        } catch (e) {
+            console.warn('Supabase signout error:', e);
+        }
         setIsOwner(false);
         setCurrentUser({ email: 'guest@example.com', id: 'guest' });
         try {
@@ -1144,6 +1249,7 @@ function AppContent() {
         } catch (e) {
             console.error("Failed to remove special user from localStorage", e);
         }
+        showToast('Déconnexion effectuée', 'info');
     };
 
 
@@ -1248,6 +1354,17 @@ function AppContent() {
             <div className="flex h-full print:h-auto print:block w-full">
                 {isAnalyzing && <AnalysisLoader total={analysisTotal} startTime={analysisStartTime} isAnalysisDone={isAnalysisDone} onViewResults={handleViewResults} onCancel={handleCancelAnalysis} />}
                 {isQuotaModalOpen && <QuotaModal onClose={() => setIsQuotaModalOpen(false)} onConnect={handleConnect} />}
+                {isAuthModalOpen && (
+                    <AuthModal
+                        isOpen={isAuthModalOpen}
+                        onClose={() => setIsAuthModalOpen(false)}
+                        onSuccess={(user) => {
+                            setCurrentUser(user);
+                            const isAdm = user.email.toLowerCase() === 'moslihayoub@gmail.com' || user.email.toLowerCase() === 'fahdrahali@gmail.com';
+                            setIsOwner(isAdm);
+                        }}
+                    />
+                )}
 
                 <Sidebar
                     currentView={view}
@@ -1257,6 +1374,9 @@ function AppContent() {
                     isMobileOpen={isMobileSidebarOpen}
                     setIsMobileOpen={setIsMobileSidebarOpen}
                     isOwner={isOwner}
+                    currentUser={currentUser}
+                    onOpenAuthModal={() => setIsAuthModalOpen(true)}
+                    onSignOut={handleDisconnect}
                 />
                 <div className="flex-1 flex flex-col overflow-hidden print:overflow-visible print:block">
                     <header className={`print:hidden md:hidden flex items-center justify-between rtl:flex-row-reverse p-4 border-b dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm fixed top-0 left-0 right-0 z-20 transition-transform duration-300 ${showBars ? 'translate-y-0' : '-translate-y-full'}`}>

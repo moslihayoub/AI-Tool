@@ -51,6 +51,20 @@ export const InfraView: React.FC<InfraViewProps> = () => {
                 date: getDateStr(0),
                 time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                 type: 'feat',
+                title: 'Supabase Backend, Gmail/Email Auth & Auto-Bascule Hybride Dynamique',
+                description: 'Mise en place de l\'infrastructure backend Supabase avec 5 tables et RLS, authentification Google/Email, interface shadcn/lucide et bascule automatique en mode hybride sur token épuisé.',
+                details: [
+                    'Backend Supabase : création des tables `hr_candidates`, `hr_pipeline`, `hr_missions`, `hr_timesheets`, `hr_user_quotas` avec Row Level Security (RLS) activé à 100%.',
+                    'Authentification Gmail OAuth & Email : modal de connexion/création de compte moderne inspirée de shadcn avec Lucide icons.',
+                    'Sécurité & Visibilité du Toggle : restriction stricte du commutateur de mode de parsing (Hybride/Vision) à l\'administrateur uniquement (`isOwner`), masqué pour les utilisateurs standards.',
+                    'Auto-Bascule Hybride Dynamique : bascule automatique immédiate vers le mode Hybride (PDF.js + texte) en cas d\'épuisement de quota, rate limit 429 ou incident sur le modèle Vision.',
+                    'Synchronisation persistante des candidats et quotas avec la base de données Supabase.'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'feat',
                 title: 'Dual Engine Parsing : Hybride Local (PDF.js) + Vision Multimodale',
                 description: 'Intégration d\'un système de double moteur de parsing avec bascule instantanée 1-clic : Mode Hybride ultra-rapide (~7s, -90% tokens) et Mode Vision multimodale Base64.',
                 details: [

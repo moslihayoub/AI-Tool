@@ -110,69 +110,71 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700">
-                    <h3 className="text-lg font-semibold font-display mb-1">Moteur d'analyse CV</h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-                        Choisissez la stratégie d'extraction des données. Vous pouvez basculer à tout moment.
-                    </p>
-                    <div className="space-y-3">
-                        <label 
-                            onClick={() => onSetParsingMode && onSetParsingMode('hybrid')}
-                            className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
-                                parsingMode === 'hybrid'
-                                    ? 'border-pink-500 bg-pink-50/50 dark:bg-pink-950/20 shadow-xs'
-                                    : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750'
-                            }`}
-                        >
-                            <input 
-                                type="radio" 
-                                name="parsingMode" 
-                                checked={parsingMode === 'hybrid'} 
-                                onChange={() => onSetParsingMode && onSetParsingMode('hybrid')}
-                                className="mt-1 text-pink-600 focus:ring-pink-500"
-                            />
-                            <div className="flex-1">
-                                <div className="flex items-center gap-2">
-                                    <span className="font-bold text-sm text-gray-800 dark:text-gray-100">⚡ Hybride (Recommandé)</span>
-                                    <span className="text-[10px] uppercase tracking-wider font-extrabold px-1.5 py-0.5 rounded bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300">
-                                        ~7s • -90% tokens
-                                    </span>
+                {isOwner && (
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700">
+                        <h3 className="text-lg font-semibold font-display mb-1">Moteur d'analyse CV (Admin)</h3>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                            Choisissez la stratégie d'extraction des données. Vous pouvez basculer à tout moment.
+                        </p>
+                        <div className="space-y-3">
+                            <label 
+                                onClick={() => onSetParsingMode && onSetParsingMode('hybrid')}
+                                className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
+                                    parsingMode === 'hybrid'
+                                        ? 'border-pink-500 bg-pink-50/50 dark:bg-pink-950/20 shadow-xs'
+                                        : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750'
+                                }`}
+                            >
+                                <input 
+                                    type="radio" 
+                                    name="parsingMode" 
+                                    checked={parsingMode === 'hybrid'} 
+                                    onChange={() => onSetParsingMode && onSetParsingMode('hybrid')}
+                                    className="mt-1 text-pink-600 focus:ring-pink-500"
+                                />
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-bold text-sm text-gray-800 dark:text-gray-100">⚡ Hybride (Recommandé)</span>
+                                        <span className="text-[10px] uppercase tracking-wider font-extrabold px-1.5 py-0.5 rounded bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300">
+                                            ~7s • -90% tokens
+                                        </span>
+                                    </div>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                        Extraction de texte directe côté client via PDF.js + structuration IA textuelle ultra-rapide. Recommandé pour les CVs natifs.
+                                    </p>
                                 </div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                                    Extraction de texte directe côté client via PDF.js + structuration IA textuelle ultra-rapide. Recommandé pour les CVs natifs.
-                                </p>
-                            </div>
-                        </label>
+                            </label>
 
-                        <label 
-                            onClick={() => onSetParsingMode && onSetParsingMode('vision')}
-                            className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
-                                parsingMode === 'vision'
-                                    ? 'border-pink-500 bg-pink-50/50 dark:bg-pink-950/20 shadow-xs'
-                                    : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750'
-                            }`}
-                        >
-                            <input 
-                                type="radio" 
-                                name="parsingMode" 
-                                checked={parsingMode === 'vision'} 
-                                onChange={() => onSetParsingMode && onSetParsingMode('vision')}
-                                className="mt-1 text-pink-600 focus:ring-pink-500"
-                            />
-                            <div className="flex-1">
-                                <div className="flex items-center gap-2">
-                                    <span className="font-bold text-sm text-gray-800 dark:text-gray-100">👁️ Vision Multimodale</span>
-                                    <span className="text-[10px] uppercase tracking-wider font-extrabold px-1.5 py-0.5 rounded bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
-                                        Base64 OCR
-                                    </span>
+                            <label 
+                                onClick={() => onSetParsingMode && onSetParsingMode('vision')}
+                                className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
+                                    parsingMode === 'vision'
+                                        ? 'border-pink-500 bg-pink-50/50 dark:bg-pink-950/20 shadow-xs'
+                                        : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750'
+                                }`}
+                            >
+                                <input 
+                                    type="radio" 
+                                    name="parsingMode" 
+                                    checked={parsingMode === 'vision'} 
+                                    onChange={() => onSetParsingMode && onSetParsingMode('vision')}
+                                    className="mt-1 text-pink-600 focus:ring-pink-500"
+                                />
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-bold text-sm text-gray-800 dark:text-gray-100">👁️ Vision Multimodale</span>
+                                        <span className="text-[10px] uppercase tracking-wider font-extrabold px-1.5 py-0.5 rounded bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                                            Base64 OCR
+                                        </span>
+                                    </div>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                        Transmission de l'image/PDF complet à Gemini Vision. Idéal pour les scans d'anciens documents ou photos de CV.
+                                    </p>
                                 </div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                                    Transmission de l'image/PDF complet à Gemini Vision. Idéal pour les scans d'anciens documents ou photos de CV.
-                                </p>
-                            </div>
-                        </label>
+                            </label>
+                        </div>
                     </div>
-                </div>
+                )}
 
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700">
                     {isOwner ? (
