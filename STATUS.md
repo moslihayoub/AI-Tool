@@ -6,6 +6,9 @@
 - **Branche:** `main`
 
 ## 🚀 Progrès Récents
+- **Révocation Stricte des Droits d'Administration pour fahdrahali@gmail.com :**
+  * **Suppression complète des privilèges tiers** : Retrait de l'adresse `fahdrahali@gmail.com` de tous les contrôles d'habilitation administrateur (`isOwner`) dans `App.tsx` (`initAuth`, `onAuthStateChange`, `AuthModal onSuccess`).
+  * **Sanctuarisation de l'accès Propriétaire** : Seuls l'email `moslihayoub@gmail.com` et l'identifiant `Moslih84` conservent les privilèges d'administration et l'accès exclusif aux modules *"Moteur d'analyse CV (Admin)"* et *"Gestion des données"*.
 - **Cloisonnement Admin Strict, Onboarding 1ère Visite & Lien Moslih84 :**
   * **Signature mise à jour** : Le lien de pied de page de la barre latérale affiche "Created by Moslih84" et pointe désormais directement vers `https://moslih84.vercel.app/`.
   * **Sanctuarisation des données et outils Admin** : Les sections *"Moteur d'analyse CV (Admin)"* et *"Gestion des données"* dans les Réglages (`SettingsView.tsx`) sont désormais **strictement invisibles** pour tout utilisateur ordinaire et réservées exclusivement à l'administrateur connecté (`moslihayoub@gmail.com` ou identifiant `Moslih84`).

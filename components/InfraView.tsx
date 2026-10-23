@@ -50,13 +50,25 @@ export const InfraView: React.FC<InfraViewProps> = () => {
             {
                 date: getDateStr(0),
                 time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'security',
+                title: 'Révocation Privilèges Admin fahdrahali@gmail.com',
+                description: 'Révocation immédiate et complète de tous les droits d\'administration pour fahdrahali@gmail.com. Accès propriétaire strictement réservé à moslihayoub@gmail.com et Moslih84.',
+                details: [
+                    'Contrôle RBAC durci : suppression de l\'adresse fahdrahali@gmail.com des conditions isOwner dans App.tsx (initAuth, onAuthStateChange, AuthModal onSuccess).',
+                    'Cloisonnement exclusif : seuls moslihayoub@gmail.com et Moslih84 disposent des droits d\'accès aux sections administratives (Moteur d\'analyse CV Admin, Gestion des données).',
+                    'Zero Trust vérifié : application stricte du principe de moindre privilège.'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                 type: 'ui',
                 title: 'Cloisonnement Admin Strict, Onboarding 1ère Visite & Lien Moslih84',
                 description: 'Restriction stricte des modules d\'administration aux seuls profils habilités (moslihayoub@gmail.com / Moslih84), chargement automatique des données de démo pour tout nouvel utilisateur avec toaster et bouton Effacer, et mise à jour du lien de signature vers https://moslih84.vercel.app/.',
                 details: [
                     'Lien de signature : redirection de la mention "Created by Moslih84" dans la barre latérale vers https://moslih84.vercel.app/.',
                     'Isolation des sections Admin : masquage strict des blocs "Moteur d\'analyse CV (Admin)" et "Gestion des données" dans les paramètres pour tout utilisateur non-administrateur.',
-                    'Habilitation Admin : reconnaissance stricte de l\'administrateur par email (moslihayoub@gmail.com, fahdrahali@gmail.com) ou identifiant (Moslih84).',
+                    'Habilitation Admin : reconnaissance stricte de l\'administrateur par email (moslihayoub@gmail.com) ou identifiant (Moslih84 / préfixe moslih84). Révocation complète des privilèges tiers.',
                     'Onboarding 1ère connexion : injection automatique des données fictives lors de la 1ère visite ou 1ère connexion avec toaster explicatif et CTA "Effacer" interactif à durée étendue.'
                 ]
             },

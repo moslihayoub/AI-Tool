@@ -382,7 +382,7 @@ function AppContent() {
                     const email = session.user.email || '';
                     const id = session.user.id;
                     setCurrentUser({ id, email });
-                    const isAdm = email.toLowerCase() === 'moslihayoub@gmail.com' || email.toLowerCase() === 'fahdrahali@gmail.com' || id === 'Moslih84' || email.toLowerCase().startsWith('moslih84');
+                    const isAdm = email.toLowerCase() === 'moslihayoub@gmail.com' || id === 'Moslih84' || email.toLowerCase().startsWith('moslih84');
                     setIsOwner(isAdm);
                     
                     // Sync Candidates from Supabase DB
@@ -443,7 +443,7 @@ function AppContent() {
                 const email = session.user.email || '';
                 const id = session.user.id;
                 setCurrentUser({ id, email });
-                const isAdm = email.toLowerCase() === 'moslihayoub@gmail.com' || email.toLowerCase() === 'fahdrahali@gmail.com' || id === 'Moslih84' || email.toLowerCase().startsWith('moslih84');
+                const isAdm = email.toLowerCase() === 'moslihayoub@gmail.com' || id === 'Moslih84' || email.toLowerCase().startsWith('moslih84');
                 setIsOwner(isAdm);
 
                 loadCandidatesFromDb(id).then(dbCandidates => {
@@ -1377,7 +1377,7 @@ function AppContent() {
                         onClose={() => setIsAuthModalOpen(false)}
                         onSuccess={(user) => {
                             setCurrentUser(user);
-                            const isAdm = user.email.toLowerCase() === 'moslihayoub@gmail.com' || user.email.toLowerCase() === 'fahdrahali@gmail.com' || user.id === 'Moslih84';
+                            const isAdm = user.email.toLowerCase() === 'moslihayoub@gmail.com' || user.id === 'Moslih84' || user.email.toLowerCase().startsWith('moslih84');
                             setIsOwner(isAdm);
                             // Pour un utilisateur qui se connecte la première fois, charger données fictives avec toast explicatif
                             const userKey = `parseliq_seeded_${user.id}`;
