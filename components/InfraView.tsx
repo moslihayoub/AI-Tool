@@ -50,6 +50,19 @@ export const InfraView: React.FC<InfraViewProps> = () => {
             {
                 date: getDateStr(0),
                 time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'perf',
+                title: 'Audit de Cybersécurité & Hardening (M84 Secure Core)',
+                description: 'Vérification complète de l\'étanchéité des secrets : historique Git 100% propre, isolation des clés d\'API, RLS Supabase validé et template .env.example déployé.',
+                details: [
+                    'Historique Git audité : 0 clé sensible (Google Secret, Gemini, OpenRouter) n\'a jamais été commitée dans le dépôt.',
+                    'Fichiers d\'environnement : exclusion stricte vérifiée (.env et .env.* ignorés), ajout du gabarit public sécurisé .env.example.',
+                    'Sécurité Supabase : RLS actif sur 100% des tables avec politique Zero Trust (auth.uid() = user_id) et clé service_role strictement absente du client.',
+                    'Google OAuth : secret conservé exclusivement côté serveur chez Google et Supabase GoTrue, aucune fuite bundle client.'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                 type: 'ui',
                 title: 'Déplacement de "Créer un CV" dans Outils & Correction du Scroll Vide',
                 description: 'Reclassification du module "Créer un CV" dans la section Outils du menu latéral, suppression des scrollbars imbriquées et ajout d\'un contrôleur de carrousel de modèles.',

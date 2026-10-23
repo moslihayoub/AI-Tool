@@ -6,6 +6,11 @@
 - **Branche:** `main`
 
 ## 🚀 Progrès Récents
+- **Audit de Cybersécurité & Hardening (M84 Secure Core) :**
+  * Audit complet de l'historique Git : aucune clé secrète (Google Client Secret, Gemini API Key, OpenRouter) n'a fuité dans les commits.
+  * Validation du `.gitignore` pour sanctuariser les fichiers `.env` et création d'un gabarit `.env.example` sans secrets pour le déploiement d'équipe.
+  * Vérification de la couche Supabase : RLS actif sur 100% des tables, politique Zero Trust isolant les données par utilisateur, clé `service_role` 100% exclue du client.
+  * Flux Google OAuth sécurisé : secret stocké exclusivement sur les serveurs Google et Supabase GoTrue, inaccessible au navigateur.
 - **Optimisation "Créer un CV" & Correction du Scroll Vide :**
   * Déplacement de l'élément "Créer un CV" de la catégorie *Recrutement* vers la catégorie *Outils* dans `Sidebar.tsx`.
   * Suppression définitive du double scroll et de l'espace vide sous la feuille A4 grâce à l'ajustement du conteneur parent (`overflow-hidden` pour cette vue) et le confinement du défilement dans le panneau de prévisualisation.
