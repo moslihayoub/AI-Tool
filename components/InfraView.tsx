@@ -51,6 +51,18 @@ export const InfraView: React.FC<InfraViewProps> = () => {
                 date: getDateStr(0),
                 time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                 type: 'ui',
+                title: 'Pastille Carrousel Flottante en Bas (Sans Masquer le CV & Zéro Fond Gris)',
+                description: 'Repositionnement du carrousel de modèles en pastille compacte flottante ancrée en bas de page sans bandeau gris pleine largeur, libérant totalement l\'en-tête du CV.',
+                details: [
+                    'Libération de l\'en-tête du CV : suppression de la barre sticky haute qui masquait le nom et le titre du profil ("Jean Dupont").',
+                    'Pastille flottante 100% autonome : transformée en pilule compacte avec coins arrondis, ombre portée douce et effet backdrop-blur, sans arrière-plan gris pleine largeur.',
+                    'Ancrage bas maîtrisé : fixée délicatement en bas (sticky bottom-6) au centre du panneau sans bloquer la lecture du document.'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'ui',
                 title: 'Éradication Définitive du Scroll Vide & Toolbar Carrousel Sticky',
                 description: 'Suppression du marqueur fantôme Page 3 qui forçait 60cm de défilement vide et replacement du carrousel de modèles en en-tête sticky au-dessus de la feuille A4.',
                 details: [

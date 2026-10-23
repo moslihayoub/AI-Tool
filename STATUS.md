@@ -6,6 +6,10 @@
 - **Branche:** `main`
 
 ## 🚀 Progrès Récents
+- **Pastille de Modèles Flottante en Bas (Zéro Masquage & Zéro Bandeau Gris) :**
+  * **Libération intégrale de l'en-tête** : Suppression définitive de la barre haute qui occultait le nom ("Jean Dupont") et les coordonnées du CV.
+  * **Pastille flottante isolée en bas** : Le carrousel `< ● ● ● >` devient un composant flottant autonome centré en bas (`sticky bottom-6`), sans aucun fond gris pleine largeur (`w-full`), avec ombre portée 3D et effet de flou d'arrière-plan (`backdrop-blur-md`).
+  * **Ergonomie optimale** : Permet de commuter les modèles en bas de l'écran tactile/desktop sans masquer ni le contenu supérieur ni les sections de compétences.
 - **Éradication Définitive du Scroll Vide & Carrousel Sticky dans "Créer un CV" :**
   * **Suppression du marqueur fantôme `top-[59.4cm]`** : Un indicateur visuel absolu pour une "Page 3" inexistante forçait le conteneur scrollable à étirer sa hauteur à près de 60 cm (~2250px), créant un vide gris béant de plus de 1000px sous le document.
   * **Carrousel de templates en Sticky Header** : Déplacement des boutons de sélection de modèles (`< ● ● ● ● >`) au sommet du panneau de prévisualisation (en barre flottante avec `backdrop-blur`). L'utilisateur peut ainsi basculer instantanément entre les styles (Minimaliste, Technique, Cadre, Freelance) tout en voyant directement l'en-tête et les polices changer, sans devoir scroller tout en bas du CV.
