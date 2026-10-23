@@ -216,28 +216,30 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 </div>
 
 
-                 <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700">
-                    <h3 className="text-lg font-semibold font-display mb-3">{t('settings.data.title')}</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{t('settings.data.dummy_description')}</p>
-                    {isDummyDataActive ? (
-                        <button
-                            onClick={onReset}
-                            className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors bg-red-600 text-white hover:bg-red-700"
-                        >
-                            <Icon name="refresh-cw" className="w-5 h-5"/>
-                            <span>{t('common.reset')}</span>
-                        </button>
-                    ) : (
-                         <button
-                            onClick={onLoadDummyData}
-                            disabled={isDummyDataButtonDisabled}
-                            className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-full font-semibold transition-opacity bg-gradient-button text-white hover:opacity-90 disabled:bg-none disabled:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            <Icon name="bot" className="w-5 h-5"/>
-                            <span>{t('settings.data.load_dummy')}</span>
-                        </button>
-                    )}
-                </div>
+                {isOwner && (
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border dark:border-gray-700">
+                        <h3 className="text-lg font-semibold font-display mb-3">{t('settings.data.title')}</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{t('settings.data.dummy_description')}</p>
+                        {isDummyDataActive ? (
+                            <button
+                                onClick={onReset}
+                                className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-full font-semibold transition-colors bg-red-600 text-white hover:bg-red-700"
+                            >
+                                <Icon name="refresh-cw" className="w-5 h-5"/>
+                                <span>{t('common.reset')}</span>
+                            </button>
+                        ) : (
+                            <button
+                                onClick={onLoadDummyData}
+                                disabled={isDummyDataButtonDisabled}
+                                className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-full font-semibold transition-opacity bg-gradient-button text-white hover:opacity-90 disabled:bg-none disabled:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <Icon name="bot" className="w-5 h-5"/>
+                                <span>{t('settings.data.load_dummy')}</span>
+                            </button>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

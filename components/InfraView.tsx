@@ -51,6 +51,19 @@ export const InfraView: React.FC<InfraViewProps> = () => {
                 date: getDateStr(0),
                 time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                 type: 'ui',
+                title: 'Cloisonnement Admin Strict, Onboarding 1ère Visite & Lien Moslih84',
+                description: 'Restriction stricte des modules d\'administration aux seuls profils habilités (moslihayoub@gmail.com / Moslih84), chargement automatique des données de démo pour tout nouvel utilisateur avec toaster et bouton Effacer, et mise à jour du lien de signature vers https://moslih84.vercel.app/.',
+                details: [
+                    'Lien de signature : redirection de la mention "Created by Moslih84" dans la barre latérale vers https://moslih84.vercel.app/.',
+                    'Isolation des sections Admin : masquage strict des blocs "Moteur d\'analyse CV (Admin)" et "Gestion des données" dans les paramètres pour tout utilisateur non-administrateur.',
+                    'Habilitation Admin : reconnaissance stricte de l\'administrateur par email (moslihayoub@gmail.com, fahdrahali@gmail.com) ou identifiant (Moslih84).',
+                    'Onboarding 1ère connexion : injection automatique des données fictives lors de la 1ère visite ou 1ère connexion avec toaster explicatif et CTA "Effacer" interactif à durée étendue.'
+                ]
+            },
+            {
+                date: getDateStr(0),
+                time: now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                type: 'ui',
                 title: 'Pastille Carrousel Flottante en Bas (Sans Masquer le CV & Zéro Fond Gris)',
                 description: 'Repositionnement du carrousel de modèles en pastille compacte flottante ancrée en bas de page sans bandeau gris pleine largeur, libérant totalement l\'en-tête du CV.',
                 details: [

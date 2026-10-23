@@ -169,9 +169,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         <footer className={`p-3 border-t border-gray-200 dark:border-gray-800 flex items-center gap-2 ${isCollapsed ? 'justify-center' : ''}`}>
            <img src={logoIcon} alt="ParseLIQ HR Icon" className="w-5 h-5"/>
-           <a href="https://www.linkedin.com/in/moslih84/" target="_blank" rel="noopener noreferrer" className={`text-xs text-gray-500 dark:text-gray-400 hover:underline transition-opacity duration-200 ${isCollapsed ? 'opacity-0 w-0 h-0' : 'opacity-100'}`}>
-              {t('sidebar.footer')}
-            </a>
+           <a 
+             href="https://moslih84.vercel.app/" 
+             target="_blank" 
+             rel="noopener noreferrer" 
+             className={`text-xs text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 hover:underline transition-all duration-200 ${isCollapsed ? 'opacity-0 w-0 h-0 hidden' : 'opacity-100 font-medium'}`}
+           >
+              Created by Moslih84
+           </a>
         </footer>
       </aside>
     </>

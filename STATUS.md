@@ -6,6 +6,10 @@
 - **Branche:** `main`
 
 ## 🚀 Progrès Récents
+- **Cloisonnement Admin Strict, Onboarding 1ère Visite & Lien Moslih84 :**
+  * **Signature mise à jour** : Le lien de pied de page de la barre latérale affiche "Created by Moslih84" et pointe désormais directement vers `https://moslih84.vercel.app/`.
+  * **Sanctuarisation des données et outils Admin** : Les sections *"Moteur d'analyse CV (Admin)"* et *"Gestion des données"* dans les Réglages (`SettingsView.tsx`) sont désormais **strictement invisibles** pour tout utilisateur ordinaire et réservées exclusivement à l'administrateur connecté (`moslihayoub@gmail.com` ou identifiant `Moslih84`).
+  * **Onboarding 1ère Connexion & Visite** : Injection automatique d'un jeu complet de données de démonstration lors de la première arrivée d'un utilisateur, accompagné d'un toaster interactif pédagogique avec bouton d'action **"Effacer"** pour nettoyer l'espace de travail en 1 clic.
 - **Pastille de Modèles Flottante en Bas (Zéro Masquage & Zéro Bandeau Gris) :**
   * **Libération intégrale de l'en-tête** : Suppression définitive de la barre haute qui occultait le nom ("Jean Dupont") et les coordonnées du CV.
   * **Pastille flottante isolée en bas** : Le carrousel `< ● ● ● >` devient un composant flottant autonome centré en bas (`sticky bottom-6`), sans aucun fond gris pleine largeur (`w-full`), avec ombre portée 3D et effet de flou d'arrière-plan (`backdrop-blur-md`).

@@ -382,7 +382,7 @@ function AppContent() {
                     const email = session.user.email || '';
                     const id = session.user.id;
                     setCurrentUser({ id, email });
-                    const isAdm = email.toLowerCase() === 'moslihayoub@gmail.com' || email.toLowerCase() === 'fahdrahali@gmail.com' || localStorage.getItem('specialUser') !== null;
+                    const isAdm = email.toLowerCase() === 'moslihayoub@gmail.com' || email.toLowerCase() === 'fahdrahali@gmail.com' || id === 'Moslih84' || email.toLowerCase().startsWith('moslih84');
                     setIsOwner(isAdm);
                     
                     // Sync Candidates from Supabase DB
@@ -443,7 +443,7 @@ function AppContent() {
                 const email = session.user.email || '';
                 const id = session.user.id;
                 setCurrentUser({ id, email });
-                const isAdm = email.toLowerCase() === 'moslihayoub@gmail.com' || email.toLowerCase() === 'fahdrahali@gmail.com' || localStorage.getItem('specialUser') !== null;
+                const isAdm = email.toLowerCase() === 'moslihayoub@gmail.com' || email.toLowerCase() === 'fahdrahali@gmail.com' || id === 'Moslih84' || email.toLowerCase().startsWith('moslih84');
                 setIsOwner(isAdm);
 
                 loadCandidatesFromDb(id).then(dbCandidates => {
@@ -1020,11 +1020,28 @@ function AppContent() {
     React.useEffect(() => {
         try {
             const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('demo') === 'true' || urlParams.get('seed') === 'true') {
+            const isDemoParam = urlParams.get('demo') === 'true' || urlParams.get('seed') === 'true';
+            const hasVisitedBefore = localStorage.getItem('parseliq_visited_before');
+            const hasExistingFiles = localStorage.getItem('cvFiles');
+            
+            // Premier visiteur ou paramètre ?demo=true : chargement automatique des données fictives avec explication et CTA Effacer
+            if (isDemoParam || (!hasVisitedBefore && (!hasExistingFiles || JSON.parse(hasExistingFiles).length === 0))) {
+                localStorage.setItem('parseliq_visited_before', 'true');
                 handleLoadDummyData();
+                setTimeout(() => {
+                    showToast(
+                        "Données fictives chargées pour visualiser les résultats et comprendre le fonctionnement de la solution.",
+                        "info",
+                        {
+                            label: "Effacer",
+                            onClick: handleReset
+                        },
+                        10000
+                    );
+                }, 800);
             }
         } catch (e) {
-            console.error("Failed to parse demo URL param", e);
+            console.error("Failed to check first visit demo check", e);
         }
     }, []);
     
@@ -1360,8 +1377,25 @@ function AppContent() {
                         onClose={() => setIsAuthModalOpen(false)}
                         onSuccess={(user) => {
                             setCurrentUser(user);
-                            const isAdm = user.email.toLowerCase() === 'moslihayoub@gmail.com' || user.email.toLowerCase() === 'fahdrahali@gmail.com';
+                            const isAdm = user.email.toLowerCase() === 'moslihayoub@gmail.com' || user.email.toLowerCase() === 'fahdrahali@gmail.com' || user.id === 'Moslih84';
                             setIsOwner(isAdm);
+                            // Pour un utilisateur qui se connecte la première fois, charger données fictives avec toast explicatif
+                            const userKey = `parseliq_seeded_${user.id}`;
+                            if (!localStorage.getItem(userKey) && cvFiles.length === 0) {
+                                localStorage.setItem(userKey, 'true');
+                                handleLoadDummyData();
+                                setTimeout(() => {
+                                    showToast(
+                                        "Données fictives chargées pour visualiser les résultats et comprendre le fonctionnement de la solution.",
+                                        "info",
+                                        {
+                                            label: "Effacer",
+                                            onClick: handleReset
+                                        },
+                                        10000
+                                    );
+                                }, 800);
+                            }
                         }}
                     />
                 )}
@@ -1410,6 +1444,20 @@ function AppContent() {
                             </button>
                         </div>
                     ) : null}
+                    {isDummyDataActive && (
+                        <div className="mx-4 sm:mx-8 mt-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40 border border-blue-200 dark:border-blue-800 text-blue-900 dark:text-blue-100 rounded-xl flex items-center justify-between text-xs sm:text-sm animate-fade-in shadow-xs">
+                            <div className="flex items-center gap-2 min-w-0">
+                                <Icon name="sparkles" className="w-4 h-4 text-pink-500 flex-shrink-0" />
+                                <span className="font-medium truncate sm:whitespace-normal">Données de démonstration actives pour explorer les fonctionnalités ATS.</span>
+                            </div>
+                            <button
+                                onClick={handleReset}
+                                className="ml-3 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs transition-colors flex-shrink-0 shadow-xs cursor-pointer"
+                            >
+                                Effacer
+                            </button>
+                        </div>
+                    )}
                     <main 
                         ref={mainContentRef} 
                         onScroll={handleScroll}
